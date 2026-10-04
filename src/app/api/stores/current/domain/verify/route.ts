@@ -2,10 +2,10 @@
 // POST — check DNS records to verify custom domain ownership
 
 import { NextResponse } from "next/server";
-import dns from "dns";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { getStoreByOwnerId } from "@/services/store.service";
+import { checkPlanAccess } from "@/lib/plan-limits";
+import { verifyCustomDomain } from "@/services/custom-domain.service";
 
 export async function POST() {
   const session = await auth();
@@ -19,53 +19,42 @@ export async function POST() {
       return NextResponse.json({ success: false, error: "Store not found" }, { status: 404 });
     }
 
-    if (!store.customDomain || !store.domainVerificationToken) {
+    // Verify plan access
+    const planAccess = await checkPlanAccess(store.id, "CUSTOM_DOMAIN");
+    if (!planAccess.allowed) {
       return NextResponse.json(
-        { success: false, error: "No custom domain pending verification" },
-        { status: 400 }
+        {
+          success: false,
+          error: planAccess.reason || "Custom domains are not available on your current plan.",
+        },
+        { status: 403 }
       );
     }
 
-    let isVerified = false;
-    let dnsLookupError: string | null = null;
+    const result = await verifyCustomDomain(store.id);
 
-    try {
-      // Query DNS TXT records for the domain
-      const records = await dns.promises.resolveTxt(store.customDomain);
-      const flattened = records.flat().join(" ");
-      if (flattened.includes(store.domainVerificationToken)) {
-        isVerified = true;
-      }
-    } catch (dnsErr: any) {
-      dnsLookupError = dnsErr?.message || "DNS lookup failed";
-    }
-
-    if (isVerified) {
-      await prisma.store.update({
-        where: { id: store.id },
-        data: { domainStatus: "CONNECTED" },
-      });
-
+    if (result.success) {
       return NextResponse.json({
         success: true,
-        status: "CONNECTED",
+        status: "VERIFIED",
         message: "Domain successfully verified and connected!",
+        data: result.data,
       });
     } else {
-      await prisma.store.update({
-        where: { id: store.id },
-        data: { domainStatus: "VERIFICATION_FAILED" },
-      });
-
       return NextResponse.json({
         success: false,
-        status: "VERIFICATION_FAILED",
-        error: `Verification record not found. Please ensure a TXT record with value "${store.domainVerificationToken}" is added to your DNS. (Note: DNS propagation can take 5-30 minutes).`,
-        details: dnsLookupError,
+        status: "FAILED",
+        error:
+          result.error ||
+          "DNS verification token not detected yet. DNS changes may take some time to propagate across global DNS servers.",
+        details: result.verification?.details,
       });
     }
   } catch (error) {
     console.error("[POST /api/stores/current/domain/verify]", error);
-    return NextResponse.json({ success: false, error: "Domain verification check failed" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Domain verification check failed" },
+      { status: 500 }
+    );
   }
 }

@@ -25,6 +25,12 @@ export default async function EditProductPage({ params }: EditProductProps) {
     notFound();
   }
 
+  const serializedProduct = {
+    ...product,
+    price: Number(product.price),
+    salePrice: product.salePrice ? Number(product.salePrice) : null,
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
@@ -36,7 +42,7 @@ export default async function EditProductPage({ params }: EditProductProps) {
 
       <ProductForm
         productId={id}
-        initialData={product}
+        initialData={serializedProduct}
         categories={categories}
         brands={brands}
       />

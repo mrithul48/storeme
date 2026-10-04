@@ -90,6 +90,13 @@ enum DomainStatus {
   VERIFICATION_FAILED
 }
 
+enum CustomDomainStatus {
+  PENDING_VERIFICATION
+  VERIFIED
+  FAILED
+  DISCONNECTED
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // USER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -141,8 +148,10 @@ model Store {
   brands       Brand[]
   orders       Order[]
   customers    Customer[]
-  homePage     HomePage?
-  subscription Subscription?
+  homePage              HomePage?
+  subscription          Subscription?
+  merchantPaymentConfig MerchantPaymentConfig[]
+  customDomainRecord    CustomDomain?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -528,4 +537,45 @@ model HomePage {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MERCHANT PAYMENT CONFIG
+// Per-store payment provider credentials (encrypted at rest, never plain-text)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model MerchantPaymentConfig {
+  id              String  @id @default(cuid())
+  storeId         String
+  store           Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  provider        String  @default("razorpay") // "razorpay" — extensible to stripe etc.
+  keyId           String  // Public key ID — not secret, safe to return to client when needed
+  encryptedSecret String  @db.Text              // AES-256-GCM encrypted: "iv:authTag:ciphertext"
+  isActive        Boolean @default(true)        // false = disconnected (soft delete)
+  mode            String  @default("test")      // "test" | "live"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([storeId, provider])
+  @@index([storeId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CUSTOM DOMAIN
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CustomDomain {
+  id                String             @id @default(cuid())
+  storeId           String             @unique
+  store             Store              @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  domain            String             @unique
+  status            CustomDomainStatus @default(PENDING_VERIFICATION)
+  verificationToken String             @unique
+  verifiedAt        DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([domain])
+  @@index([storeId])
 }

@@ -45,6 +45,13 @@ export async function checkPlanAccess(
 
   switch (feature) {
     case "CUSTOM_DOMAIN":
+      // Development-only bypass when explicitly configured in env
+      if (
+        process.env.NODE_ENV !== "production" &&
+        process.env.CUSTOM_DOMAIN_TEST_BYPASS === "true"
+      ) {
+        return { allowed: true, planName: `${planName} (Dev Bypass Active)` };
+      }
       if (!isScalePro) {
         return {
           allowed: false,

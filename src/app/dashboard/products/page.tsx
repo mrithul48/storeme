@@ -26,6 +26,12 @@ export default async function DashboardProductsPage({ searchParams }: ProductsPa
     listCategories(store!.id),
   ]);
 
+  const initialProducts = productsData.data.map((product) => ({
+    ...product,
+    price: Number(product.price),
+    salePrice: product.salePrice ? Number(product.salePrice) : null,
+  }));
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -45,7 +51,7 @@ export default async function DashboardProductsPage({ searchParams }: ProductsPa
       </div>
 
       <ProductsTableClient
-        initialProducts={productsData.data}
+        initialProducts={initialProducts}
         categories={categories}
       />
     </div>

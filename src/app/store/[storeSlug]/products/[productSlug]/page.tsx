@@ -23,9 +23,28 @@ export async function generateMetadata({ params }: ProductPageProps) {
   const product = await getProductBySlug(store.id, productSlug);
   if (!product) return { title: "Product Not Found" };
 
+  const baseUrl =
+    store.customDomain && store.domainStatus === "CONNECTED"
+      ? `https://${store.customDomain}/products/${product.slug}`
+      : `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/store/${store.slug}/products/${product.slug}`;
+
+  const description =
+    product.description?.slice(0, 160) || `Buy ${product.name} at ${store.name}`;
+
   return {
     title: `${product.name} — ${store.name}`,
-    description: product.description?.slice(0, 160) || `Buy ${product.name} at ${store.name}`,
+    description,
+    metadataBase: new URL(baseUrl),
+    alternates: {
+      canonical: baseUrl,
+    },
+    openGraph: {
+      title: `${product.name} — ${store.name}`,
+      description,
+      url: baseUrl,
+      siteName: store.name,
+      images: product.images?.[0]?.url ? [{ url: product.images[0].url }] : [],
+    },
   };
 }
 
@@ -67,7 +86,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
           {/* Interactive Client Component for gallery, cart, quantity */}
           <ProductDetailClient
-            product={product}
+            product={{
+              ...product,
+              price: Number(product.price),
+              salePrice: product.salePrice ? Number(product.salePrice) : null,
+            }}
             store={store}
           />
         </main>

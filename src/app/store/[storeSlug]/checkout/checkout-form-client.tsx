@@ -31,6 +31,7 @@ interface CheckoutFormClientProps {
       whatsapp?: string | null;
       phone?: string | null;
     } | null;
+    merchantPaymentConfig?: { isActive: boolean }[];
   };
 }
 
@@ -42,7 +43,9 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
   const [error, setError] = useState<string | null>(null);
 
   const codEnabled = store.settings?.codEnabled !== false;
-  const onlineEnabled = store.settings?.onlinePaymentEnabled !== false;
+  // Online payment is only functional if the merchant has a connected Razorpay account
+  const merchantRazorpayConnected = (store.merchantPaymentConfig ?? []).some((c) => c.isActive);
+  const onlineEnabled = store.settings?.onlinePaymentEnabled !== false && merchantRazorpayConnected;
   const whatsappEnabled = Boolean(store.settings?.whatsappOrderEnabled);
 
   const defaultMethod: "COD" | "RAZORPAY" | "WHATSAPP" = codEnabled

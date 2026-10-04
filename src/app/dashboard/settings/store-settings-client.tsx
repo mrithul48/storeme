@@ -22,6 +22,10 @@ import {
   Sliders,
   Type,
   Eye,
+  Unplug,
+  Plug,
+  ShieldCheck,
+  Loader2,
 } from "lucide-react";
 
 interface StoreSettingsClientProps {
@@ -47,7 +51,20 @@ const supportedFonts = [
 
 export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"general" | "orders" | "theme" | "domain">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "orders" | "theme" | "domain" | "payments">("general");
+
+  // Razorpay connection state
+  const [rzpStatus, setRzpStatus] = useState<{ connected: boolean; keyId?: string; mode?: string } | null>(null);
+  const [rzpLoading, setRzpLoading] = useState(false);
+  const [rzpSaving, setRzpSaving] = useState(false);
+  const [rzpKeyId, setRzpKeyId] = useState("");
+  const [rzpKeySecret, setRzpKeySecret] = useState("");
+  const [rzpMode, setRzpMode] = useState<"test" | "live">("test");
+  const [rzpShowSecret, setRzpShowSecret] = useState(false);
+  const [rzpError, setRzpError] = useState<string | null>(null);
+  const [rzpSuccess, setRzpSuccess] = useState<string | null>(null);
+  const [rzpDisconnecting, setRzpDisconnecting] = useState(false);
+  const [rzpConfirmDisconnect, setRzpConfirmDisconnect] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
@@ -88,9 +105,99 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
   const [customDomain, setCustomDomain] = useState(store.customDomain || "");
   const [domainStatus, setDomainStatus] = useState(store.domainStatus || "NOT_CONNECTED");
   const [verificationToken, setVerificationToken] = useState(store.domainVerificationToken || "");
+  const [dnsInstructions, setDnsInstructions] = useState<any>(null);
   const [verifyingDomain, setVerifyingDomain] = useState(false);
+  const [disconnectingDomain, setDisconnectingDomain] = useState(false);
+  const [copiedToken, setCopiedToken] = useState(false);
+  const [copiedRouting, setCopiedRouting] = useState(false);
+
+  const handleDomainTabClick = async () => {
+    setActiveTab("domain");
+    try {
+      const res = await fetch("/api/stores/current/domain");
+      const json = await res.json();
+      if (res.ok && json.success && json.data) {
+        if (json.data.domain) setCustomDomain(json.data.domain);
+        if (json.data.status) setDomainStatus(json.data.status);
+        if (json.data.verificationToken) setVerificationToken(json.data.verificationToken);
+        if (json.data.dnsInstructions) setDnsInstructions(json.data.dnsInstructions);
+      }
+    } catch {
+      // Keep existing state
+    }
+  };
 
   const storeUrl = typeof window !== "undefined" ? `${window.location.origin}/store/${store.slug}` : `/store/${store.slug}`;
+
+  // Fetch Razorpay connection status when Payments tab is opened
+  const handlePaymentsTabClick = async () => {
+    setActiveTab("payments");
+    if (rzpStatus === null) {
+      setRzpLoading(true);
+      try {
+        const res = await fetch("/api/stores/current/payment/razorpay");
+        const json = await res.json();
+        if (res.ok && json.success) {
+          setRzpStatus(json.data);
+        }
+      } catch {
+        // ignore — user will see disconnected state
+      } finally {
+        setRzpLoading(false);
+      }
+    }
+  };
+
+  // Connect / Update Razorpay (plain function — not a form handler to avoid nested <form>)
+  const handleRzpConnect = async () => {
+    if (!rzpKeyId.trim() || !rzpKeySecret.trim()) {
+      setRzpError("Please enter both Key ID and Key Secret.");
+      return;
+    }
+    setRzpError(null);
+    setRzpSuccess(null);
+    setRzpSaving(true);
+    try {
+      const res = await fetch("/api/stores/current/payment/razorpay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyId: rzpKeyId, keySecret: rzpKeySecret, mode: rzpMode }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to connect Razorpay");
+      }
+      setRzpStatus({ connected: true, keyId: rzpKeyId, mode: rzpMode });
+      setRzpKeyId("");
+      setRzpKeySecret("");
+      setRzpSuccess(json.message || "Razorpay connected successfully!");
+    } catch (err: unknown) {
+      setRzpError(err instanceof Error ? err.message : "Failed to connect Razorpay");
+    } finally {
+      setRzpSaving(false);
+    }
+  };
+
+  // Disconnect Razorpay
+  const handleRzpDisconnect = async () => {
+    setRzpDisconnecting(true);
+    setRzpError(null);
+    setRzpSuccess(null);
+    try {
+      const res = await fetch("/api/stores/current/payment/razorpay", { method: "DELETE" });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to disconnect Razorpay");
+      }
+      setRzpStatus({ connected: false });
+      setRzpConfirmDisconnect(false);
+      setRzpSuccess("Razorpay disconnected. Historical orders remain intact.");
+    } catch (err: unknown) {
+      setRzpError(err instanceof Error ? err.message : "Failed to disconnect Razorpay");
+    } finally {
+      setRzpDisconnecting(false);
+    }
+  };
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(storeUrl);
@@ -188,10 +295,10 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
     }
   };
 
-  // Save Custom Domain
+  // Save / Register Custom Domain
   const handleSaveDomain = async () => {
-    if (!customDomain) {
-      setError("Please enter a domain name.");
+    if (!customDomain.trim()) {
+      setError("Please enter a domain name (e.g. store.mybrand.com or mybrand.com).");
       return;
     }
 
@@ -211,9 +318,11 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
         throw new Error(json.error || "Failed to register custom domain.");
       }
 
-      setVerificationToken(json.data.domainVerificationToken);
-      setDomainStatus(json.data.domainStatus);
-      setSuccess("Domain registered! Add the DNS TXT record below and click 'Verify DNS Record'.");
+      setCustomDomain(json.data.domain);
+      setVerificationToken(json.data.verificationToken);
+      setDomainStatus(json.data.status || "PENDING_VERIFICATION");
+      setDnsInstructions(json.instructions || json.data.dnsInstructions);
+      setSuccess("Domain registered! Add the DNS records shown below with your registrar and click 'Verify DNS Record'.");
       router.refresh();
     } catch (err: any) {
       setError(err.message || "Failed to save custom domain.");
@@ -236,16 +345,49 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
       const json = await res.json();
       if (res.ok && json.success) {
         setDomainStatus("CONNECTED");
-        setSuccess("Domain successfully verified and connected!");
+        setSuccess("Domain successfully verified! Your storefront is now accessible via your custom domain.");
       } else {
         setDomainStatus("VERIFICATION_FAILED");
-        setError(json.error || "DNS verification not detected yet. Please ensure your TXT record is active.");
+        setError(json.error || "DNS verification not detected yet. DNS records may take 10-30 minutes to propagate.");
       }
       router.refresh();
     } catch (err: any) {
       setError(err.message || "DNS verification failed.");
     } finally {
       setVerifyingDomain(false);
+    }
+  };
+
+  // Disconnect Custom Domain
+  const handleDisconnectDomain = async () => {
+    if (!confirm("Are you sure you want to disconnect this domain? Your storefront, products, and order data will remain untouched.")) {
+      return;
+    }
+
+    setDisconnectingDomain(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const res = await fetch("/api/stores/current/domain", {
+        method: "DELETE",
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to disconnect custom domain.");
+      }
+
+      setCustomDomain("");
+      setDomainStatus("NOT_CONNECTED");
+      setVerificationToken("");
+      setDnsInstructions(null);
+      setSuccess("Custom domain disconnected successfully.");
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message || "Failed to disconnect custom domain.");
+    } finally {
+      setDisconnectingDomain(false);
     }
   };
 
@@ -332,7 +474,7 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
 
         <button
           type="button"
-          onClick={() => setActiveTab("domain")}
+          onClick={handleDomainTabClick}
           className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all ${
             activeTab === "domain"
               ? "border-blue-500 text-white"
@@ -341,6 +483,19 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
         >
           <Globe className="w-4 h-4" />
           Custom Domain
+        </button>
+
+        <button
+          type="button"
+          onClick={handlePaymentsTabClick}
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all ${
+            activeTab === "payments"
+              ? "border-blue-500 text-white"
+              : "border-transparent text-slate-400 hover:text-slate-200"
+          }`}
+        >
+          <CreditCard className="w-4 h-4" />
+          Payments
         </button>
       </div>
 
@@ -829,77 +984,255 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
         {/* TAB 4: CUSTOM DOMAIN */}
         {activeTab === "domain" && (
           <div className="space-y-6">
+            {/* Active Connected Domain Hero Banner */}
+            {(domainStatus === "CONNECTED" || domainStatus === "VERIFIED") && customDomain && (
+              <Card className="bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-900 border-emerald-500/30">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                        Custom Domain Active & Verified
+                      </span>
+                    </div>
+                    <p className="text-xl font-mono font-bold text-white tracking-tight">
+                      https://{customDomain}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      Your store catalog, cart, checkout, and themes are live on your custom domain.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <a
+                      href={`https://${customDomain}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex"
+                    >
+                      <Button type="button" variant="primary" size="sm">
+                        <ExternalLink className="w-4 h-4 mr-1.5" />
+                        Visit Storefront
+                      </Button>
+                    </a>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+                      isLoading={disconnectingDomain}
+                      onClick={handleDisconnectDomain}
+                    >
+                      <Unplug className="w-4 h-4 mr-1.5" />
+                      Disconnect
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* Domain Configuration Form Card */}
             <Card className="space-y-6">
-              <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
+              <div className="border-b border-slate-800 pb-3 flex items-center justify-between flex-wrap gap-2">
                 <div>
                   <h2 className="text-base font-bold text-white">Custom Domain Mapping</h2>
                   <p className="text-xs text-slate-400">
-                    Connect your own custom root or subdomain (e.g. shop.yourbrand.com).
+                    Connect your own custom root or subdomain (e.g. shop.yourbrand.com or yourbrand.com).
                   </p>
                 </div>
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    domainStatus === "CONNECTED"
+                    domainStatus === "CONNECTED" || domainStatus === "VERIFIED"
                       ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                       : domainStatus === "PENDING_VERIFICATION"
                       ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                      : domainStatus === "VERIFICATION_FAILED"
+                      : domainStatus === "VERIFICATION_FAILED" || domainStatus === "FAILED"
                       ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                       : "bg-slate-800 text-slate-400"
                   }`}
                 >
-                  Status: {domainStatus.replace("_", " ")}
+                  Status: {domainStatus.replace(/_/g, " ")}
                 </span>
               </div>
 
               <div className="space-y-3">
                 <label className="text-xs font-semibold text-slate-300">Custom Domain Hostname</label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-col sm:flex-row">
                   <Input
                     value={customDomain}
                     onChange={(e) => setCustomDomain(e.target.value)}
-                    placeholder="e.g. store.lumina.style"
+                    placeholder="e.g. store.yourbrand.com or yourbrand.com"
+                    className="flex-1"
                   />
                   <Button type="button" variant="primary" onClick={handleSaveDomain} isLoading={loading}>
-                    Register Domain
+                    <Globe className="w-4 h-4 mr-1.5" />
+                    {domainStatus === "CONNECTED" || domainStatus === "VERIFIED" ? "Update Domain" : "Register Domain"}
                   </Button>
                 </div>
+                <p className="text-[11px] text-slate-500">
+                  Enter your domain name without <span className="font-mono text-slate-400">https://</span> or trailing slashes.
+                </p>
               </div>
 
+              {/* DNS Instructions Section */}
               {verificationToken && (
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400">
-                    DNS Verification Instructions
-                  </h4>
+                <div className="p-4 sm:p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4" />
+                      DNS Configuration Instructions
+                    </h4>
+                    <span className="text-[11px] text-slate-400">Hostinger, GoDaddy, Namecheap, Cloudflare</span>
+                  </div>
+
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Add the following TXT record with your domain registrar (GoDaddy, Cloudflare, Namecheap, etc.) to prove ownership:
+                    Log in to your domain registrar and create the following DNS records to verify ownership and route traffic:
                   </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-900 p-3 rounded-lg border border-slate-800 text-xs font-mono">
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">RECORD TYPE</span>
-                      <span className="text-white font-bold">TXT</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">HOST / NAME</span>
-                      <span className="text-white font-bold">@ (or subdomain)</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">RECORD VALUE</span>
-                      <span className="text-emerald-400 font-bold break-all">{verificationToken}</span>
+                  <div className="space-y-3">
+                    {/* Record 1: Routing Record */}
+                    {customDomain.split(".").length > 2 ? (
+                      <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800/80 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">
+                            Record 1: Traffic Routing (CNAME)
+                          </span>
+                          <span className="text-[10px] text-slate-400">Points subdomain to platform</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
+                          <div>
+                            <span className="text-slate-500 block text-[10px]">TYPE</span>
+                            <span className="text-white font-bold">CNAME</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 block text-[10px]">HOST / NAME</span>
+                            <span className="text-white font-bold">{customDomain.split(".")[0]}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 block text-[10px]">TARGET / VALUE</span>
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="text-blue-300 font-bold break-all">cname.vercel-dns.com</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard.writeText("cname.vercel-dns.com");
+                                  setCopiedRouting(true);
+                                  setTimeout(() => setCopiedRouting(false), 2000);
+                                }}
+                                className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
+                                title="Copy Value"
+                              >
+                                {copiedRouting ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800/80 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">
+                            Record 1: Traffic Routing (A Record)
+                          </span>
+                          <span className="text-[10px] text-slate-400">Points root domain to platform IP</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
+                          <div>
+                            <span className="text-slate-500 block text-[10px]">TYPE</span>
+                            <span className="text-white font-bold">A</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 block text-[10px]">HOST / NAME</span>
+                            <span className="text-white font-bold">@</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 block text-[10px]">TARGET / IP</span>
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="text-blue-300 font-bold break-all">76.76.21.21</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard.writeText("76.76.21.21");
+                                  setCopiedRouting(true);
+                                  setTimeout(() => setCopiedRouting(false), 2000);
+                                }}
+                                className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
+                                title="Copy IP"
+                              >
+                                {copiedRouting ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Record 2: TXT Verification Record */}
+                    <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800/80 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                          Record 2: Ownership Verification (TXT)
+                        </span>
+                        <span className="text-[10px] text-slate-400">Proves domain ownership</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
+                        <div>
+                          <span className="text-slate-500 block text-[10px]">TYPE</span>
+                          <span className="text-white font-bold">TXT</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[10px]">HOST / NAME</span>
+                          <span className="text-white font-bold">@</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 block text-[10px]">RECORD VALUE</span>
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="text-emerald-400 font-bold break-all text-[11px]">{verificationToken}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(verificationToken);
+                                setCopiedToken(true);
+                                setTimeout(() => setCopiedToken(false), 2000);
+                              }}
+                              className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
+                              title="Copy Token"
+                            >
+                              {copiedToken ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="pt-2">
+                  <p className="text-[11px] text-slate-400 italic">
+                    Note: DNS records usually propagate within 5-30 minutes, but can occasionally take up to 24 hours depending on your registrar.
+                  </p>
+
+                  <div className="pt-2 flex items-center gap-3 flex-wrap">
                     <Button
                       type="button"
-                      variant="secondary"
+                      variant="primary"
                       size="sm"
                       isLoading={verifyingDomain}
                       onClick={handleVerifyDomain}
                     >
                       <RefreshCw className="w-4 h-4 mr-1.5" />
-                      Verify DNS Record
+                      Verify DNS Configuration
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="border-rose-500/20 text-rose-400 hover:bg-rose-500/10"
+                      isLoading={disconnectingDomain}
+                      onClick={handleDisconnectDomain}
+                    >
+                      <Unplug className="w-4 h-4 mr-1.5" />
+                      Disconnect Domain
                     </Button>
                   </div>
                 </div>
@@ -908,8 +1241,238 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
           </div>
         )}
 
-        {/* Global Save Button (for General, Order Methods and Theme) */}
-        {activeTab !== "domain" && (
+        {/* TAB 5: PAYMENTS — Merchant Razorpay Integration */}
+        {activeTab === "payments" && (
+          <div className="space-y-6">
+            {/* Razorpay Status / Notifications */}
+            {rzpSuccess && (
+              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-2">
+                <Check className="w-5 h-5 flex-shrink-0" />
+                <span>{rzpSuccess}</span>
+              </div>
+            )}
+            {rzpError && (
+              <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span>{rzpError}</span>
+              </div>
+            )}
+
+            {rzpLoading ? (
+              <Card className="flex items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+                <span className="ml-3 text-slate-400 text-sm">Loading payment settings...</span>
+              </Card>
+            ) : (
+              <>
+                {/* Connection Status Card */}
+                {rzpStatus?.connected && (
+                  <Card className="bg-gradient-to-br from-emerald-950/40 to-slate-900 border-emerald-500/20">
+                    <div className="flex items-start justify-between flex-wrap gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                          <span className="text-sm font-bold text-emerald-400">Razorpay Connected</span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                            rzpStatus.mode === "live"
+                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                              : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                          }`}>
+                            {rzpStatus.mode ?? "test"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400">
+                          Key ID:{" "}
+                          <span className="font-mono text-slate-200">
+                            {rzpStatus.keyId
+                              ? `${rzpStatus.keyId.slice(0, 12)}${"..".padEnd(8, "●")}`
+                              : "—"}
+                          </span>
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          Secret: <span className="font-mono">●●●●●●●●●●●●●●●●</span>
+                        </p>
+                      </div>
+
+                      <div className="flex gap-2 flex-wrap">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setRzpConfirmDisconnect(true)}
+                        >
+                          <Unplug className="w-4 h-4 mr-1.5" />
+                          Disconnect
+                        </Button>
+                      </div>
+                    </div>
+
+                    {rzpConfirmDisconnect && (
+                      <div className="mt-4 p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 space-y-3">
+                        <p className="text-sm text-rose-300 font-semibold">
+                          Disconnect Razorpay?
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          Online payments will be disabled until you reconnect. Existing orders and payment records remain intact.
+                        </p>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="primary"
+                            size="sm"
+                            isLoading={rzpDisconnecting}
+                            onClick={handleRzpDisconnect}
+                            className="!bg-rose-600 hover:!bg-rose-700"
+                          >
+                            Yes, Disconnect
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setRzpConfirmDisconnect(false)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                )}
+
+                {/* Connect / Update Form */}
+                <Card className="space-y-5">
+                  <div className="border-b border-slate-800 pb-3">
+                    <h2 className="text-base font-bold text-white flex items-center gap-2">
+                      <CreditCard className="w-5 h-5 text-blue-400" />
+                      {rzpStatus?.connected ? "Update Razorpay Credentials" : "Connect Razorpay"}
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Connect your Razorpay account so customers can pay online directly into your Razorpay account.
+                      Your credentials are encrypted and stored securely — never visible to anyone.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Mode selector */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-300">Account Mode</label>
+                      <div className="flex gap-3">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="rzpMode"
+                            value="test"
+                            checked={rzpMode === "test"}
+                            onChange={() => setRzpMode("test")}
+                            className="accent-blue-500"
+                          />
+                          <span className="text-sm text-slate-300">Test Mode</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="rzpMode"
+                            value="live"
+                            checked={rzpMode === "live"}
+                            onChange={() => setRzpMode("live")}
+                            className="accent-emerald-500"
+                          />
+                          <span className="text-sm text-slate-300">Live Mode</span>
+                        </label>
+                      </div>
+                      {rzpMode === "live" && (
+                        <p className="text-[11px] text-amber-400">⚠ Live mode will charge real money. Ensure your credentials are from a verified Razorpay account.</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-300">Key ID *</label>
+                      <Input
+                        required
+                        value={rzpKeyId}
+                        onChange={(e) => setRzpKeyId(e.target.value)}
+                        placeholder={rzpMode === "live" ? "rzp_live_..." : "rzp_test_..."}
+                        autoComplete="off"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-300">Key Secret *</label>
+                      <div className="relative">
+                        <Input
+                          required
+                          type={rzpShowSecret ? "text" : "password"}
+                          value={rzpKeySecret}
+                          onChange={(e) => setRzpKeySecret(e.target.value)}
+                          placeholder="Enter your Razorpay Key Secret"
+                          autoComplete="new-password"
+                          className="pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setRzpShowSecret(!rzpShowSecret)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-slate-500">
+                        Your secret is encrypted with AES-256-GCM before storage. It is never visible or logged after saving.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-2">
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="md"
+                        isLoading={rzpSaving}
+                        onClick={handleRzpConnect}
+                      >
+                        <Plug className="w-4 h-4 mr-1.5" />
+                        {rzpStatus?.connected ? "Update Credentials" : "Connect Razorpay"}
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Help Card */}
+                <Card className="bg-slate-900/60 border-slate-800 space-y-3">
+                  <h3 className="text-sm font-semibold text-slate-300">Need help?</h3>
+                  <div className="flex flex-wrap gap-3">
+                    <a
+                      href="https://razorpay.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button type="button" variant="outline" size="sm">
+                        <ExternalLink className="w-4 h-4 mr-1.5" />
+                        Create Razorpay Account
+                      </Button>
+                    </a>
+                    <a
+                      href="https://dashboard.razorpay.com/app/keys"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button type="button" variant="outline" size="sm">
+                        <ExternalLink className="w-4 h-4 mr-1.5" />
+                        Get API Keys
+                      </Button>
+                    </a>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Find your API keys at Dashboard → Settings → API Keys in your Razorpay account.
+                  </p>
+                </Card>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Global Save Button (for General, Order Methods and Theme only) */}
+        {activeTab !== "domain" && activeTab !== "payments" && (
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
             <Button type="submit" variant="primary" size="lg" isLoading={loading}>
               Save All Changes
