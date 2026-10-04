@@ -59,10 +59,19 @@ export default async function StorefrontPage({ params, searchParams }: StorePage
   const themeColor = store.theme?.primaryColor || "#3b82f6";
   const heroHeading = store.homePage?.heroHeading || `Welcome to ${store.name}`;
   const heroSubheading = store.homePage?.heroSubtitle || store.company?.description;
+  const h1Color = store.theme?.h1Color;
+  const paragraphColor = store.theme?.paragraphColor;
+  const primaryFont = store.theme?.primaryFont;
 
   return (
     <CartProvider storeSlug={store.slug}>
-      <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+      <div
+        className="min-h-screen flex flex-col text-slate-100 transition-colors"
+        style={{
+          fontFamily: primaryFont || "inherit",
+          backgroundColor: store.theme?.backgroundColor || "#020617",
+        }}
+      >
         {/* Storefront Header */}
         <StoreHeader store={store} />
 
@@ -81,12 +90,18 @@ export default async function StorefrontPage({ params, searchParams }: StorePage
                 <span>Verified Online Store</span>
               </div>
 
-              <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white max-w-3xl mx-auto leading-tight">
+              <h1
+                className="text-3xl md:text-5xl font-extrabold tracking-tight text-white max-w-3xl mx-auto leading-tight"
+                style={{ color: h1Color || undefined }}
+              >
                 {heroHeading}
               </h1>
 
               {heroSubheading && (
-                <p className="text-slate-400 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
+                <p
+                  className="text-slate-400 text-sm md:text-base max-w-2xl mx-auto leading-relaxed"
+                  style={{ color: paragraphColor || undefined }}
+                >
                   {heroSubheading}
                 </p>
               )}

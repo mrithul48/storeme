@@ -1,10 +1,18 @@
 // src/lib/auth.ts
-// NextAuth v5 (beta) configuration with Google & Credentials demo provider
+// NextAuth v5 (beta) configuration — Google OAuth + Email/Password credentials.
+// Sessions are JWTs stored in HTTP-only, SameSite=Lax cookies (Secure in production) managed by NextAuth.
 
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/db";
+import { verifyPassword } from "@/lib/password";
+import { loginSchema } from "@/validations/auth.schema";
+
+const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+if (!authSecret && process.env.NODE_ENV === "production") {
+  throw new Error("AUTH_SECRET / NEXTAUTH_SECRET must be set in production");
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -17,32 +25,31 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         ]
       : []),
     Credentials({
-      name: "Email / Demo",
+      name: "Email & Password",
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "demo@storebuilder.com" },
-        name: { label: "Name", type: "text", placeholder: "Alex Mercer" },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email) return null;
-        const email = String(credentials.email).toLowerCase().trim();
-        const name = credentials.name ? String(credentials.name).trim() : email.split("@")[0];
+        const parsed = loginSchema.safeParse(credentials);
+        if (!parsed.success) return null;
+        const { email, password } = parsed.data;
 
         try {
-          const user = await prisma.user.upsert({
+          const user = await prisma.user.findUnique({
             where: { email },
-            update: { name },
-            create: {
-              email,
-              name,
-              avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`,
-            },
+            select: { id: true, email: true, name: true, avatar: true, password: true },
           });
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            image: user.avatar,
-          };
+
+          // Google-only accounts have no password → credentials login is rejected.
+          // verifyPassword is still executed on a miss to reduce user-enumeration timing differences.
+          const ok = await verifyPassword(
+            password,
+            user?.password ?? "scrypt$16384$8$1$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+          );
+          if (!user || !user.password || !ok) return null;
+
+          return { id: user.id, email: user.email, name: user.name, image: user.avatar };
         } catch (e) {
           console.error("[Auth] Credentials authorize error:", e);
           return null;
@@ -52,26 +59,45 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   session: {
     strategy: "jwt",
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+    updateAge: 24 * 60 * 60,
   },
   callbacks: {
     async signIn({ user, account }) {
       if (!user.email) return false;
       if (account?.provider === "google") {
+        const email = user.email.toLowerCase();
         try {
-          await prisma.user.upsert({
-            where: { email: user.email },
-            update: {
-              name: user.name ?? undefined,
-              avatar: user.image ?? undefined,
-              googleId: account.providerAccountId,
-            },
-            create: {
-              email: user.email,
-              name: user.name ?? null,
-              avatar: user.image ?? null,
-              googleId: account.providerAccountId,
-            },
+          const existing = await prisma.user.findUnique({
+            where: { email },
+            select: { id: true, emailVerified: true, password: true },
           });
+
+          if (existing) {
+            await prisma.user.update({
+              where: { id: existing.id },
+              data: {
+                name: user.name ?? undefined,
+                avatar: user.image ?? undefined,
+                googleId: account.providerAccountId,
+                emailVerified: true,
+                // Pre-account-takeover protection: if someone registered this email with a password
+                // before ownership was ever verified, invalidate that password now that Google
+                // has proven the real owner.
+                ...(existing.password && !existing.emailVerified ? { password: null } : {}),
+              },
+            });
+          } else {
+            await prisma.user.create({
+              data: {
+                email,
+                name: user.name ?? null,
+                avatar: user.image ?? null,
+                googleId: account.providerAccountId,
+                emailVerified: true,
+              },
+            });
+          }
         } catch (error) {
           console.error("[Auth] Google signIn error:", error);
           return false;
@@ -84,14 +110,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user?.email) {
         try {
           const dbUser = await prisma.user.findUnique({
-            where: { email: user.email },
-            select: { id: true, email: true, name: true, avatar: true },
+            where: { email: user.email.toLowerCase() },
+            select: { id: true, email: true, name: true, avatar: true, role: true },
           });
           if (dbUser) {
             token.userId = dbUser.id;
             token.email = dbUser.email;
             token.name = dbUser.name ?? token.name;
             token.picture = dbUser.avatar ?? token.picture;
+            token.role = dbUser.role;
           }
         } catch (error) {
           console.error("[Auth] jwt lookup error:", error);
@@ -103,15 +130,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       if (token.userId) {
         session.user.id = token.userId as string;
+        session.user.role = (token.role as "USER" | "PLATFORM_ADMIN") ?? "USER";
       }
       return session;
     },
   },
   pages: {
     signIn: "/auth/signin",
-    error: "/auth/error",
+    error: "/auth/signin",
   },
-  secret: process.env.NEXTAUTH_SECRET || "development-secret-store-builder-saas-2025-token",
+  secret: authSecret,
 });
 
 declare module "next-auth" {
@@ -121,6 +149,7 @@ declare module "next-auth" {
       email: string;
       name?: string | null;
       image?: string | null;
+      role: "USER" | "PLATFORM_ADMIN";
     };
   }
 }

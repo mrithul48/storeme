@@ -22,6 +22,7 @@ export async function GET(request: Request) {
     const search = searchParams.get("search") || undefined;
     const status = searchParams.get("status") || undefined;
     const paymentStatus = searchParams.get("paymentStatus") || undefined;
+    const channel = searchParams.get("channel") || searchParams.get("orderChannel") || undefined;
 
     const result = await listOrders(store.id, {
       page,
@@ -29,6 +30,7 @@ export async function GET(request: Request) {
       search,
       status,
       paymentStatus,
+      channel,
     });
 
     return NextResponse.json({ success: true, ...result });

@@ -77,6 +77,9 @@ export async function PUT(request: Request) {
           data: {
             ...(settings.brandsEnabled !== undefined ? { brandsEnabled: settings.brandsEnabled } : {}),
             ...(settings.ordersEnabled !== undefined ? { ordersEnabled: settings.ordersEnabled } : {}),
+            ...(settings.codEnabled !== undefined ? { codEnabled: settings.codEnabled } : {}),
+            ...(settings.onlinePaymentEnabled !== undefined ? { onlinePaymentEnabled: settings.onlinePaymentEnabled } : {}),
+            ...(settings.whatsappOrderEnabled !== undefined ? { whatsappOrderEnabled: settings.whatsappOrderEnabled } : {}),
           },
         });
       }

@@ -27,6 +27,11 @@ export const themeSchema = z.object({
   mutedTextColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   navbarBg: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   navbarText: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  buttonBg: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  buttonText: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  h1Color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  h2Color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  paragraphColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   buttonShape: z.enum(["SQUARE", "MEDIUM_ROUNDED", "FULLY_ROUNDED"]),
   primaryFont: z.string().min(1).max(100),
 });
@@ -70,6 +75,9 @@ export const updateCompanySchema = z.object({
 export const updateStoreSettingsSchema = z.object({
   brandsEnabled: z.boolean().optional(),
   ordersEnabled: z.boolean().optional(),
+  codEnabled: z.boolean().optional(),
+  onlinePaymentEnabled: z.boolean().optional(),
+  whatsappOrderEnabled: z.boolean().optional(),
   razorpayKeyId: z.string().optional(),
   razorpaySecret: z.string().optional(),
   brevoApiKey: z.string().optional(),

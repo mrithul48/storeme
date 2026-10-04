@@ -5,9 +5,16 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { formatCurrency, calculateDiscountPercentage, buildWhatsAppUrl } from "@/lib/utils";
 import { useCart } from "@/context/cart-context";
-import { ShoppingBag, MessageCircle, Check, Plus, Minus, ShieldCheck, Truck, RefreshCw } from "lucide-react";
+import { ShoppingBag, MessageCircle, Check, Plus, Minus, ShieldCheck, Truck, RefreshCw, Ban } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+
+interface StoreSettings {
+  ordersEnabled?: boolean | null;
+  codEnabled?: boolean | null;
+  onlinePaymentEnabled?: boolean | null;
+  whatsappOrderEnabled?: boolean | null;
+}
 
 interface ProductDetailClientProps {
   product: {
@@ -29,6 +36,7 @@ interface ProductDetailClientProps {
       whatsapp?: string | null;
       phone?: string | null;
     } | null;
+    settings?: StoreSettings | null;
     theme?: {
       primaryColor?: string | null;
     } | null;
@@ -51,8 +59,22 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
   const currentImage = product.images?.[selectedImageIndex]?.url;
   const whatsappNumber = store.company?.whatsapp || store.company?.phone;
 
+  // ── Order method flags (default to true when settings are absent) ──────────
+  const settings = store.settings;
+  const ordersEnabled      = settings?.ordersEnabled      !== false;
+  const codEnabled         = settings?.codEnabled         !== false;
+  const onlinePayEnabled   = settings?.onlinePaymentEnabled !== false;
+  const whatsappEnabled    = settings?.whatsappOrderEnabled === true;
+
+  // Cart checkout = COD or online payment is on
+  const cartCheckoutAvailable  = ordersEnabled && (codEnabled || onlinePayEnabled);
+  // WhatsApp order = explicitly toggled on AND a number exists
+  const whatsappOrderAvailable = ordersEnabled && whatsappEnabled && !!whatsappNumber;
+  // Any ordering at all
+  const anyOrderingAvailable   = cartCheckoutAvailable || whatsappOrderAvailable;
+
   const handleAddToCart = () => {
-    if (isOutOfStock) return;
+    if (isOutOfStock || !cartCheckoutAvailable) return;
     addItem(
       {
         productId: product.id,
@@ -70,7 +92,7 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
   };
 
   const handleBuyNow = () => {
-    if (isOutOfStock) return;
+    if (isOutOfStock || !cartCheckoutAvailable) return;
     addItem(
       {
         productId: product.id,
@@ -188,8 +210,8 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
             </div>
           )}
 
-          {/* Quantity Selector */}
-          {!isOutOfStock && (
+          {/* Quantity Selector — only shown when a cart-based checkout method is enabled */}
+          {!isOutOfStock && cartCheckoutAvailable && (
             <div className="pt-4 space-y-2">
               <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
                 Quantity
@@ -224,43 +246,47 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
 
         {/* Action Buttons */}
         <div className="space-y-3 pt-6 border-t border-slate-800/80">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              size="lg"
-              disabled={isOutOfStock}
-              onClick={handleAddToCart}
-              className="w-full"
-            >
-              {added ? (
-                <>
-                  <Check className="w-5 h-5 text-emerald-400" />
-                  <span>Added to Cart!</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingBag className="w-5 h-5" />
-                  <span>Add to Cart</span>
-                </>
-              )}
-            </Button>
 
-            <Button
-              variant="primary"
-              size="lg"
-              disabled={isOutOfStock}
-              onClick={handleBuyNow}
-              className="w-full"
-            >
-              Buy Now
-            </Button>
-          </div>
+          {/* Cart-based checkout — shown when COD or online payment is enabled */}
+          {cartCheckoutAvailable && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                size="lg"
+                disabled={isOutOfStock}
+                onClick={handleAddToCart}
+                className="w-full"
+              >
+                {added ? (
+                  <>
+                    <Check className="w-5 h-5 text-emerald-400" />
+                    <span>Added to Cart!</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag className="w-5 h-5" />
+                    <span>Add to Cart</span>
+                  </>
+                )}
+              </Button>
 
-          {/* WhatsApp Direct Buy */}
-          {whatsappNumber && (
+              <Button
+                variant="primary"
+                size="lg"
+                disabled={isOutOfStock}
+                onClick={handleBuyNow}
+                className="w-full"
+              >
+                Buy Now
+              </Button>
+            </div>
+          )}
+
+          {/* WhatsApp Direct Order — only shown when explicitly enabled */}
+          {whatsappOrderAvailable && (
             <a
               href={buildWhatsAppUrl(
-                whatsappNumber,
+                whatsappNumber!,
                 `Hello ${store.name}! I would like to order: ${product.name} (Qty: ${quantity}) for ${formatCurrency(
                   (isSale ? salePriceNum! : priceNum) * quantity
                 )}.`
@@ -272,6 +298,16 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
               <MessageCircle className="w-4 h-4 text-emerald-400" />
               Direct Order via WhatsApp
             </a>
+          )}
+
+          {/* Fallback — all ordering methods are disabled */}
+          {!anyOrderingAvailable && (
+            <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-900/60 border border-slate-700/50 text-slate-400">
+              <Ban className="w-5 h-5 flex-shrink-0 text-slate-500" />
+              <p className="text-sm">
+                Online ordering is currently unavailable. Please contact the store directly.
+              </p>
+            </div>
           )}
 
           {/* Trust Guarantees */}

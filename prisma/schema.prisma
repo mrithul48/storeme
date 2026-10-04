@@ -14,6 +14,11 @@ datasource db {
 // ENUMS
 // ─────────────────────────────────────────────────────────────────────────────
 
+enum UserRole {
+  USER
+  PLATFORM_ADMIN
+}
+
 enum StoreStatus {
   ACTIVE
   INACTIVE
@@ -59,6 +64,12 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum OrderChannel {
+  COD
+  ONLINE_PAYMENT
+  WHATSAPP
+}
+
 enum PlanStatus {
   ACTIVE
   COMING_SOON
@@ -72,21 +83,36 @@ enum SubscriptionStatus {
   CANCELLED
 }
 
+enum DomainStatus {
+  NOT_CONNECTED
+  PENDING_VERIFICATION
+  CONNECTED
+  VERIFICATION_FAILED
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // USER
 // ─────────────────────────────────────────────────────────────────────────────
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  avatar    String?
-  googleId  String?  @unique
-  store     Store?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  name                 String?
+  avatar               String?
+  googleId             String?   @unique
+  role                 UserRole  @default(USER)
+  // Password auth — null for Google-only accounts
+  password             String?
+  // Password reset — single-use, expiring token
+  passwordResetToken   String?   @unique
+  passwordResetExpires DateTime?
+  emailVerified        Boolean   @default(false)
+  store                Store?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   @@index([email])
+  @@index([passwordResetToken])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -100,6 +126,11 @@ model Store {
   status  StoreStatus @default(ACTIVE)
   ownerId String      @unique
   owner   User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Custom domain
+  customDomain            String?      @unique
+  domainVerificationToken String?      @unique
+  domainStatus            DomainStatus @default(NOT_CONNECTED)
 
   company      CompanyDetails?
   settings     StoreSettings?
@@ -118,6 +149,7 @@ model Store {
 
   @@index([slug])
   @@index([ownerId])
+  @@index([customDomain])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -147,14 +179,22 @@ model CompanyDetails {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model StoreSettings {
-  id               String  @id @default(cuid())
-  storeId          String  @unique
-  store            Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  brandsEnabled    Boolean @default(false)
-  ordersEnabled    Boolean @default(true)
-  // Razorpay keys stored encrypted or null — never exposed to client
-  razorpayKeyId    String?
-  razorpaySecret   String?
+  id      String @id @default(cuid())
+  storeId String @unique
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  brandsEnabled  Boolean @default(false)
+  ordersEnabled  Boolean @default(true)
+
+  // Order method toggles — each independently enabled/disabled
+  codEnabled           Boolean @default(true)
+  onlinePaymentEnabled Boolean @default(true)
+  whatsappOrderEnabled Boolean @default(false)
+
+  // Razorpay keys — never exposed to client
+  razorpayKeyId  String?
+  razorpaySecret String?
+
   // Brevo
   brevoApiKey      String?
   brevoSenderEmail String?
@@ -181,6 +221,11 @@ model ThemeSettings {
   mutedTextColor  String      @default("#6b7280")
   navbarBg        String      @default("#ffffff")
   navbarText      String      @default("#111827")
+  buttonBg        String      @default("#22c55e")
+  buttonText      String      @default("#ffffff")
+  h1Color         String      @default("#111827")
+  h2Color         String      @default("#1f2937")
+  paragraphColor  String      @default("#374151")
   buttonShape     ButtonShape @default(MEDIUM_ROUNDED)
   primaryFont     String      @default("Inter")
 
@@ -260,17 +305,17 @@ model ProductImage {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Category {
-  id          String         @id @default(cuid())
-  storeId     String
-  store       Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  name        String
-  slug        String
-  description String?
-  imageUrl    String?
+  id            String         @id @default(cuid())
+  storeId       String
+  store         Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name          String
+  slug          String
+  description   String?
+  imageUrl      String?
   imagePublicId String?
-  status      CategoryStatus @default(ACTIVE)
-  sortOrder   Int            @default(0)
-  products    Product[]
+  status        CategoryStatus @default(ACTIVE)
+  sortOrder     Int            @default(0)
+  products      Product[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -341,6 +386,7 @@ model Order {
   status          OrderStatus   @default(PENDING)
   paymentStatus   PaymentStatus @default(PENDING)
   paymentMethod   String?
+  orderChannel    OrderChannel  @default(COD)
   notes           String?       @db.Text
   shippingAddress Json
   payment         Payment?
@@ -352,6 +398,7 @@ model Order {
   @@index([storeId])
   @@index([storeId, status])
   @@index([storeId, paymentStatus])
+  @@index([storeId, orderChannel])
   @@index([storeId, createdAt])
   @@index([customerId])
 }
@@ -402,15 +449,16 @@ model Payment {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Plan {
-  id           String        @id @default(cuid())
-  name         String
-  price        Decimal       @db.Decimal(10, 2)
-  status       PlanStatus    @default(ACTIVE)
-  features     Json          // Array of feature strings
-  maxProducts  Int?
-  maxOrders    Int?
-  maxImages    Int?
-  description  String?
+  id            String        @id @default(cuid())
+  name          String
+  slug          String?       @unique
+  price         Decimal       @db.Decimal(10, 2)
+  status        PlanStatus    @default(ACTIVE)
+  features      Json          // Array of feature strings
+  maxProducts   Int?
+  maxOrders     Int?
+  maxImages     Int?
+  description   String?
   subscriptions Subscription[]
 
   createdAt DateTime @default(now())
@@ -430,6 +478,7 @@ model Subscription {
   status             SubscriptionStatus @default(ACTIVE)
   currentPeriodStart DateTime
   currentPeriodEnd   DateTime
+  razorpayPaymentId  String?            // Razorpay payment ID that activated this subscription
   payment            Payment?
 
   createdAt DateTime @default(now())
@@ -449,20 +498,20 @@ model HomePage {
   store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   // Hero section
-  heroHeading    String?
-  heroSubtitle   String?
-  heroImageUrl   String?
+  heroHeading       String?
+  heroSubtitle      String?
+  heroImageUrl      String?
   heroImagePublicId String?
-  heroCtaText    String?
-  heroCtaLink    String?
-  heroEnabled    Boolean @default(true)
+  heroCtaText       String?
+  heroCtaLink       String?
+  heroEnabled       Boolean @default(true)
 
   // About section
-  aboutHeading   String?
-  aboutContent   String? @db.Text
-  aboutImageUrl  String?
+  aboutHeading       String?
+  aboutContent       String? @db.Text
+  aboutImageUrl      String?
   aboutImagePublicId String?
-  aboutEnabled   Boolean @default(false)
+  aboutEnabled       Boolean @default(false)
 
   // Footer
   footerDescription String? @db.Text
@@ -474,7 +523,7 @@ model HomePage {
   // Featured sections stored as JSON array
   featuredSections Json? // [{ id, title, productIds, enabled, sortOrder }]
 
-  // Promotional banners stored as JSON array  
+  // Promotional banners stored as JSON array
   promoBanners Json? // [{ id, title, content, imageUrl, imagePublicId, ctaText, ctaLink, enabled }]
 
   createdAt DateTime @default(now())

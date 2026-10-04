@@ -8,7 +8,7 @@ import { useCart } from "@/context/cart-context";
 import { formatCurrency } from "@/lib/utils";
 import { Card, Input, Textarea } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, ArrowLeft, CreditCard, Banknote, ShieldCheck, AlertCircle } from "lucide-react";
+import { ShoppingBag, ArrowLeft, CreditCard, Banknote, ShieldCheck, AlertCircle, MessageCircle } from "lucide-react";
 
 declare global {
   interface Window {
@@ -18,8 +18,19 @@ declare global {
 
 interface CheckoutFormClientProps {
   store: {
+    id: string;
     name: string;
     slug: string;
+    settings?: {
+      ordersEnabled?: boolean;
+      codEnabled?: boolean;
+      onlinePaymentEnabled?: boolean;
+      whatsappOrderEnabled?: boolean;
+    } | null;
+    company?: {
+      whatsapp?: string | null;
+      phone?: string | null;
+    } | null;
   };
 }
 
@@ -30,7 +41,19 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [paymentMethod, setPaymentMethod] = useState<"COD" | "RAZORPAY">("COD");
+  const codEnabled = store.settings?.codEnabled !== false;
+  const onlineEnabled = store.settings?.onlinePaymentEnabled !== false;
+  const whatsappEnabled = Boolean(store.settings?.whatsappOrderEnabled);
+
+  const defaultMethod: "COD" | "RAZORPAY" | "WHATSAPP" = codEnabled
+    ? "COD"
+    : onlineEnabled
+    ? "RAZORPAY"
+    : whatsappEnabled
+    ? "WHATSAPP"
+    : "COD";
+
+  const [paymentMethod, setPaymentMethod] = useState<"COD" | "RAZORPAY" | "WHATSAPP">(defaultMethod);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -52,6 +75,11 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
 
     if (items.length === 0) {
       setError("Your cart is empty.");
+      return;
+    }
+
+    if (!codEnabled && !onlineEnabled && !whatsappEnabled) {
+      setError("Orders are currently unavailable for this store.");
       return;
     }
 
@@ -86,10 +114,20 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
       const orderNumber = data.order.orderNumber;
       const orderId = data.order.id;
 
+      // WhatsApp Order flow: Order is created in DB, now redirect to WhatsApp
+      if (paymentMethod === "WHATSAPP" && data.whatsappUrl) {
+        clearCart();
+        if (typeof window !== "undefined") {
+          window.open(data.whatsappUrl, "_blank", "noopener,noreferrer");
+        }
+        router.push(`/store/${store.slug}/orders/${orderNumber}`);
+        return;
+      }
+
       // Handle Razorpay Online Payment
       if (paymentMethod === "RAZORPAY" && data.razorpayOrder) {
         if (!window.Razorpay) {
-          throw new Error("Razorpay SDK is loading, please try again in a moment.");
+          throw new Error("Payment gateway SDK is loading. Please try again in a moment.");
         }
 
         const options = {
@@ -97,7 +135,7 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
           amount: data.razorpayOrder.amount,
           currency: data.razorpayOrder.currency,
           name: store.name,
-          description: `Order ${orderNumber}`,
+          description: `Order #${orderNumber}`,
           order_id: data.razorpayOrder.id,
           prefill: {
             name: formData.name,
@@ -136,7 +174,6 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
           modal: {
             ondismiss: function () {
               setLoading(false);
-              // Order was created as pending, customer can view or pay again
               router.push(`/store/${store.slug}/orders/${orderNumber}`);
             },
           },
@@ -147,7 +184,7 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
         return;
       }
 
-      // COD or Instant Success
+      // COD Success
       clearCart();
       router.push(`/store/${store.slug}/orders/${orderNumber}`);
     } catch (err: any) {
@@ -214,31 +251,32 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="e.g. Rahul Sharma"
+                  placeholder="e.g. Alex Mercer"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Phone Number *</label>
+                <label className="text-xs font-semibold text-slate-300">Email Address *</label>
                 <Input
                   required
-                  name="phone"
-                  value={formData.phone}
+                  type="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleChange}
-                  placeholder="e.g. +91 9876543210"
+                  placeholder="alex@example.com"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Email Address *</label>
+              <label className="text-xs font-semibold text-slate-300">Phone Number *</label>
               <Input
                 required
-                type="email"
-                name="email"
-                value={formData.email}
+                type="tel"
+                name="phone"
+                value={formData.phone}
                 onChange={handleChange}
-                placeholder="e.g. rahul@gmail.com"
+                placeholder="+91 9876543210"
               />
             </div>
           </Card>
@@ -286,13 +324,13 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">PIN Code *</label>
+                <label className="text-xs font-semibold text-slate-300">Postal Code *</label>
                 <Input
                   required
                   name="pincode"
                   value={formData.pincode}
                   onChange={handleChange}
-                  placeholder="PIN Code"
+                  placeholder="PIN / Zip Code"
                 />
               </div>
             </div>
@@ -308,63 +346,100 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
             </div>
           </Card>
 
+          {/* Payment Method Selection */}
           <Card className="space-y-4">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold flex items-center justify-center">
                 3
               </span>
-              Payment Method
+              Choose Order & Payment Method
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label
-                onClick={() => setPaymentMethod("COD")}
-                className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
-                  paymentMethod === "COD"
-                    ? "border-blue-500 bg-blue-500/10 text-white"
-                    : "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  checked={paymentMethod === "COD"}
-                  onChange={() => setPaymentMethod("COD")}
-                  className="hidden"
-                />
-                <div className="p-2 rounded-lg bg-slate-800 text-emerald-400">
-                  <Banknote className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold">Cash on Delivery</h4>
-                  <p className="text-xs text-slate-400">Pay when your order arrives</p>
-                </div>
-              </label>
+            {!codEnabled && !onlineEnabled && !whatsappEnabled ? (
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs">
+                No payment or order methods are currently enabled for this store. Please contact the seller.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {codEnabled && (
+                  <label
+                    onClick={() => setPaymentMethod("COD")}
+                    className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                      paymentMethod === "COD"
+                        ? "border-blue-500 bg-blue-500/10 text-white"
+                        : "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      checked={paymentMethod === "COD"}
+                      onChange={() => setPaymentMethod("COD")}
+                      className="hidden"
+                    />
+                    <div className="p-2 rounded-lg bg-slate-800 text-emerald-400">
+                      <Banknote className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold">Cash on Delivery</h4>
+                      <p className="text-xs text-slate-400">Pay when your order arrives</p>
+                    </div>
+                  </label>
+                )}
 
-              <label
-                onClick={() => setPaymentMethod("RAZORPAY")}
-                className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
-                  paymentMethod === "RAZORPAY"
-                    ? "border-blue-500 bg-blue-500/10 text-white"
-                    : "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  checked={paymentMethod === "RAZORPAY"}
-                  onChange={() => setPaymentMethod("RAZORPAY")}
-                  className="hidden"
-                />
-                <div className="p-2 rounded-lg bg-slate-800 text-blue-400">
-                  <CreditCard className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold">Pay Online</h4>
-                  <p className="text-xs text-slate-400">UPI, Cards, NetBanking (Razorpay)</p>
-                </div>
-              </label>
-            </div>
+                {onlineEnabled && (
+                  <label
+                    onClick={() => setPaymentMethod("RAZORPAY")}
+                    className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                      paymentMethod === "RAZORPAY"
+                        ? "border-blue-500 bg-blue-500/10 text-white"
+                        : "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      checked={paymentMethod === "RAZORPAY"}
+                      onChange={() => setPaymentMethod("RAZORPAY")}
+                      className="hidden"
+                    />
+                    <div className="p-2 rounded-lg bg-slate-800 text-blue-400">
+                      <CreditCard className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold">Pay Online</h4>
+                      <p className="text-xs text-slate-400">UPI, Cards, NetBanking (Razorpay)</p>
+                    </div>
+                  </label>
+                )}
+
+                {whatsappEnabled && (
+                  <label
+                    onClick={() => setPaymentMethod("WHATSAPP")}
+                    className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                      paymentMethod === "WHATSAPP"
+                        ? "border-emerald-500 bg-emerald-500/10 text-white"
+                        : "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      checked={paymentMethod === "WHATSAPP"}
+                      onChange={() => setPaymentMethod("WHATSAPP")}
+                      className="hidden"
+                    />
+                    <div className="p-2 rounded-lg bg-slate-800 text-emerald-400">
+                      <MessageCircle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold">WhatsApp Order</h4>
+                      <p className="text-xs text-slate-400">Creates order and sends details via WhatsApp</p>
+                    </div>
+                  </label>
+                )}
+              </div>
+            )}
           </Card>
         </div>
 
@@ -424,11 +499,14 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
               variant="primary"
               size="lg"
               isLoading={loading}
+              disabled={!codEnabled && !onlineEnabled && !whatsappEnabled}
               className="w-full mt-4"
             >
               {paymentMethod === "RAZORPAY"
                 ? `Pay ${formatCurrency(subtotal)} Online`
-                : `Place Order (${formatCurrency(subtotal)})`}
+                : paymentMethod === "WHATSAPP"
+                ? `Order via WhatsApp (${formatCurrency(subtotal)})`
+                : `Place COD Order (${formatCurrency(subtotal)})`}
             </Button>
 
             <div className="flex items-center justify-center gap-1.5 text-center text-xs text-slate-500 pt-2">
