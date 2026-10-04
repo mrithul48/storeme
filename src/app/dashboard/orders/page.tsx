@@ -27,6 +27,11 @@ export default async function DashboardOrdersPage({ searchParams }: OrdersPagePr
     sortOrder: "desc",
   });
 
+  const initialOrders = ordersData.data.map((order) => ({
+    ...order,
+    total: Number(order.total),
+  }));
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <div>
@@ -37,7 +42,7 @@ export default async function DashboardOrdersPage({ searchParams }: OrdersPagePr
       </div>
 
       <OrdersTableClient
-        initialOrders={ordersData.data}
+        initialOrders={initialOrders}
         storeSlug={store!.slug}
       />
     </div>

@@ -23,9 +23,28 @@ export async function generateMetadata({ params }: StorePageProps) {
     return { title: "Store Not Found" };
   }
 
+  const baseUrl =
+    store.customDomain && store.domainStatus === "CONNECTED"
+      ? `https://${store.customDomain}`
+      : `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/store/${store.slug}`;
+
+  const description =
+    store.company?.description || `Welcome to ${store.name}. Browse our catalog and order online.`;
+
   return {
     title: `${store.name} — Online Store`,
-    description: store.company?.description || `Welcome to ${store.name}. Browse our catalog and order online.`,
+    description,
+    metadataBase: new URL(baseUrl),
+    alternates: {
+      canonical: baseUrl,
+    },
+    openGraph: {
+      title: `${store.name} — Online Store`,
+      description,
+      url: baseUrl,
+      siteName: store.name,
+      images: store.company?.logoUrl ? [{ url: store.company.logoUrl }] : [],
+    },
   };
 }
 
