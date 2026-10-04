@@ -1,0 +1,482 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum StoreStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum ButtonShape {
+  SQUARE
+  MEDIUM_ROUNDED
+  FULLY_ROUNDED
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+}
+
+enum CategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BrandStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PlanStatus {
+  ACTIVE
+  COMING_SOON
+  DEPRECATED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatar    String?
+  googleId  String?  @unique
+  store     Store?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STORE (Tenant Root)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Store {
+  id      String      @id @default(cuid())
+  slug    String      @unique
+  name    String
+  status  StoreStatus @default(ACTIVE)
+  ownerId String      @unique
+  owner   User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  company      CompanyDetails?
+  settings     StoreSettings?
+  theme        ThemeSettings?
+  workingHours WorkingHours[]
+  products     Product[]
+  categories   Category[]
+  brands       Brand[]
+  orders       Order[]
+  customers    Customer[]
+  homePage     HomePage?
+  subscription Subscription?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([ownerId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COMPANY DETAILS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CompanyDetails {
+  id           String  @id @default(cuid())
+  storeId      String  @unique
+  store        Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  businessType String
+  address      String?
+  email        String?
+  phone        String?
+  whatsapp     String?
+  description  String? @db.Text
+  logoUrl      String?
+  logoPublicId String?
+  socialLinks  Json?   // { facebook?, instagram?, twitter?, youtube?, linkedin? }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STORE SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model StoreSettings {
+  id               String  @id @default(cuid())
+  storeId          String  @unique
+  store            Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  brandsEnabled    Boolean @default(false)
+  ordersEnabled    Boolean @default(true)
+  // Razorpay keys stored encrypted or null — never exposed to client
+  razorpayKeyId    String?
+  razorpaySecret   String?
+  // Brevo
+  brevoApiKey      String?
+  brevoSenderEmail String?
+  brevoSenderName  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THEME SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ThemeSettings {
+  id              String      @id @default(cuid())
+  storeId         String      @unique
+  store           Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  primaryColor    String      @default("#22c55e")
+  secondaryColor  String      @default("#f0fdf4")
+  accentColor     String      @default("#16a34a")
+  backgroundColor String      @default("#ffffff")
+  surfaceColor    String      @default("#f6faf7")
+  textColor       String      @default("#111827")
+  mutedTextColor  String      @default("#6b7280")
+  navbarBg        String      @default("#ffffff")
+  navbarText      String      @default("#111827")
+  buttonShape     ButtonShape @default(MEDIUM_ROUNDED)
+  primaryFont     String      @default("Inter")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WORKING HOURS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model WorkingHours {
+  id        String  @id @default(cuid())
+  storeId   String
+  store     Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  dayOfWeek Int // 0=Sunday, 1=Monday ... 6=Saturday
+  isOpen    Boolean @default(true)
+  openTime  String? // "09:00"
+  closeTime String? // "18:00"
+
+  @@unique([storeId, dayOfWeek])
+  @@index([storeId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRODUCT
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Product {
+  id          String        @id @default(cuid())
+  storeId     String
+  store       Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String
+  description String?       @db.Text
+  price       Decimal       @db.Decimal(10, 2)
+  salePrice   Decimal?      @db.Decimal(10, 2)
+  sku         String?
+  stock       Int           @default(0)
+  status      ProductStatus @default(ACTIVE)
+  featured    Boolean       @default(false)
+  categoryId  String?
+  category    Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  brandId     String?
+  brand       Brand?        @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  images      ProductImage[]
+  orderItems  OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([storeId, slug])
+  @@index([storeId])
+  @@index([storeId, status])
+  @@index([storeId, categoryId])
+  @@index([storeId, brandId])
+  @@index([storeId, featured])
+  @@index([storeId, createdAt])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  publicId  String
+  altText   String?
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CATEGORY
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Category {
+  id          String         @id @default(cuid())
+  storeId     String
+  store       Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String
+  description String?
+  imageUrl    String?
+  imagePublicId String?
+  status      CategoryStatus @default(ACTIVE)
+  sortOrder   Int            @default(0)
+  products    Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([storeId, slug])
+  @@index([storeId])
+  @@index([storeId, status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BRAND
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Brand {
+  id           String      @id @default(cuid())
+  storeId      String
+  store        Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name         String
+  slug         String
+  logoUrl      String?
+  logoPublicId String?
+  status       BrandStatus @default(ACTIVE)
+  products     Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([storeId, slug])
+  @@index([storeId])
+  @@index([storeId, status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CUSTOMER
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Customer {
+  id      String  @id @default(cuid())
+  storeId String
+  store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name    String
+  email   String
+  phone   String?
+  orders  Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([storeId, email])
+  @@index([storeId])
+  @@index([storeId, email])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ORDER
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Order {
+  id              String        @id @default(cuid())
+  storeId         String
+  store           Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  orderNumber     String
+  customerId      String
+  customer        Customer      @relation(fields: [customerId], references: [id])
+  items           OrderItem[]
+  subtotal        Decimal       @db.Decimal(10, 2)
+  total           Decimal       @db.Decimal(10, 2)
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   String?
+  notes           String?       @db.Text
+  shippingAddress Json
+  payment         Payment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([storeId, orderNumber])
+  @@index([storeId])
+  @@index([storeId, status])
+  @@index([storeId, paymentStatus])
+  @@index([storeId, createdAt])
+  @@index([customerId])
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  orderId     String
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
+  productName String  // Snapshot at time of order
+  productSku  String?
+  price       Decimal @db.Decimal(10, 2) // Snapshot at time of order
+  quantity    Int
+  subtotal    Decimal @db.Decimal(10, 2)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAYMENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Payment {
+  id                String        @id @default(cuid())
+  orderId           String?       @unique
+  order             Order?        @relation(fields: [orderId], references: [id])
+  subscriptionId    String?       @unique
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id])
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("INR")
+  status            PaymentStatus @default(PENDING)
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  razorpaySignature String?
+  metadata          Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([razorpayOrderId])
+  @@index([razorpayPaymentId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUBSCRIPTION PLANS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Plan {
+  id           String        @id @default(cuid())
+  name         String
+  price        Decimal       @db.Decimal(10, 2)
+  status       PlanStatus    @default(ACTIVE)
+  features     Json          // Array of feature strings
+  maxProducts  Int?
+  maxOrders    Int?
+  maxImages    Int?
+  description  String?
+  subscriptions Subscription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUBSCRIPTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  storeId            String             @unique
+  store              Store              @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  planId             String
+  plan               Plan               @relation(fields: [planId], references: [id])
+  status             SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  payment            Payment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([storeId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HOME PAGE CMS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model HomePage {
+  id      String @id @default(cuid())
+  storeId String @unique
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  // Hero section
+  heroHeading    String?
+  heroSubtitle   String?
+  heroImageUrl   String?
+  heroImagePublicId String?
+  heroCtaText    String?
+  heroCtaLink    String?
+  heroEnabled    Boolean @default(true)
+
+  // About section
+  aboutHeading   String?
+  aboutContent   String? @db.Text
+  aboutImageUrl  String?
+  aboutImagePublicId String?
+  aboutEnabled   Boolean @default(false)
+
+  // Footer
+  footerDescription String? @db.Text
+  footerWhatsapp    String?
+  footerPhone       String?
+  footerEmail       String?
+  footerSocialLinks Json?
+
+  // Featured sections stored as JSON array
+  featuredSections Json? // [{ id, title, productIds, enabled, sortOrder }]
+
+  // Promotional banners stored as JSON array  
+  promoBanners Json? // [{ id, title, content, imageUrl, imagePublicId, ctaText, ctaLink, enabled }]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
