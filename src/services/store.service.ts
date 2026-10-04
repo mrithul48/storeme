@@ -173,6 +173,9 @@ export async function getStorefrontConfig(slug: string) {
         select: {
           brandsEnabled: true,
           ordersEnabled: true,
+          codEnabled: true,
+          onlinePaymentEnabled: true,
+          whatsappOrderEnabled: true,
         },
       },
       theme: {
@@ -186,6 +189,11 @@ export async function getStorefrontConfig(slug: string) {
           mutedTextColor: true,
           navbarBg: true,
           navbarText: true,
+          buttonBg: true,
+          buttonText: true,
+          h1Color: true,
+          h2Color: true,
+          paragraphColor: true,
           buttonShape: true,
           primaryFont: true,
         },

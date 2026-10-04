@@ -12,6 +12,8 @@ import {
   ExternalLink,
   LogOut,
   Store as StoreIcon,
+  TrendingUp,
+  ShieldAlert,
 } from "lucide-react";
 
 export default async function DashboardLayout({
@@ -31,12 +33,18 @@ export default async function DashboardLayout({
     redirect("/onboarding");
   }
 
+  const isPlatformAdmin = session.user.role === "PLATFORM_ADMIN";
+
   const navItems = [
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { label: "Products", href: "/dashboard/products", icon: Package },
     { label: "Categories", href: "/dashboard/categories", icon: Layers },
     { label: "Orders", href: "/dashboard/orders", icon: ShoppingBag },
+    { label: "Analytics", href: "/dashboard/analytics", icon: TrendingUp },
     { label: "Store Settings", href: "/dashboard/settings", icon: Settings },
+    ...(isPlatformAdmin
+      ? [{ label: "Super Admin", href: "/admin", icon: ShieldAlert }]
+      : []),
   ];
 
   return (
