@@ -152,6 +152,7 @@ model Store {
   subscription          Subscription?
   merchantPaymentConfig MerchantPaymentConfig[]
   customDomainRecord    CustomDomain?
+  authConfig            MerchantAuthConfig?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -365,10 +366,15 @@ model Customer {
   id      String  @id @default(cuid())
   storeId String
   store   Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  name    String
-  email   String
-  phone   String?
-  orders  Order[]
+  name                 String
+  email                String
+  username             String?
+  phone                String?
+  password             String?
+  googleId             String?
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+  orders               Order[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -376,6 +382,8 @@ model Customer {
   @@unique([storeId, email])
   @@index([storeId])
   @@index([storeId, email])
+  @@index([storeId, username])
+  @@index([passwordResetToken])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -506,34 +514,85 @@ model HomePage {
   storeId String @unique
   store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
-  // Hero section
+  // ── Hero ────────────────────────────────────────────────────────────────────
+  heroEnabled       Boolean @default(true)
+  heroType          String  @default("CONTENT") // "CONTENT" | "SLIDER"
+
+  // Hero type CONTENT fields
   heroHeading       String?
   heroSubtitle      String?
+  heroDescription   String? @db.Text
   heroImageUrl      String?
   heroImagePublicId String?
   heroCtaText       String?
+  // heroCtaLink for backward compat — use heroButtonLinkType + heroButtonLinkValue instead
   heroCtaLink       String?
-  heroEnabled       Boolean @default(true)
+  heroButtonLinkType  String? // "SHOP" | "CATEGORY" | "PRODUCT"
+  heroButtonLinkValue String? // categoryId or productId (null = shop)
 
-  // About section
+  // Hero type SLIDER — up to 3 banners as JSON
+  heroBanners Json? // [{ url, publicId, sortOrder }]
+
+  // ── Brand Section ───────────────────────────────────────────────────────────
+  brandSectionEnabled Boolean @default(false)
+  brandShape          String  @default("SQUARE") // "ROUND" | "SQUARE" | "RECTANGLE"
+
+  // ── Category Section ────────────────────────────────────────────────────────
+  categorySectionEnabled Boolean @default(true)
+  categoryShape          String  @default("SQUARE") // "ROUND" | "SQUARE" | "RECTANGLE"
+  categoryRadius         String  @default("MD")     // "NONE" | "SM" | "MD" | "LG" | "FULL"
+
+  // ── New Arrival Section ─────────────────────────────────────────────────────
+  newArrivalEnabled Boolean @default(true)
+
+  // ── Offer Banners ───────────────────────────────────────────────────────────
+  offerBanners Json? // [{ url, publicId, linkType, linkValue, borderRadius }]
+
+  // ── Best Seller Section ─────────────────────────────────────────────────────
+  bestSellerEnabled Boolean @default(true)
+
+  // ── Testimonials ────────────────────────────────────────────────────────────
+  testimonialSectionEnabled Boolean @default(false)
+  testimonials              Json?   // [{ id, name, description, rating, bgColor, sortOrder }]
+
+  // ── All Products Section ────────────────────────────────────────────────────
+  allProductsEnabled Boolean @default(true)
+
+  // ── Product Card Settings (shared across sections) ──────────────────────────
+  productCardRadius    String  @default("LG")   // "NONE" | "SM" | "MD" | "LG"
+  showSalePrice        Boolean @default(true)
+  showOriginalPrice    Boolean @default(true)
+
+  // ── WhatsApp Floating Button ────────────────────────────────────────────────
+  whatsappEnabled Boolean @default(false)
+
+  // ── Header extra info ───────────────────────────────────────────────────────
+  headerDeliveryInfo String?
+  showAccountIcon    Boolean @default(true)
+
+  // ── About section ───────────────────────────────────────────────────────────
+  aboutEnabled       Boolean @default(false)
   aboutHeading       String?
   aboutContent       String? @db.Text
   aboutImageUrl      String?
   aboutImagePublicId String?
-  aboutEnabled       Boolean @default(false)
+  vision             String? @db.Text
+  mission            String? @db.Text
+  badges             Json?   // [{ id, icon, iconPublicId, text, sortOrder }]
 
-  // Footer
+  // ── Contact section ─────────────────────────────────────────────────────────
+  contactEnabled Boolean @default(false)
+
+  // ── Footer ──────────────────────────────────────────────────────────────────
   footerDescription String? @db.Text
   footerWhatsapp    String?
   footerPhone       String?
   footerEmail       String?
   footerSocialLinks Json?
 
-  // Featured sections stored as JSON array
+  // ── Legacy / compat fields ──────────────────────────────────────────────────
   featuredSections Json? // [{ id, title, productIds, enabled, sortOrder }]
-
-  // Promotional banners stored as JSON array
-  promoBanners Json? // [{ id, title, content, imageUrl, imagePublicId, ctaText, ctaLink, enabled }]
+  promoBanners     Json? // [{ id, title, content, imageUrl, imagePublicId, ctaText, ctaLink, enabled }]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -577,5 +636,23 @@ model CustomDomain {
   updatedAt         DateTime           @updatedAt
 
   @@index([domain])
+  @@index([storeId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MERCHANT CUSTOMER AUTH CONFIG
+// Per-store customer authentication configuration (Google OAuth credentials)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model MerchantAuthConfig {
+  id                          String   @id @default(cuid())
+  storeId                     String   @unique
+  store                       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  googleEnabled               Boolean  @default(false)
+  googleClientId              String?
+  encryptedGoogleClientSecret String?  @db.Text // AES-256-GCM encrypted: "iv:authTag:ciphertext"
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
   @@index([storeId])
 }

@@ -20,6 +20,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "No file provided" }, { status: 400 });
     }
 
+    // 1. Prevent files larger than 4 MB
+    const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4 MB
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "File size exceeds the 4 MB limit. Please upload an image under 4 MB.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // 2. Compress only if file exceeds 2 MB; otherwise keep 100% uncompressed
+    const COMPRESSION_THRESHOLD = 2 * 1024 * 1024; // 2 MB
+    const shouldCompress = file.size > COMPRESSION_THRESHOLD;
+
     // Convert file to base64 buffer for Cloudinary upload
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
@@ -27,6 +43,7 @@ export async function POST(request: Request) {
 
     const result = await uploadImage(base64Data, {
       folder: `store-builder/${folder}`,
+      compress: shouldCompress,
     });
 
     return NextResponse.json({

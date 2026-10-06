@@ -14,7 +14,9 @@ import {
   Store as StoreIcon,
   TrendingUp,
   ShieldAlert,
+  Paintbrush2,
 } from "lucide-react";
+
 
 export default async function DashboardLayout({
   children,
@@ -41,11 +43,13 @@ export default async function DashboardLayout({
     { label: "Categories", href: "/dashboard/categories", icon: Layers },
     { label: "Orders", href: "/dashboard/orders", icon: ShoppingBag },
     { label: "Analytics", href: "/dashboard/analytics", icon: TrendingUp },
+    { label: "Live Store Design", href: "/dashboard/store-design", icon: Paintbrush2 },
     { label: "Store Settings", href: "/dashboard/settings", icon: Settings },
     ...(isPlatformAdmin
       ? [{ label: "Super Admin", href: "/admin", icon: ShieldAlert }]
       : []),
   ];
+
 
   return (
     <div className="h-screen flex bg-[#070b12] text-slate-100 overflow-hidden">

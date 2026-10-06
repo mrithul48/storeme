@@ -8,6 +8,9 @@ import { formatCurrency, formatDateTime, buildWhatsAppUrl } from "@/lib/utils";
 import { StoreHeader } from "@/components/storefront/store-header";
 import { StoreFooter } from "@/components/storefront/store-footer";
 import { CartProvider } from "@/context/cart-context";
+import { WishlistProvider } from "@/context/wishlist-context";
+import { WishlistDrawer } from "@/components/storefront/wishlist-drawer";
+import { StoreThemeWrapper } from "@/components/storefront/store-theme-wrapper";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +25,8 @@ export default async function OrderConfirmationPage({ params }: OrderPageProps) 
 
   const store = await getStorefrontConfig(storeSlug);
   if (!store) notFound();
+
+  const showAccountIcon = (store as any).homePage?.showAccountIcon ?? true;
 
   const order = await prisma.order.findFirst({
     where: {
@@ -59,8 +64,9 @@ export default async function OrderConfirmationPage({ params }: OrderPageProps) 
 
   return (
     <CartProvider storeSlug={store.slug}>
-      <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
-        <StoreHeader store={store} />
+      <WishlistProvider storeSlug={store.slug}>
+        <StoreThemeWrapper theme={store.theme} className="min-h-screen flex flex-col">
+          <StoreHeader store={store} showAccountIcon={showAccountIcon} />
 
         <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
           {/* Back link */}
@@ -223,8 +229,10 @@ export default async function OrderConfirmationPage({ params }: OrderPageProps) 
           </div>
         </main>
 
-        <StoreFooter store={store as any} />
-      </div>
+          <WishlistDrawer storeSlug={store.slug} />
+          <StoreFooter store={store as any} />
+        </StoreThemeWrapper>
+      </WishlistProvider>
     </CartProvider>
   );
 }

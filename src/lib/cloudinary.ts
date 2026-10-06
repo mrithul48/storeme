@@ -13,7 +13,8 @@ cloudinary.config({
 export { cloudinary };
 
 /**
- * Upload a base64 or URL to Cloudinary with optimization
+ * Upload a base64 or URL to Cloudinary.
+ * Only compresses when compress option is true (> 2MB files).
  */
 export async function uploadImage(
   source: string,
@@ -22,19 +23,34 @@ export async function uploadImage(
     publicId?: string;
     maxWidth?: number;
     quality?: number;
+    compress?: boolean;
   } = {}
 ): Promise<{ url: string; publicId: string }> {
-  const { folder = "ecombuilder", publicId, maxWidth = 1200, quality = 80 } = options;
+  const {
+    folder = "ecombuilder",
+    publicId,
+    maxWidth = 2560,
+    quality = 85,
+    compress = false,
+  } = options;
 
-  const result = await cloudinary.uploader.upload(source, {
+  const uploadOptions: Record<string, unknown> = {
     folder,
     public_id: publicId,
     overwrite: !!publicId,
-    transformation: [
+    resource_type: "image",
+  };
+
+  // Only apply compression transformation if file exceeds 2 MB
+  if (compress) {
+    uploadOptions.transformation = [
       { width: maxWidth, crop: "limit" },
       { quality: quality, fetch_format: "auto" },
-    ],
-  });
+    ];
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result = await cloudinary.uploader.upload(source, uploadOptions as any);
 
   return {
     url: result.secure_url,

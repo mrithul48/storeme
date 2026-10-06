@@ -64,6 +64,12 @@ export function ProductForm({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 4 * 1024 * 1024) {
+      setError("File size exceeds 4 MB. Please choose an image smaller than 4 MB.");
+      e.target.value = "";
+      return;
+    }
+
     setUploadingImage(true);
     setError(null);
 

@@ -5,6 +5,9 @@ import Link from "next/link";
 import { getStorefrontConfig } from "@/services/store.service";
 import { getProductBySlug } from "@/services/product.service";
 import { CartProvider } from "@/context/cart-context";
+import { WishlistProvider } from "@/context/wishlist-context";
+import { WishlistDrawer } from "@/components/storefront/wishlist-drawer";
+import { StoreThemeWrapper } from "@/components/storefront/store-theme-wrapper";
 import { StoreHeader } from "@/components/storefront/store-header";
 import { StoreFooter } from "@/components/storefront/store-footer";
 import { CartDrawer } from "@/components/storefront/cart-drawer";
@@ -57,47 +60,52 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const product = await getProductBySlug(store.id, productSlug);
   if (!product) notFound();
 
+  const showAccountIcon = (store as any).homePage?.showAccountIcon ?? true;
+
   return (
     <CartProvider storeSlug={store.slug}>
-      <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
-        <StoreHeader store={store} />
+      <WishlistProvider storeSlug={store.slug}>
+        <StoreThemeWrapper theme={store.theme} className="min-h-screen flex flex-col">
+          <StoreHeader store={store} showAccountIcon={showAccountIcon} />
 
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-          {/* Breadcrumbs */}
-          <nav className="flex items-center gap-2 text-xs text-slate-400">
-            <Link href={`/store/${store.slug}`} className="hover:text-white transition-colors flex items-center gap-1">
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Store</span>
-            </Link>
-            <ChevronRight className="w-3 h-3 text-slate-600" />
-            {product.category && (
-              <>
-                <Link
-                  href={`/store/${store.slug}?category=${product.category.id}`}
-                  className="hover:text-white transition-colors"
-                >
-                  {product.category.name}
-                </Link>
-                <ChevronRight className="w-3 h-3 text-slate-600" />
-              </>
-            )}
-            <span className="text-slate-200 truncate max-w-xs">{product.name}</span>
-          </nav>
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            {/* Breadcrumbs */}
+            <nav className="flex items-center gap-2 text-xs opacity-70">
+              <Link href={`/store/${store.slug}`} className="hover:opacity-100 transition-opacity flex items-center gap-1">
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to Store</span>
+              </Link>
+              <ChevronRight className="w-3 h-3 opacity-50" />
+              {product.category && (
+                <>
+                  <Link
+                    href={`/store/${store.slug}/shop?category=${product.category.id}`}
+                    className="hover:opacity-100 transition-opacity"
+                  >
+                    {product.category.name}
+                  </Link>
+                  <ChevronRight className="w-3 h-3 opacity-50" />
+                </>
+              )}
+              <span className="truncate max-w-xs font-medium">{product.name}</span>
+            </nav>
 
-          {/* Interactive Client Component for gallery, cart, quantity */}
-          <ProductDetailClient
-            product={{
-              ...product,
-              price: Number(product.price),
-              salePrice: product.salePrice ? Number(product.salePrice) : null,
-            }}
-            store={store}
-          />
-        </main>
+            {/* Interactive Client Component for gallery, cart, quantity */}
+            <ProductDetailClient
+              product={{
+                ...product,
+                price: Number(product.price),
+                salePrice: product.salePrice ? Number(product.salePrice) : null,
+              }}
+              store={store}
+            />
+          </main>
 
-        <CartDrawer storeSlug={store.slug} />
-        <StoreFooter store={store as any} />
-      </div>
+          <CartDrawer storeSlug={store.slug} />
+          <WishlistDrawer storeSlug={store.slug} />
+          <StoreFooter store={store as any} />
+        </StoreThemeWrapper>
+      </WishlistProvider>
     </CartProvider>
   );
 }
