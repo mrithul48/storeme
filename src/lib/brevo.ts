@@ -226,3 +226,22 @@ export async function sendSubscriptionConfirmationEmail(to: { email: string; nam
     `),
   });
 }
+
+export async function sendCustomerPasswordResetEmail(
+  to: { email: string; name: string },
+  storeName: string,
+  resetUrl: string
+) {
+  return sendEmail({
+    to: [to],
+    subject: `Reset your password for ${storeName}`,
+    htmlContent: wrap(`
+      <h1>Password Reset Request</h1>
+      <p style="color:#4b5563;">We received a request to reset your password for your account at <strong>${escapeHtml(storeName)}</strong>.</p>
+      <p style="color:#4b5563;">Click the button below to reset your password. This link is valid for 1 hour.</p>
+      ${button(resetUrl, "Reset Password")}
+      <p style="color:#9ca3af;font-size:12px;margin-top:24px;">If you did not request this password reset, please ignore this email.</p>
+    `),
+  });
+}
+

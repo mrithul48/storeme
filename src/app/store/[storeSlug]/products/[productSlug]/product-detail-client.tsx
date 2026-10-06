@@ -5,7 +5,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { formatCurrency, calculateDiscountPercentage, buildWhatsAppUrl } from "@/lib/utils";
 import { useCart } from "@/context/cart-context";
-import { ShoppingBag, MessageCircle, Check, Plus, Minus, ShieldCheck, Truck, RefreshCw, Ban } from "lucide-react";
+import { useWishlist } from "@/context/wishlist-context";
+import { ShoppingBag, MessageCircle, Check, Plus, Minus, ShieldCheck, Truck, RefreshCw, Ban, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -46,6 +47,7 @@ interface ProductDetailClientProps {
 export function ProductDetailClient({ product, store }: ProductDetailClientProps) {
   const router = useRouter();
   const { addItem } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
@@ -55,8 +57,9 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
   const isSale = salePriceNum !== null && salePriceNum < priceNum;
   const discount = isSale ? calculateDiscountPercentage(priceNum, salePriceNum) : 0;
   const isOutOfStock = product.stock <= 0;
+  const wishlisted = isInWishlist(product.id);
 
-  const currentImage = product.images?.[selectedImageIndex]?.url;
+  const currentImage = product.images?.[0]?.url ? product.images[selectedImageIndex]?.url || product.images[0].url : undefined;
   const whatsappNumber = store.company?.whatsapp || store.company?.phone;
 
   // ── Order method flags (default to true when settings are absent) ──────────
@@ -108,6 +111,18 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
     router.push(`/store/${store.slug}/checkout`);
   };
 
+  const handleToggleWishlist = () => {
+    toggleWishlist({
+      productId: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: priceNum,
+      salePrice: salePriceNum,
+      imageUrl: currentImage,
+      stock: product.stock,
+    });
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
       {/* Product Image Gallery */}
@@ -145,6 +160,19 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
               </Badge>
             ) : null}
           </div>
+
+          {/* Wishlist Floating Button on Image */}
+          <button
+            onClick={handleToggleWishlist}
+            aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-white transition shadow-lg"
+          >
+            <Heart
+              className={`w-5 h-5 transition-colors ${
+                wishlisted ? "fill-rose-500 text-rose-500" : "text-slate-300"
+              }`}
+            />
+          </button>
         </div>
 
         {/* Thumbnail Selector */}
@@ -176,35 +204,41 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
             </span>
           )}
 
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h1
+            className="text-2xl sm:text-4xl font-extrabold tracking-tight"
+            style={{ color: "var(--store-page-heading, inherit)" }}
+          >
             {product.name}
           </h1>
 
           {/* Pricing */}
           <div className="flex items-baseline gap-3 pt-2">
-            <span className="text-3xl font-extrabold text-white">
+            <span
+              className="text-3xl font-extrabold"
+              style={{ color: "var(--store-page-heading, inherit)" }}
+            >
               {formatCurrency(isSale ? salePriceNum! : priceNum)}
             </span>
             {isSale && (
-              <span className="text-lg text-slate-500 line-through">
+              <span className="text-lg opacity-50 line-through">
                 {formatCurrency(priceNum)}
               </span>
             )}
           </div>
 
           {product.sku && (
-            <p className="text-xs text-slate-400">
-              SKU: <span className="font-mono text-slate-300">{product.sku}</span>
+            <p className="text-xs opacity-70">
+              SKU: <span className="font-mono">{product.sku}</span>
             </p>
           )}
 
           {/* Description */}
           {product.description && (
             <div className="pt-4 border-t border-slate-800/80">
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-2 opacity-70">
                 Description
               </h3>
-              <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
+              <p className="text-sm opacity-90 leading-relaxed whitespace-pre-line">
                 {product.description}
               </p>
             </div>
@@ -213,7 +247,7 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
           {/* Quantity Selector — only shown when a cart-based checkout method is enabled */}
           {!isOutOfStock && cartCheckoutAvailable && (
             <div className="pt-4 space-y-2">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+              <label className="text-xs font-semibold uppercase tracking-wider block opacity-70">
                 Quantity
               </label>
               <div className="flex items-center gap-3">
@@ -236,7 +270,7 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs opacity-70">
                   {product.stock} available in stock
                 </span>
               </div>
@@ -249,13 +283,13 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
 
           {/* Cart-based checkout — shown when COD or online payment is enabled */}
           {cartCheckoutAvailable && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex items-center gap-3">
               <Button
                 variant="outline"
                 size="lg"
                 disabled={isOutOfStock}
                 onClick={handleAddToCart}
-                className="w-full"
+                className="flex-1"
               >
                 {added ? (
                   <>
@@ -275,10 +309,26 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
                 size="lg"
                 disabled={isOutOfStock}
                 onClick={handleBuyNow}
-                className="w-full"
+                className="flex-1"
+                style={{
+                  backgroundColor: "var(--store-button-bg, #2563eb)",
+                  color: "var(--store-button-text, #ffffff)",
+                }}
               >
                 Buy Now
               </Button>
+
+              <button
+                onClick={handleToggleWishlist}
+                aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                className={`p-3.5 rounded-xl border transition flex items-center justify-center ${
+                  wishlisted
+                    ? "bg-rose-500/10 border-rose-500/30 text-rose-500"
+                    : "border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-400 hover:text-white"
+                }`}
+              >
+                <Heart className={`w-5 h-5 ${wishlisted ? "fill-rose-500" : ""}`} />
+              </button>
             </div>
           )}
 

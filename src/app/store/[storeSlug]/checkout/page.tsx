@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import Script from "next/script";
 import { getStorefrontConfig } from "@/services/store.service";
 import { CartProvider } from "@/context/cart-context";
+import { WishlistProvider } from "@/context/wishlist-context";
+import { WishlistDrawer } from "@/components/storefront/wishlist-drawer";
+import { StoreThemeWrapper } from "@/components/storefront/store-theme-wrapper";
 import { StoreHeader } from "@/components/storefront/store-header";
 import { StoreFooter } from "@/components/storefront/store-footer";
 import { CheckoutFormClient } from "./checkout-form-client";
@@ -28,24 +31,29 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
 
   if (!store) notFound();
 
+  const showAccountIcon = (store as any).homePage?.showAccountIcon ?? true;
+
   return (
     <CartProvider storeSlug={store.slug}>
-      {/* Razorpay Standard Checkout SDK */}
-      <Script
-        id="razorpay-checkout-js"
-        src="https://checkout.razorpay.com/v1/checkout.js"
-        strategy="lazyOnload"
-      />
+      <WishlistProvider storeSlug={store.slug}>
+        {/* Razorpay Standard Checkout SDK */}
+        <Script
+          id="razorpay-checkout-js"
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+        />
 
-      <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
-        <StoreHeader store={store} />
+        <StoreThemeWrapper theme={store.theme} className="min-h-screen flex flex-col">
+          <StoreHeader store={store} showAccountIcon={showAccountIcon} />
 
-        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <CheckoutFormClient store={store} />
-        </main>
+          <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <CheckoutFormClient store={store} />
+          </main>
 
-        <StoreFooter store={store} />
-      </div>
+          <WishlistDrawer storeSlug={store.slug} />
+          <StoreFooter store={store} />
+        </StoreThemeWrapper>
+      </WishlistProvider>
     </CartProvider>
   );
 }

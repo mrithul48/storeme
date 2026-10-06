@@ -198,6 +198,7 @@ export async function getStorefrontConfig(slugOrDomain: string) {
         primaryFont: true,
       },
     },
+    // Full homePage record — includes all design fields
     homePage: true,
     workingHours: {
       orderBy: { dayOfWeek: "asc" as const },
@@ -207,6 +208,13 @@ export async function getStorefrontConfig(slugOrDomain: string) {
       where: { provider: "razorpay", isActive: true },
       select: { isActive: true },
       take: 1,
+    },
+    // Public customer auth config — never include encryptedGoogleClientSecret
+    authConfig: {
+      select: {
+        googleEnabled: true,
+        googleClientId: true,
+      },
     },
   };
 
