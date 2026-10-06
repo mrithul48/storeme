@@ -147,55 +147,99 @@ export async function createStore(ownerId: string, data: CreateStoreInput) {
 }
 
 /**
- * Get the full storefront config for a given slug (public — no auth required)
+ * Get the full storefront config for a given slug or custom domain (public — no auth required)
  */
-export async function getStorefrontConfig(slug: string) {
-  return prisma.store.findUnique({
-    where: { slug },
-    select: {
-      id: true,
-      slug: true,
-      name: true,
-      status: true,
-      company: {
-        select: {
-          businessType: true,
-          address: true,
-          email: true,
-          phone: true,
-          whatsapp: true,
-          description: true,
-          logoUrl: true,
-          socialLinks: true,
-        },
-      },
-      settings: {
-        select: {
-          brandsEnabled: true,
-          ordersEnabled: true,
-        },
-      },
-      theme: {
-        select: {
-          primaryColor: true,
-          secondaryColor: true,
-          accentColor: true,
-          backgroundColor: true,
-          surfaceColor: true,
-          textColor: true,
-          mutedTextColor: true,
-          navbarBg: true,
-          navbarText: true,
-          buttonShape: true,
-          primaryFont: true,
-        },
-      },
-      homePage: true,
-      workingHours: {
-        orderBy: { dayOfWeek: "asc" },
+export async function getStorefrontConfig(slugOrDomain: string) {
+  const selectFields = {
+    id: true,
+    slug: true,
+    name: true,
+    status: true,
+    customDomain: true,
+    domainStatus: true,
+    company: {
+      select: {
+        businessType: true,
+        address: true,
+        email: true,
+        phone: true,
+        whatsapp: true,
+        description: true,
+        logoUrl: true,
+        socialLinks: true,
       },
     },
+    settings: {
+      select: {
+        brandsEnabled: true,
+        ordersEnabled: true,
+        codEnabled: true,
+        onlinePaymentEnabled: true,
+        whatsappOrderEnabled: true,
+      },
+    },
+    theme: {
+      select: {
+        primaryColor: true,
+        secondaryColor: true,
+        accentColor: true,
+        backgroundColor: true,
+        surfaceColor: true,
+        textColor: true,
+        mutedTextColor: true,
+        navbarBg: true,
+        navbarText: true,
+        buttonBg: true,
+        buttonText: true,
+        h1Color: true,
+        h2Color: true,
+        paragraphColor: true,
+        buttonShape: true,
+        primaryFont: true,
+      },
+    },
+    // Full homePage record — includes all design fields
+    homePage: true,
+    workingHours: {
+      orderBy: { dayOfWeek: "asc" as const },
+    },
+    // Only include connection status — never include encryptedSecret
+    merchantPaymentConfig: {
+      where: { provider: "razorpay", isActive: true },
+      select: { isActive: true },
+      take: 1,
+    },
+    // Public customer auth config — never include encryptedGoogleClientSecret
+    authConfig: {
+      select: {
+        googleEnabled: true,
+        googleClientId: true,
+      },
+    },
+  };
+
+  // 1. Try finding by store slug first
+  let store = await prisma.store.findUnique({
+    where: { slug: slugOrDomain },
+    select: selectFields,
   });
+
+  // 2. If not found by slug, resolve by verified custom domain
+  if (!store) {
+    const normalized = slugOrDomain.trim().toLowerCase();
+    store = await prisma.store.findFirst({
+      where: {
+        OR: [
+          { customDomain: normalized, domainStatus: "CONNECTED" },
+          { customDomainRecord: { domain: normalized, status: "VERIFIED" } },
+        ],
+        status: "ACTIVE",
+      },
+      select: selectFields,
+    });
+  }
+
+  return store;
 }
 
 /**

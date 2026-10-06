@@ -8,7 +8,7 @@ export default async function DashboardSettingsPage() {
   const store = await getStoreByOwnerId(session!.user.id);
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-7xl">
       <div>
         <h1 className="text-2xl font-extrabold text-white">Store Settings & Branding</h1>
         <p className="text-xs sm:text-sm text-slate-400">

@@ -12,7 +12,11 @@ import {
   ExternalLink,
   LogOut,
   Store as StoreIcon,
+  TrendingUp,
+  ShieldAlert,
+  Paintbrush2,
 } from "lucide-react";
+
 
 export default async function DashboardLayout({
   children,
@@ -31,19 +35,27 @@ export default async function DashboardLayout({
     redirect("/onboarding");
   }
 
+  const isPlatformAdmin = session.user.role === "PLATFORM_ADMIN";
+
   const navItems = [
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { label: "Products", href: "/dashboard/products", icon: Package },
     { label: "Categories", href: "/dashboard/categories", icon: Layers },
     { label: "Orders", href: "/dashboard/orders", icon: ShoppingBag },
+    { label: "Analytics", href: "/dashboard/analytics", icon: TrendingUp },
+    { label: "Live Store Design", href: "/dashboard/store-design", icon: Paintbrush2 },
     { label: "Store Settings", href: "/dashboard/settings", icon: Settings },
+    ...(isPlatformAdmin
+      ? [{ label: "Super Admin", href: "/admin", icon: ShieldAlert }]
+      : []),
   ];
 
+
   return (
-    <div className="min-h-screen flex bg-[#070b12] text-slate-100">
+    <div className="h-screen flex bg-[#070b12] text-slate-100 overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-800/80 bg-[#090e17]/95 flex flex-col justify-between hidden md:flex flex-shrink-0">
-        <div className="p-6 space-y-6">
+      <aside className="w-64 h-full border-r border-slate-800/80 bg-[#090e17]/95 flex flex-col justify-between hidden md:flex flex-shrink-0 overflow-hidden">
+        <div className="p-6 space-y-6 flex-1 overflow-y-auto">
           {/* Logo & Store Selector */}
           <div className="space-y-3">
             <div className="flex items-center gap-2.5">
@@ -84,7 +96,7 @@ export default async function DashboardLayout({
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-6 border-t border-slate-800/80 space-y-3">
+        <div className="p-6 border-t border-slate-800/80 space-y-3 flex-shrink-0">
           <Link
             href={`/store/${store.slug}`}
             target="_blank"
@@ -115,9 +127,9 @@ export default async function DashboardLayout({
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {/* Top Navbar */}
-        <header className="h-16 border-b border-slate-800/80 bg-[#090e17]/80 backdrop-blur-md px-6 flex items-center justify-between">
+        <header className="h-16 flex-shrink-0 border-b border-slate-800/80 bg-[#090e17]/80 backdrop-blur-md px-6 flex items-center justify-between">
           <div className="flex items-center gap-3 md:hidden">
             <span className="font-bold text-white">{store.name}</span>
           </div>
@@ -144,7 +156,7 @@ export default async function DashboardLayout({
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">{children}</main>
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto min-h-0">{children}</main>
       </div>
     </div>
   );

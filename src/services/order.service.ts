@@ -102,6 +102,7 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
         status: "PENDING",
         paymentStatus: "PENDING",
         paymentMethod: data.paymentMethod || "COD",
+        orderChannel: data.orderChannel || (data.paymentMethod === "RAZORPAY" ? "ONLINE_PAYMENT" : (data.paymentMethod === "WHATSAPP" ? "WHATSAPP" : "COD")),
         notes: data.notes || null,
         shippingAddress: {
           address: data.customer.address,
@@ -146,16 +147,18 @@ export async function listOrders(
     search?: string;
     status?: string;
     paymentStatus?: string;
+    channel?: string;
     sortOrder?: "asc" | "desc";
   }
 ) {
-  const { page = 1, limit = 20, search, status, paymentStatus, sortOrder = "desc" } = params;
+  const { page = 1, limit = 20, search, status, paymentStatus, channel, sortOrder = "desc" } = params;
   const skip = (page - 1) * limit;
 
   const where = {
     storeId,
     ...(status ? { status: status as never } : {}),
     ...(paymentStatus ? { paymentStatus: paymentStatus as never } : {}),
+    ...(channel ? { orderChannel: channel as never } : {}),
     ...(search
       ? {
           OR: [
@@ -175,6 +178,8 @@ export async function listOrders(
         orderNumber: true,
         status: true,
         paymentStatus: true,
+        orderChannel: true,
+        paymentMethod: true,
         total: true,
         createdAt: true,
         customer: {
