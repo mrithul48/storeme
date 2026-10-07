@@ -13,13 +13,15 @@ import { z } from "zod";
 const heroBannerSchema = z.object({
   url: z.string().url(),
   publicId: z.string().min(1),
+  mobileUrl: z.string().url().optional().nullable().or(z.literal("")),
+  mobilePublicId: z.string().optional().nullable(),
   sortOrder: z.number().int().min(0),
 });
 
 const offerBannerSchema = z.object({
   url: z.string().url(),
-  publicId: z.string().min(1),
-  linkType: z.enum(["CATEGORY", "PRODUCT"]).optional().nullable(),
+  publicId: z.string().optional().nullable().or(z.literal("")),
+  linkType: z.enum(["CATEGORY", "PRODUCT"]).optional().nullable().or(z.literal("")),
   linkValue: z.string().optional().nullable(),
   borderRadius: z.enum(["NONE", "SM", "MD", "LG"]).optional().nullable(),
 });

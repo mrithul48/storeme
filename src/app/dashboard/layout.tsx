@@ -2,6 +2,7 @@ import React from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { auth, signOut } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { getStoreByOwnerId } from "@/services/store.service";
 import {
   LayoutDashboard,
@@ -25,11 +26,20 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
 
-  if (!session?.user?.id) {
+  if (!session?.user?.id && !session?.user?.email) {
     redirect("/auth/signin");
   }
 
-  const store = await getStoreByOwnerId(session.user.id);
+  let store = session.user?.id ? await getStoreByOwnerId(session.user.id) : null;
+  if (!store && session.user?.email) {
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email.toLowerCase() },
+      select: { id: true },
+    });
+    if (user) {
+      store = await getStoreByOwnerId(user.id);
+    }
+  }
 
   if (!store) {
     redirect("/onboarding");

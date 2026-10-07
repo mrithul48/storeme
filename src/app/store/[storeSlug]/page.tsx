@@ -104,8 +104,15 @@ export default async function StorefrontPage({ params, searchParams }: StorePage
   // ── Determine which sections are enabled ──────────────────────────────────
 
   const heroEnabled = (hp?.heroEnabled as boolean) ?? true;
-  const heroType = (hp?.heroType as string) ?? "CONTENT";
-  const heroBanners = Array.isArray(hp?.heroBanners) ? hp.heroBanners as Array<{ url: string; publicId: string; sortOrder: number }> : [];
+  const heroBanners = Array.isArray(hp?.heroBanners)
+    ? (hp.heroBanners as Array<{
+        url: string;
+        publicId: string;
+        mobileUrl?: string | null;
+        mobilePublicId?: string | null;
+        sortOrder: number;
+      }>)
+    : [];
 
   const brandSectionEnabled = (hp?.brandSectionEnabled as boolean) ?? false;
   const brandShape = (hp?.brandShape as string) ?? "SQUARE";
@@ -263,15 +270,9 @@ export default async function StorefrontPage({ params, searchParams }: StorePage
           {/* Header */}
           <StoreHeader store={store} showAccountIcon={showAccountIcon} />
 
-        {/* ── Hero ───────────────────────────────────────────────────────── */}
-        {heroEnabled && (
-          <>
-            {heroType === "SLIDER" && heroBanners.length > 0 ? (
-              <HeroSlider banners={heroBanners} themeColor={themeColor} />
-            ) : heroType === "CONTENT" ? (
-              <HeroContent hp={hp} themeColor={themeColor} h1Color={h1Color} paragraphColor={paragraphColor} store={store} shopUrl={shopUrl} />
-            ) : null}
-          </>
+        {/* ── Hero Slider ───────────────────────────────────────────────── */}
+        {heroEnabled && heroBanners.length > 0 && (
+          <HeroSlider banners={heroBanners} themeColor={themeColor} />
         )}
 
         {/* ── Brand Section ───────────────────────────────────────────────── */}
@@ -502,99 +503,5 @@ export default async function StorefrontPage({ params, searchParams }: StorePage
         </StoreThemeWrapper>
       </WishlistProvider>
     </CartProvider>
-  );
-}
-
-// ─── Hero Content sub-component (Server) ────────────────────────────────────
-
-function HeroContent({
-  hp, themeColor, h1Color, paragraphColor, store, shopUrl,
-}: {
-  hp: Record<string, unknown> | null;
-  themeColor: string;
-  h1Color?: string | null;
-  paragraphColor?: string | null;
-  store: { slug: string; name: string };
-  shopUrl: string;
-}) {
-  const heading = (hp?.heroHeading as string) || null;
-  const subtitle = (hp?.heroSubtitle as string) || null;
-  const description = (hp?.heroDescription as string) || null;
-  const imageUrl = hp?.heroImageUrl as string | null | undefined;
-  const ctaText = (hp?.heroCtaText as string) || "Shop Now";
-  const linkType = (hp?.heroButtonLinkType as string) || "SHOP";
-
-  // Build the button destination — for CATEGORY/PRODUCT we embed as search param
-  let ctaHref = shopUrl;
-  if (linkType === "CATEGORY" && hp?.heroButtonLinkValue) {
-    ctaHref = `${shopUrl}?category=${hp.heroButtonLinkValue}`;
-  } else if (linkType === "PRODUCT" && hp?.heroButtonLinkValue) {
-    // Will resolve to product detail page if slug is needed — but we stored ID, redirect via shop filter
-    ctaHref = `${shopUrl}`;
-  }
-
-  return (
-    <section
-      className="relative overflow-hidden w-full h-[70vh] min-h-[420px] md:h-[calc(100vh-5rem)] md:min-h-[550px] flex items-center justify-center border-b border-slate-900"
-      style={{ backgroundColor: "inherit" }}
-    >
-      {imageUrl ? (
-        <div className="absolute inset-0 z-0">
-          <Image
-            src={imageUrl}
-            alt="Hero"
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-            unoptimized
-          />
-          {/* Subtle dark gradient overlay for crisp text readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/70" />
-        </div>
-      ) : (
-        <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60" />
-      )}
-
-      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-center space-y-3 sm:space-y-4">
-        {heading && (
-          <h1
-            className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight max-w-3xl mx-auto leading-tight text-white drop-shadow-sm"
-            style={{ color: h1Color || "#ffffff" }}
-          >
-            {heading}
-          </h1>
-        )}
-
-        {subtitle && (
-          <p
-            className="hidden md:block text-base md:text-xl font-medium max-w-2xl mx-auto"
-            style={{ color: paragraphColor || "#e2e8f0" }}
-          >
-            {subtitle}
-          </p>
-        )}
-
-        {description && (
-          <p
-            className="hidden md:block text-sm md:text-base max-w-xl mx-auto leading-relaxed opacity-90"
-            style={{ color: paragraphColor || "#cbd5e1" }}
-          >
-            {description}
-          </p>
-        )}
-
-        <div className="flex items-center justify-center pt-1 sm:pt-2">
-          <Link
-            href={ctaHref}
-            className="inline-flex items-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl text-sm sm:text-base font-bold text-white shadow-xl transition-all hover:opacity-95 hover:scale-[1.02] active:scale-[0.98]"
-            style={{ backgroundColor: themeColor }}
-          >
-            {ctaText}
-            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-          </Link>
-        </div>
-      </div>
-    </section>
   );
 }

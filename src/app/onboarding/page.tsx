@@ -1,6 +1,7 @@
 import React from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { getStoreByOwnerId } from "@/services/store.service";
 import { OnboardingWizardClient } from "./onboarding-wizard-client";
 
@@ -12,11 +13,21 @@ export const metadata = {
 export default async function OnboardingPage() {
   const session = await auth();
 
-  if (!session?.user?.id) {
+  if (!session?.user?.id && !session?.user?.email) {
     redirect("/auth/signin");
   }
 
-  const existingStore = await getStoreByOwnerId(session.user.id);
+  let existingStore = session.user?.id ? await getStoreByOwnerId(session.user.id) : null;
+  if (!existingStore && session.user?.email) {
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email.toLowerCase() },
+      select: { id: true },
+    });
+    if (user) {
+      existingStore = await getStoreByOwnerId(user.id);
+    }
+  }
+
   if (existingStore) {
     redirect("/dashboard");
   }

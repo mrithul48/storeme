@@ -55,11 +55,16 @@ export async function updateCategory(
     where: { id },
     data: {
       ...(data.name ? { name: data.name } : {}),
-      ...(data.description !== undefined ? { description: data.description } : {}),
-      ...(data.imageUrl !== undefined ? { imageUrl: data.imageUrl } : {}),
-      ...(data.imagePublicId !== undefined ? { imagePublicId: data.imagePublicId } : {}),
+      ...(data.description !== undefined ? { description: data.description || null } : {}),
+      ...(data.imageUrl !== undefined ? { imageUrl: data.imageUrl || null } : {}),
+      ...(data.imagePublicId !== undefined ? { imagePublicId: data.imagePublicId || null } : {}),
       ...(data.sortOrder !== undefined ? { sortOrder: data.sortOrder } : {}),
       ...(data.status !== undefined ? { status: data.status } : {}),
+    },
+    include: {
+      _count: {
+        select: { products: true },
+      },
     },
   });
 }
@@ -105,6 +110,32 @@ export async function createBrand(storeId: string, data: CreateBrandInput) {
       logoUrl: data.logoUrl || null,
       logoPublicId: data.logoPublicId || null,
       status: data.status ?? "ACTIVE",
+    },
+  });
+}
+
+export async function updateBrand(
+  storeId: string,
+  id: string,
+  data: Partial<CreateBrandInput>
+) {
+  const brand = await prisma.brand.findFirst({
+    where: { id, storeId },
+  });
+  if (!brand) return null;
+
+  return prisma.brand.update({
+    where: { id },
+    data: {
+      ...(data.name ? { name: data.name } : {}),
+      ...(data.logoUrl !== undefined ? { logoUrl: data.logoUrl || null } : {}),
+      ...(data.logoPublicId !== undefined ? { logoPublicId: data.logoPublicId || null } : {}),
+      ...(data.status !== undefined ? { status: data.status } : {}),
+    },
+    include: {
+      _count: {
+        select: { products: true },
+      },
     },
   });
 }
