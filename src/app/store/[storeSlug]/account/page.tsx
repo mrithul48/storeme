@@ -163,6 +163,7 @@ export default async function CustomerAccountPage({ params }: AccountPageProps) 
                       Browse our catalog and make your first purchase!
                     </p>
                   </div>
+                  
                   <Link
                     href={getStoreLink(storeSlug, "/shop")}
                     className="px-4 py-2 rounded-xl text-xs font-semibold shadow-sm"
