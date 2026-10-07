@@ -1,4 +1,5 @@
 import React from "react";
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getStoreByOwnerId } from "@/services/store.service";
 import { listCategories, listBrands } from "@/services/category.service";
@@ -6,11 +7,22 @@ import { CategoriesBrandsClient } from "./categories-brands-client";
 
 export default async function DashboardCategoriesPage() {
   const session = await auth();
-  const store = await getStoreByOwnerId(session!.user.id);
+  if (!session?.user) {
+    redirect("/auth/signin");
+  }
+
+  let store = session.user.id ? await getStoreByOwnerId(session.user.id) : null;
+  if (!store && session.user.email) {
+    store = await getStoreByOwnerId(session.user.email);
+  }
+
+  if (!store) {
+    redirect("/onboarding");
+  }
 
   const [categories, brands] = await Promise.all([
-    listCategories(store!.id),
-    listBrands(store!.id),
+    listCategories(store.id),
+    listBrands(store.id),
   ]);
 
   return (

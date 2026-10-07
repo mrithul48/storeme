@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { getStoreByOwnerId, getDashboardStats } from "@/services/store.service";
 import { listOrders } from "@/services/order.service";
@@ -23,11 +24,22 @@ import {
 
 export default async function DashboardOverviewPage() {
   const session = await auth();
-  const store = await getStoreByOwnerId(session!.user.id);
+  if (!session?.user) {
+    redirect("/auth/signin");
+  }
+
+  let store = session.user.id ? await getStoreByOwnerId(session.user.id) : null;
+  if (!store && session.user.email) {
+    store = await getStoreByOwnerId(session.user.email);
+  }
+
+  if (!store) {
+    redirect("/onboarding");
+  }
 
   const [stats, ordersData] = await Promise.all([
-    getDashboardStats(store!.id),
-    listOrders(store!.id, { limit: 5, sortOrder: "desc" }),
+    getDashboardStats(store.id),
+    listOrders(store.id, { limit: 5, sortOrder: "desc" }),
   ]);
 
   const recentOrders = ordersData.data;
@@ -50,7 +62,7 @@ export default async function DashboardOverviewPage() {
             Welcome back, {session?.user?.name || "Store Owner"}! 👋
           </h1>
           <p className="text-xs sm:text-sm text-slate-400">
-            Here is an overview of what is happening in <span className="text-white font-semibold">{store!.name}</span> today.
+            Here is an overview of what is happening in <span className="text-white font-semibold">{store.name}</span> today.
           </p>
         </div>
 
@@ -61,7 +73,7 @@ export default async function DashboardOverviewPage() {
               Add Product
             </Button>
           </Link>
-          <Link href={`/store/${store!.slug}`} target="_blank">
+          <Link href={`/store/${store.slug}`} target="_blank">
             <Button variant="outline" size="md">
               <StoreIcon className="w-4 h-4 mr-1.5" />
               Live Store

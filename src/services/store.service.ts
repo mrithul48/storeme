@@ -6,10 +6,13 @@ import { generateSlug, generateUniqueSlug } from "@/lib/utils";
 import type { CreateStoreInput } from "@/validations/store.schema";
 
 /**
- * Get a store by the owner's user ID
+ * Get a store by the owner's user ID, google ID, or email
  */
 export async function getStoreByOwnerId(ownerId: string) {
-  return prisma.store.findUnique({
+  if (!ownerId) return null;
+
+  // 1. Direct lookup by ownerId
+  let store = await prisma.store.findUnique({
     where: { ownerId },
     include: {
       company: true,
@@ -20,6 +23,53 @@ export async function getStoreByOwnerId(ownerId: string) {
       },
     },
   });
+
+  if (store) return store;
+
+  // 2. Fallback: check if ownerId is a User's googleId
+  const userByGoogleId = await prisma.user.findFirst({
+    where: { googleId: ownerId },
+    select: { id: true },
+  });
+
+  if (userByGoogleId) {
+    store = await prisma.store.findUnique({
+      where: { ownerId: userByGoogleId.id },
+      include: {
+        company: true,
+        settings: true,
+        theme: true,
+        subscription: {
+          include: { plan: true },
+        },
+      },
+    });
+    if (store) return store;
+  }
+
+  // 3. Fallback: check if ownerId is an email address
+  if (ownerId.includes("@")) {
+    const userByEmail = await prisma.user.findUnique({
+      where: { email: ownerId.toLowerCase() },
+      select: { id: true },
+    });
+
+    if (userByEmail) {
+      return prisma.store.findUnique({
+        where: { ownerId: userByEmail.id },
+        include: {
+          company: true,
+          settings: true,
+          theme: true,
+          subscription: {
+            include: { plan: true },
+          },
+        },
+      });
+    }
+  }
+
+  return null;
 }
 
 /**
@@ -123,7 +173,7 @@ export async function createStore(ownerId: string, data: CreateStoreInput) {
     await tx.homePage.create({
       data: {
         storeId: store.id,
-        heroHeading: `Welcome to ${data.businessName}`,
+        heroType: "SLIDER",
         heroEnabled: true,
         aboutEnabled: false,
       },
