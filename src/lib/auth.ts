@@ -107,10 +107,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
 
     async jwt({ token, user }) {
-      if (user?.email) {
+      const email = (user?.email || token.email) as string | undefined;
+      if (email && (!token.userId || user)) {
         try {
           const dbUser = await prisma.user.findUnique({
-            where: { email: user.email.toLowerCase() },
+            where: { email: email.toLowerCase() },
             select: { id: true, email: true, name: true, avatar: true, role: true },
           });
           if (dbUser) {
@@ -131,7 +132,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token.userId) {
         session.user.id = token.userId as string;
         session.user.role = (token.role as "USER" | "PLATFORM_ADMIN") ?? "USER";
+      } else if (token.sub) {
+        session.user.id = token.sub;
       }
+
+      // Synchronize session.user.id with canonical database User.id so any stale JWT token is automatically corrected
+      if (session?.user?.email) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: session.user.email.toLowerCase() },
+            select: { id: true, role: true },
+          });
+          if (dbUser) {
+            session.user.id = dbUser.id;
+            session.user.role = dbUser.role;
+          }
+        } catch (e) {
+          console.error("[Auth] session dbUser sync error:", e);
+        }
+      }
+
       return session;
     },
   },

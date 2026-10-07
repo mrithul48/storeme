@@ -8,6 +8,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface HeroBanner {
   url: string;
   publicId: string;
+  mobileUrl?: string | null;
+  mobilePublicId?: string | null;
   sortOrder: number;
 }
 
@@ -42,21 +44,40 @@ export function HeroSlider({ banners, themeColor }: HeroSliderProps) {
       {/* Slides */}
       {sorted.map((banner, idx) => (
         <div
-          key={banner.publicId}
+          key={banner.publicId || idx}
           className={cn(
             "absolute inset-0 transition-opacity duration-700 ease-in-out",
             idx === current ? "opacity-100" : "opacity-0 pointer-events-none"
           )}
         >
-          <Image
-            src={banner.url}
-            alt={`Banner ${idx + 1}`}
-            fill
-            className="object-cover"
-            priority={idx === 0}
-            sizes="100vw"
-            unoptimized
-          />
+          {/* Desktop & Tablet Banner */}
+          <div className={cn("relative w-full h-full", banner.mobileUrl ? "hidden sm:block" : "block")}>
+            <Image
+              src={banner.url}
+              alt={`Banner ${idx + 1}`}
+              fill
+              className="object-cover"
+              priority={idx === 0}
+              sizes="100vw"
+              unoptimized
+            />
+          </div>
+
+          {/* Mobile Banner */}
+          {banner.mobileUrl && (
+            <div className="relative w-full h-full block sm:hidden">
+              <Image
+                src={banner.mobileUrl}
+                alt={`Banner ${idx + 1} Mobile`}
+                fill
+                className="object-cover"
+                priority={idx === 0}
+                sizes="100vw"
+                unoptimized
+              />
+            </div>
+          )}
+
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
         </div>

@@ -48,23 +48,8 @@ export function StoreDesignClient({
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // ── Hero ──
+  // ── Hero (Image Slider only) ──
   const [heroEnabled, setHeroEnabled] = useState<boolean>((hp?.heroEnabled as boolean) ?? true);
-  const [heroType, setHeroType] = useState<"CONTENT" | "SLIDER">(
-    (hp?.heroType as "CONTENT" | "SLIDER") ?? "CONTENT"
-  );
-  const [heroHeading, setHeroHeading] = useState<string>((hp?.heroHeading as string) ?? "");
-  const [heroSubtitle, setHeroSubtitle] = useState<string>((hp?.heroSubtitle as string) ?? "");
-  const [heroDescription, setHeroDescription] = useState<string>((hp?.heroDescription as string) ?? "");
-  const [heroImageUrl, setHeroImageUrl] = useState<string>((hp?.heroImageUrl as string) ?? "");
-  const [heroImagePublicId, setHeroImagePublicId] = useState<string>((hp?.heroImagePublicId as string) ?? "");
-  const [heroCtaText, setHeroCtaText] = useState<string>((hp?.heroCtaText as string) ?? "");
-  const [heroButtonLinkType, setHeroButtonLinkType] = useState<"SHOP" | "CATEGORY" | "PRODUCT">(
-    (hp?.heroButtonLinkType as "SHOP" | "CATEGORY" | "PRODUCT") ?? "SHOP"
-  );
-  const [heroButtonLinkValue, setHeroButtonLinkValue] = useState<string>(
-    (hp?.heroButtonLinkValue as string) ?? ""
-  );
   const [heroBanners, setHeroBanners] = useState<HeroBanner[]>(() => {
     const b = hp?.heroBanners;
     return Array.isArray(b) ? (b as HeroBanner[]) : [];
@@ -91,7 +76,11 @@ export function StoreDesignClient({
   // ── Offer Banners ──
   const [offerBanners, setOfferBanners] = useState<OfferBanner[]>(() => {
     const b = hp?.offerBanners;
-    return Array.isArray(b) ? (b as OfferBanner[]) : [{} as OfferBanner, {} as OfferBanner];
+    const arr = Array.isArray(b) ? (b as OfferBanner[]) : [];
+    return [
+      arr[0] ? { ...arr[0] } : ({} as OfferBanner),
+      arr[1] ? { ...arr[1] } : ({} as OfferBanner),
+    ];
   });
 
   // ── Best Seller ──
@@ -164,15 +153,15 @@ export function StoreDesignClient({
 
     const payload = {
       heroEnabled,
-      heroType,
-      heroHeading: heroHeading || null,
-      heroSubtitle: heroSubtitle || null,
-      heroDescription: heroDescription || null,
-      heroImageUrl: heroImageUrl || null,
-      heroImagePublicId: heroImagePublicId || null,
-      heroCtaText: heroCtaText || null,
-      heroButtonLinkType: heroButtonLinkType ?? "SHOP",
-      heroButtonLinkValue: heroButtonLinkType !== "SHOP" ? heroButtonLinkValue || null : null,
+      heroType: "SLIDER",
+      heroHeading: null,
+      heroSubtitle: null,
+      heroDescription: null,
+      heroImageUrl: null,
+      heroImagePublicId: null,
+      heroCtaText: null,
+      heroButtonLinkType: "SHOP",
+      heroButtonLinkValue: null,
       heroBanners: heroBanners.filter((b) => b.url),
       brandSectionEnabled,
       brandShape,
@@ -180,7 +169,15 @@ export function StoreDesignClient({
       categoryShape,
       categoryRadius,
       newArrivalEnabled,
-      offerBanners: offerBanners.filter((b) => b.url),
+      offerBanners: offerBanners
+        .filter((b) => Boolean(b?.url))
+        .map((b) => ({
+          url: b.url,
+          publicId: b.publicId || "banner",
+          linkType: b.linkType || null,
+          linkValue: b.linkValue || null,
+          borderRadius: b.borderRadius || "MD",
+        })),
       bestSellerEnabled,
       testimonialSectionEnabled,
       testimonials,
@@ -263,7 +260,14 @@ export function StoreDesignClient({
   // ─── Offer Banner helpers ─────────────────────────────────────────────────
 
   const updateOfferBanner = (idx: number, update: Partial<OfferBanner>) => {
-    setOfferBanners((prev) => prev.map((b, i) => (i === idx ? { ...b, ...update } : b)));
+    setOfferBanners((prev) => {
+      const next = [...prev];
+      while (next.length <= idx) {
+        next.push({} as OfferBanner);
+      }
+      next[idx] = { ...next[idx], ...update };
+      return next;
+    });
   };
 
   // ─── Hero Banner helpers ──────────────────────────────────────────────────
@@ -273,6 +277,10 @@ export function StoreDesignClient({
       if (prev.length >= 3) return prev;
       return [...prev, { ...result, sortOrder: prev.length }];
     });
+  };
+
+  const updateHeroBanner = (idx: number, update: Partial<HeroBanner>) => {
+    setHeroBanners((prev) => prev.map((b, i) => (i === idx ? { ...b, ...update } : b)));
   };
 
   const removeHeroBanner = (idx: number) => {
@@ -358,26 +366,9 @@ export function StoreDesignClient({
           products={products}
           heroEnabled={heroEnabled}
           setHeroEnabled={setHeroEnabled}
-          heroType={heroType}
-          setHeroType={setHeroType}
-          heroHeading={heroHeading}
-          setHeroHeading={setHeroHeading}
-          heroSubtitle={heroSubtitle}
-          setHeroSubtitle={setHeroSubtitle}
-          heroDescription={heroDescription}
-          setHeroDescription={setHeroDescription}
-          heroImageUrl={heroImageUrl}
-          setHeroImageUrl={setHeroImageUrl}
-          heroImagePublicId={heroImagePublicId}
-          setHeroImagePublicId={setHeroImagePublicId}
-          heroCtaText={heroCtaText}
-          setHeroCtaText={setHeroCtaText}
-          heroButtonLinkType={heroButtonLinkType}
-          setHeroButtonLinkType={setHeroButtonLinkType}
-          heroButtonLinkValue={heroButtonLinkValue}
-          setHeroButtonLinkValue={setHeroButtonLinkValue}
           heroBanners={heroBanners}
           addHeroBanner={addHeroBanner}
+          updateHeroBanner={updateHeroBanner}
           removeHeroBanner={removeHeroBanner}
           brandSectionEnabled={brandSectionEnabled}
           setBrandSectionEnabled={setBrandSectionEnabled}

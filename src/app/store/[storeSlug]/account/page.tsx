@@ -15,6 +15,15 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { Package, User, ShoppingBag, ArrowRight } from "lucide-react";
 import { LogoutButton } from "./logout-button";
 import { getStoreLink } from "@/lib/store-url";
+import { Prisma, OrderItem } from "@prisma/client";
+
+type OrderWithItems = Prisma.OrderGetPayload<{
+  include: {
+    items: {
+      take: 3;
+    };
+  };
+}>;
 
 type AccountPageProps = {
   params: Promise<{ storeSlug: string }>;
@@ -163,6 +172,7 @@ export default async function CustomerAccountPage({ params }: AccountPageProps) 
                       Browse our catalog and make your first purchase!
                     </p>
                   </div>
+                  
                   <Link
                     href={getStoreLink(storeSlug, "/shop")}
                     className="px-4 py-2 rounded-xl text-xs font-semibold shadow-sm"
@@ -176,7 +186,7 @@ export default async function CustomerAccountPage({ params }: AccountPageProps) 
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {orders.map((order) => {
+                  {orders.map((order: OrderWithItems) => {
                     const statusClass =
                       STATUS_COLORS[order.status] ??
                       "bg-slate-500/10 text-slate-400 border-slate-500/20";
@@ -216,7 +226,7 @@ export default async function CustomerAccountPage({ params }: AccountPageProps) 
                             className="text-xs"
                             style={{ color: "var(--store-page-muted, #94a3b8)" }}
                           >
-                            {order.items.map((i) => i.productName).join(", ")}
+                            {order.items.map((i: OrderItem) => i.productName).join(", ")}
                           </div>
                         </div>
 

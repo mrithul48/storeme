@@ -39,29 +39,12 @@ export interface HomepageTabProps {
   categories: Category[];
   products: Product[];
 
-  // Hero
+  // Hero (Image Slider only)
   heroEnabled: boolean;
   setHeroEnabled: (v: boolean) => void;
-  heroType: "CONTENT" | "SLIDER";
-  setHeroType: (v: "CONTENT" | "SLIDER") => void;
-  heroHeading: string;
-  setHeroHeading: (v: string) => void;
-  heroSubtitle: string;
-  setHeroSubtitle: (v: string) => void;
-  heroDescription: string;
-  setHeroDescription: (v: string) => void;
-  heroImageUrl: string;
-  heroImagePublicId?: string;
-  setHeroImageUrl: (v: string) => void;
-  setHeroImagePublicId: (v: string) => void;
-  heroCtaText: string;
-  setHeroCtaText: (v: string) => void;
-  heroButtonLinkType: "SHOP" | "CATEGORY" | "PRODUCT";
-  setHeroButtonLinkType: (v: "SHOP" | "CATEGORY" | "PRODUCT") => void;
-  heroButtonLinkValue: string;
-  setHeroButtonLinkValue: (v: string) => void;
   heroBanners: HeroBanner[];
   addHeroBanner: (result: { url: string; publicId: string }) => void;
+  updateHeroBanner: (idx: number, update: Partial<HeroBanner>) => void;
   removeHeroBanner: (idx: number) => void;
 
   // Brand
@@ -120,25 +103,9 @@ export function HomepageTab({
   products,
   heroEnabled,
   setHeroEnabled,
-  heroType,
-  setHeroType,
-  heroHeading,
-  setHeroHeading,
-  heroSubtitle,
-  setHeroSubtitle,
-  heroDescription,
-  setHeroDescription,
-  heroImageUrl,
-  setHeroImageUrl,
-  setHeroImagePublicId,
-  heroCtaText,
-  setHeroCtaText,
-  heroButtonLinkType,
-  setHeroButtonLinkType,
-  heroButtonLinkValue,
-  setHeroButtonLinkValue,
   heroBanners,
   addHeroBanner,
+  updateHeroBanner,
   removeHeroBanner,
   brandSectionEnabled,
   setBrandSectionEnabled,
@@ -175,203 +142,166 @@ export function HomepageTab({
 }: HomepageTabProps) {
   return (
     <div className="space-y-4">
-      {/* ── Hero Section ────────────────────────────────────────────── */}
-      <Section title="Hero Section" icon={Sparkles}>
+      {/* ── Hero Section (Image Slider) ────────────────────────────── */}
+      <Section title="Hero Section (Image Slider)" icon={Sparkles}>
         <div className="space-y-5 pt-2">
           <Toggle
             label="Enable Hero Section"
-            description="Show or hide the hero banner at the top of your storefront"
+            description="Show or hide the hero image slider at the top of your storefront"
             checked={heroEnabled}
             onChange={setHeroEnabled}
           />
 
           {heroEnabled && (
-            <>
-              {/* Hero Type */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-300">Hero Type</label>
-                <div className="flex gap-3">
-                  {[
-                    { value: "CONTENT", label: "Content Hero", desc: "Image + text + button" },
-                    { value: "SLIDER", label: "Image Slider", desc: "Up to 3 auto-sliding banners" },
-                  ].map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setHeroType(opt.value as "CONTENT" | "SLIDER")}
-                      className={cn(
-                        "flex-1 p-3 rounded-xl border text-left transition-all",
-                        heroType === opt.value
-                          ? "border-blue-500 bg-blue-600/10 text-white"
-                          : "border-slate-700 bg-slate-800/40 text-slate-400 hover:border-slate-600"
-                      )}
+            <div className="space-y-4">
+              <p className="text-xs text-slate-400">
+                Upload up to <strong className="text-white">3 banner slides</strong>. Banners will auto-slide on the live store. You can upload both a <strong className="text-white">Desktop Banner</strong> and a separate <strong className="text-white">Mobile Banner</strong> for each slide.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[0, 1, 2].map((idx) => {
+                  const banner = heroBanners[idx];
+                  return (
+                    <div
+                      key={idx}
+                      className="space-y-3 p-3.5 rounded-xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between"
                     >
-                      <p className="text-xs font-bold">{opt.label}</p>
-                      <p className="text-[11px] mt-0.5 opacity-70">{opt.desc}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <label className="text-xs font-bold text-white">Slide {idx + 1}</label>
+                        {banner?.url && (
+                          <button
+                            type="button"
+                            onClick={() => removeHeroBanner(idx)}
+                            className="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Remove Slide
+                          </button>
+                        )}
+                      </div>
 
-              {/* CONTENT Hero Fields */}
-              {heroType === "CONTENT" && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Heading</label>
-                      <Input
-                        value={heroHeading}
-                        onChange={(e) => setHeroHeading(e.target.value)}
-                        placeholder="e.g. Shop the Latest Collection"
-                        maxLength={200}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Subheading</label>
-                      <Input
-                        value={heroSubtitle}
-                        onChange={(e) => setHeroSubtitle(e.target.value)}
-                        placeholder="e.g. Premium Quality, Unbeatable Prices"
-                        maxLength={300}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Short Description</label>
-                    <Textarea
-                      value={heroDescription}
-                      onChange={(e) => setHeroDescription(e.target.value)}
-                      placeholder="Brief description shown below the subheading"
-                      className="min-h-[80px]"
-                    />
-                  </div>
-
-                  <ImageUploader
-                    label="Hero Background Image"
-                    url={heroImageUrl}
-                    folder="hero"
-                    aspectHint="Recommended: 1440×600px, widescreen"
-                    onUpload={(r) => {
-                      setHeroImageUrl(r.url);
-                      setHeroImagePublicId(r.publicId);
-                    }}
-                    onRemove={() => {
-                      setHeroImageUrl("");
-                      setHeroImagePublicId("");
-                    }}
-                  />
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Button Text</label>
-                    <Input
-                      value={heroCtaText}
-                      onChange={(e) => setHeroCtaText(e.target.value)}
-                      placeholder="e.g. Shop Now"
-                      maxLength={50}
-                    />
-                  </div>
-
-                  {/* Button Link Type */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-300">Button Destination</label>
-                    <div className="flex gap-2">
-                      {(["SHOP", "CATEGORY", "PRODUCT"] as const).map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          onClick={() => {
-                            setHeroButtonLinkType(opt);
-                            setHeroButtonLinkValue("");
-                          }}
-                          className={cn(
-                            "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
-                            heroButtonLinkType === opt
-                              ? "bg-blue-600/20 border-blue-500 text-blue-300"
-                              : "bg-slate-800/60 border-slate-700 text-slate-400 hover:border-slate-600"
-                          )}
-                        >
-                          {opt === "SHOP" ? "Shop Page" : opt === "CATEGORY" ? "Category" : "Product"}
-                        </button>
-                      ))}
-                    </div>
-
-                    {heroButtonLinkType === "CATEGORY" && (
-                      <select
-                        value={heroButtonLinkValue}
-                        onChange={(e) => setHeroButtonLinkValue(e.target.value)}
-                        className={selectClass}
-                      >
-                        <option value="">— Select a category —</option>
-                        {categories.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                    {heroButtonLinkType === "PRODUCT" && (
-                      <select
-                        value={heroButtonLinkValue}
-                        onChange={(e) => setHeroButtonLinkValue(e.target.value)}
-                        className={selectClass}
-                      >
-                        <option value="">— Select a product —</option>
-                        {products.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* SLIDER Hero Fields */}
-              {heroType === "SLIDER" && (
-                <div className="space-y-4">
-                  <p className="text-xs text-slate-400">
-                    Upload up to <strong className="text-white">3 banner images</strong>. Banners will auto-slide on
-                    the live store.
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {[0, 1, 2].map((idx) => {
-                      const banner = heroBanners[idx];
-                      return (
-                        <div key={idx} className="space-y-2">
-                          <label className="text-xs font-semibold text-slate-300">Banner {idx + 1}</label>
-                          {banner?.url ? (
+                      {banner?.url ? (
+                        <div className="space-y-3">
+                          {/* Desktop Banner Image */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="text-[11px] font-semibold text-slate-300">Desktop Banner *</label>
+                              <span className="text-[10px] text-slate-500">Desktop & Tablet</span>
+                            </div>
                             <div className="relative group rounded-xl overflow-hidden border border-slate-700 bg-slate-800 aspect-video">
                               <Image
                                 src={banner.url}
-                                alt={`Banner ${idx + 1}`}
+                                alt={`Slide ${idx + 1} Desktop`}
                                 fill
                                 className="object-cover"
                               />
                               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <button
-                                  type="button"
-                                  onClick={() => removeHeroBanner(idx)}
-                                  className="px-3 py-1.5 bg-red-600 text-white text-xs rounded-lg flex items-center gap-1"
-                                >
-                                  <Trash2 className="w-3 h-3" /> Remove
-                                </button>
+                                <label className="cursor-pointer px-2.5 py-1 bg-blue-600 text-white text-[11px] rounded-lg flex items-center gap-1">
+                                  Replace
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                      const file = e.target.files?.[0];
+                                      if (!file) return;
+                                      const formData = new FormData();
+                                      formData.append("file", file);
+                                      formData.append("folder", "hero-slider");
+                                      const res = await fetch("/api/upload", { method: "POST", body: formData });
+                                      const json = await res.json();
+                                      if (res.ok && json.success) {
+                                        updateHeroBanner(idx, { url: json.url, publicId: json.publicId });
+                                      }
+                                    }}
+                                  />
+                                </label>
                               </div>
                             </div>
-                          ) : (
-                            <SliderBannerUpload
-                              disabled={heroBanners.length >= 3 && idx >= heroBanners.length}
-                              onUpload={addHeroBanner}
-                            />
-                          )}
+                          </div>
+
+                          {/* Mobile Banner Image */}
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="text-[11px] font-semibold text-slate-300">Mobile Banner (Optional)</label>
+                              <span className="text-[10px] text-slate-500">Phone view</span>
+                            </div>
+                            {banner.mobileUrl ? (
+                              <div className="relative group rounded-xl overflow-hidden border border-slate-700 bg-slate-800 aspect-[4/3]">
+                                <Image
+                                  src={banner.mobileUrl}
+                                  alt={`Slide ${idx + 1} Mobile`}
+                                  fill
+                                  className="object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                  <label className="cursor-pointer px-2.5 py-1 bg-blue-600 text-white text-[11px] rounded-lg flex items-center gap-1">
+                                    Replace
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+                                        const formData = new FormData();
+                                        formData.append("file", file);
+                                        formData.append("folder", "hero-slider-mobile");
+                                        const res = await fetch("/api/upload", { method: "POST", body: formData });
+                                        const json = await res.json();
+                                        if (res.ok && json.success) {
+                                          updateHeroBanner(idx, { mobileUrl: json.url, mobilePublicId: json.publicId });
+                                        }
+                                      }}
+                                    />
+                                  </label>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateHeroBanner(idx, { mobileUrl: null, mobilePublicId: null })}
+                                    className="px-2.5 py-1 bg-red-600 text-white text-[11px] rounded-lg flex items-center gap-1"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <label className="flex flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-slate-700 bg-slate-900/40 hover:border-blue-500/50 transition-all cursor-pointer h-24 p-2 text-center">
+                                <span className="text-[11px] text-slate-400 font-medium">Upload Mobile Banner</span>
+                                <span className="text-[10px] text-slate-500">Optimized for phones (e.g. 800×1000)</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    const formData = new FormData();
+                                    formData.append("file", file);
+                                    formData.append("folder", "hero-slider-mobile");
+                                    const res = await fetch("/api/upload", { method: "POST", body: formData });
+                                    const json = await res.json();
+                                    if (res.ok && json.success) {
+                                      updateHeroBanner(idx, { mobileUrl: json.url, mobilePublicId: json.publicId });
+                                    }
+                                  }}
+                                />
+                              </label>
+                            )}
+                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </>
+                      ) : (
+                        <div className="space-y-1.5 py-3">
+                          <SliderBannerUpload
+                            disabled={heroBanners.length >= 3 && idx >= heroBanners.length}
+                            onUpload={addHeroBanner}
+                          />
+                          <p className="text-[10px] text-slate-500 text-center">Upload desktop banner to create Slide {idx + 1}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
       </Section>

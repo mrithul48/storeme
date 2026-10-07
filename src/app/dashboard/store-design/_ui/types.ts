@@ -3,7 +3,13 @@
 export interface Category { id: string; name: string; slug: string }
 export interface Product { id: string; name: string; slug: string }
 
-export interface HeroBanner { url: string; publicId: string; sortOrder: number }
+export interface HeroBanner {
+  url: string;
+  publicId: string;
+  mobileUrl?: string | null;
+  mobilePublicId?: string | null;
+  sortOrder: number;
+}
 export interface OfferBanner {
   url: string;
   publicId: string;
@@ -38,15 +44,7 @@ export interface StoreDesignClientProps {
 export interface DesignState {
   // Hero
   heroEnabled: boolean;
-  heroType: "CONTENT" | "SLIDER";
-  heroHeading: string;
-  heroSubtitle: string;
-  heroDescription: string;
-  heroImageUrl: string;
-  heroImagePublicId: string;
-  heroCtaText: string;
-  heroButtonLinkType: "SHOP" | "CATEGORY" | "PRODUCT";
-  heroButtonLinkValue: string;
+  heroType?: "SLIDER";
   heroBanners: HeroBanner[];
   // Sections
   brandSectionEnabled: boolean;
