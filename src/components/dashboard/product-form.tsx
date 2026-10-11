@@ -6,7 +6,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { Card, Input, Textarea } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Upload, X, AlertCircle } from "lucide-react";
+import { ArrowLeft, Upload, X, AlertCircle, Plus, Palette, Trash2, CheckCircle2 } from "lucide-react";
+
+export interface ColorVariant {
+  id?: string;
+  color: string;
+  manageAvailability: boolean;
+  inStock: boolean;
+  manageQuantity: boolean;
+  stock: number;
+  sortOrder: number;
+}
 
 interface ProductFormProps {
   categories: any[];
@@ -35,7 +45,12 @@ export function ProductForm({
     price: initialData?.price ? String(initialData.price) : "",
     salePrice: initialData?.salePrice ? String(initialData.salePrice) : "",
     sku: initialData?.sku || "",
-    stock: initialData?.stock !== undefined ? String(initialData.stock) : "10",
+    manageStockAvailability: initialData?.manageStockAvailability ?? false,
+    inStock: initialData?.inStock !== undefined ? initialData.inStock : true,
+    manageStockQuantity:
+      initialData?.manageStockQuantity ??
+      (initialData?.manageStock !== undefined ? initialData.manageStock : false),
+    stock: initialData?.stock !== undefined ? String(initialData.stock) : "0",
     categoryId: initialData?.categoryId || "",
     brandId: initialData?.brandId || "",
     status: initialData?.status || "ACTIVE",
@@ -47,6 +62,28 @@ export function ProductForm({
   );
 
   const [imageUrlInput, setImageUrlInput] = useState("");
+
+  // ── Color Variants ─────────────────────────────────────────────────────────
+  const [enableVariants, setEnableVariants] = useState<boolean>(
+    () => Array.isArray(initialData?.variants) && initialData.variants.length > 0
+  );
+
+  const [variants, setVariants] = useState<ColorVariant[]>(() => {
+    if (Array.isArray(initialData?.variants) && initialData.variants.length > 0) {
+      return initialData.variants.map((v: any, idx: number) => ({
+        id: v.id,
+        color: v.color,
+        manageAvailability: Boolean(v.manageAvailability),
+        inStock: v.inStock !== false,
+        manageQuantity: Boolean(v.manageQuantity),
+        stock: typeof v.stock === "number" ? v.stock : 0,
+        sortOrder: v.sortOrder ?? idx,
+      }));
+    }
+    return [];
+  });
+
+  const [newVariantColor, setNewVariantColor] = useState("");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -64,8 +101,8 @@ export function ProductForm({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 4 * 1024 * 1024) {
-      setError("File size exceeds 4 MB. Please choose an image smaller than 4 MB.");
+    if (file.size > 5 * 1024 * 1024) {
+      setError("File size exceeds 5 MB. Please choose an image smaller than 5 MB.");
       e.target.value = "";
       return;
     }
@@ -111,6 +148,53 @@ export function ProductForm({
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // ── Variant handlers ────────────────────────────────────────────────────────
+  const handleAddVariant = () => {
+    const color = newVariantColor.trim();
+    if (!color) return;
+    if (variants.some((v) => v.color.toLowerCase() === color.toLowerCase())) {
+      setError(`Color "${color}" already exists.`);
+      return;
+    }
+    setVariants((prev) => [
+      ...prev,
+      {
+        color,
+        manageAvailability: false,
+        inStock: true,
+        manageQuantity: false,
+        stock: 0,
+        sortOrder: prev.length,
+      },
+    ]);
+    setNewVariantColor("");
+  };
+
+  const handleRemoveVariant = (idx: number) => {
+    setVariants((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleVariantChange = (
+    idx: number,
+    field: keyof ColorVariant,
+    value: string | number | boolean
+  ) => {
+    setVariants((prev) =>
+      prev.map((v, i) => {
+        if (i !== idx) return v;
+        const updated = { ...v, [field]: value };
+        // Prevent contradictory state: if quantity managed with 0 stock, cannot be inStock
+        if (updated.manageQuantity && updated.stock === 0 && updated.manageAvailability && updated.inStock) {
+          if (field === "inStock") {
+            setError(`"${updated.color}" has 0 stock. It cannot be marked In Stock when quantity is 0.`);
+            return v;
+          }
+        }
+        return updated;
+      })
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -132,6 +216,38 @@ export function ProductForm({
       return;
     }
 
+    if (formData.manageStockQuantity) {
+      if (isNaN(stock) || stock < 0) {
+        setError("Stock quantity must be a non-negative whole number (0 or greater).");
+        setLoading(false);
+        return;
+      }
+      // Contradiction prevention
+      if (stock === 0 && formData.manageStockAvailability && formData.inStock) {
+        setError("Contradictory stock state: Product cannot be marked In Stock when stock quantity is 0.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Validate variants
+    if (enableVariants) {
+      for (const v of variants) {
+        if (v.manageQuantity) {
+          if (isNaN(v.stock) || v.stock < 0) {
+            setError(`Stock for variant "${v.color}" must be a non-negative number.`);
+            setLoading(false);
+            return;
+          }
+          if (v.stock === 0 && v.manageAvailability && v.inStock) {
+            setError(`Contradictory stock state for variant "${v.color}": Cannot be In Stock when stock is 0.`);
+            setLoading(false);
+            return;
+          }
+        }
+      }
+    }
+
     const payload = {
       name: formData.name,
       slug: formData.slug || undefined,
@@ -140,6 +256,9 @@ export function ProductForm({
       salePrice: salePrice || undefined,
       sku: formData.sku || undefined,
       stock: isNaN(stock) ? 0 : stock,
+      manageStockQuantity: formData.manageStockQuantity,
+      manageStockAvailability: formData.manageStockAvailability,
+      inStock: formData.inStock,
       categoryId: formData.categoryId || undefined,
       brandId: formData.brandId || undefined,
       status: formData.status,
@@ -149,6 +268,17 @@ export function ProductForm({
         publicId: img.publicId,
         sortOrder: idx,
       })),
+      variants: enableVariants
+        ? variants.map((v, idx) => ({
+            id: v.id,
+            color: v.color,
+            manageAvailability: v.manageAvailability,
+            inStock: v.inStock,
+            manageQuantity: v.manageQuantity,
+            stock: v.stock,
+            sortOrder: idx,
+          }))
+        : [],
     };
 
     try {
@@ -280,27 +410,30 @@ export function ProductForm({
                   className="hidden"
                 />
               </label>
-            </div>
 
-            <div className="flex items-center gap-2 pt-1">
-              <Input
-                placeholder="Or paste an external image URL..."
-                value={imageUrlInput}
-                onChange={(e) => setImageUrlInput(e.target.value)}
-              />
-              <Button type="button" variant="secondary" onClick={handleAddImageUrl}>
-                Add
-              </Button>
+              <div className="flex-1 flex flex-col justify-center space-y-2">
+                <label className="text-xs font-semibold text-slate-300">Or add via Image URL</label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="https://example.com/image.jpg"
+                    value={imageUrlInput}
+                    onChange={(e) => setImageUrlInput(e.target.value)}
+                  />
+                  <Button type="button" variant="secondary" onClick={handleAddImageUrl}>
+                    Add
+                  </Button>
+                </div>
+              </div>
             </div>
           </Card>
 
-          {/* Pricing & Inventory */}
+          {/* Pricing & SKU */}
           <Card className="space-y-4">
-            <h2 className="text-base font-bold text-white">Pricing & Stock</h2>
+            <h2 className="text-base font-bold text-white">Pricing & Identification</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Regular Price (₹) *</label>
+                <label className="text-xs font-semibold text-slate-300">Regular Price (INR) *</label>
                 <Input
                   required
                   type="number"
@@ -314,7 +447,7 @@ export function ProductForm({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Sale / Discount Price (₹)</label>
+                <label className="text-xs font-semibold text-slate-300">Sale Price (INR)</label>
                 <Input
                   type="number"
                   step="0.01"
@@ -327,68 +460,381 @@ export function ProductForm({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Stock Units *</label>
-                <Input
-                  required
-                  type="number"
-                  min="0"
-                  name="stock"
-                  value={formData.stock}
-                  onChange={handleChange}
-                  placeholder="10"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">SKU (Stock Keeping Unit)</label>
-                <Input
-                  name="sku"
-                  value={formData.sku}
-                  onChange={handleChange}
-                  placeholder="e.g. PROD-WH-001"
-                />
-              </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">SKU (Stock Keeping Unit)</label>
+              <Input
+                name="sku"
+                value={formData.sku}
+                onChange={handleChange}
+                placeholder="e.g. PROD-WH-001"
+              />
             </div>
+
+            {/* 1. General Product Stock Management */}
+            {!enableVariants && (
+              <div className="rounded-xl border border-slate-700/60 bg-slate-900/40 p-4 space-y-5">
+                <div className="border-b border-slate-800 pb-2">
+                  <h3 className="text-sm font-bold text-slate-200">Stock Management</h3>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Configure stock availability and numeric quantity controls independently.
+                  </p>
+                </div>
+
+                {/* Control A: Stock Availability */}
+                <div className="space-y-2 rounded-lg bg-slate-950/40 p-3 border border-slate-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-200">Manage Stock Availability</p>
+                      <p className="text-[11px] text-slate-500">
+                        When disabled, defaults to In Stock. When enabled, you can choose In Stock or Out of Stock.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={formData.manageStockAvailability}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          manageStockAvailability: !prev.manageStockAvailability,
+                          // If disabled, product defaults to In Stock
+                          inStock: !prev.manageStockAvailability ? prev.inStock : true,
+                        }))
+                      }
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                        formData.manageStockAvailability ? "bg-blue-600" : "bg-slate-700"
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                          formData.manageStockAvailability ? "translate-x-4" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {!formData.manageStockAvailability ? (
+                    <div className="flex items-center gap-2 pt-1 text-emerald-400 text-xs font-medium">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Default: In Stock (Availability management disabled)</span>
+                    </div>
+                  ) : (
+                    <div className="pt-2 flex items-center justify-between border-t border-slate-800/80">
+                      <span className="text-xs text-slate-300 font-medium">Stock Status:</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (formData.manageStockQuantity && parseInt(formData.stock, 10) === 0) {
+                              setError("Cannot mark In Stock when managed stock quantity is 0.");
+                              return;
+                            }
+                            setFormData((prev) => ({ ...prev, inStock: true }));
+                          }}
+                          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                            formData.inStock
+                              ? "bg-emerald-600 text-white shadow-sm"
+                              : "bg-slate-800 text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          In Stock
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData((prev) => ({ ...prev, inStock: false }))}
+                          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                            !formData.inStock
+                              ? "bg-rose-600 text-white shadow-sm"
+                              : "bg-slate-800 text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          Out of Stock
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Control B: Stock Quantity */}
+                <div className="space-y-2 rounded-lg bg-slate-950/40 p-3 border border-slate-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-200">Manage Stock Quantity</p>
+                      <p className="text-[11px] text-slate-500">
+                        When disabled, quantity is unlimited. When enabled, enter available units.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={formData.manageStockQuantity}
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          manageStockQuantity: !prev.manageStockQuantity,
+                        }))
+                      }
+                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                        formData.manageStockQuantity ? "bg-blue-600" : "bg-slate-700"
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                          formData.manageStockQuantity ? "translate-x-4" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {formData.manageStockQuantity ? (
+                    <div className="pt-2 space-y-1.5 border-t border-slate-800/80">
+                      <label className="text-xs font-semibold text-slate-300">Stock Quantity *</label>
+                      <Input
+                        required
+                        type="number"
+                        min="0"
+                        step="1"
+                        name="stock"
+                        value={formData.stock}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const num = parseInt(val, 10);
+                          setFormData((prev) => ({
+                            ...prev,
+                            stock: val,
+                            // If quantity reaches 0 and availability is managed, automatically set out of stock
+                            inStock: prev.manageStockAvailability && num === 0 ? false : prev.inStock,
+                          }));
+                        }}
+                        placeholder="e.g. 100"
+                      />
+                      <p className="text-[11px] text-slate-500">
+                        Quantity of 0 prevents customers from purchasing this item.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-slate-500 pt-1">
+                      Stock quantity is hidden. Customers can purchase without quantity restriction as long as the product is In Stock.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </Card>
+
+          {/* 2 & 3. Color-wise Product Variants */}
+          <Card className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Palette className="w-4 h-4 text-slate-400" />
+                <h2 className="text-base font-bold text-white">Enable Color-wise Inventory</h2>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={enableVariants}
+                onClick={() => setEnableVariants((v) => !v)}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                  enableVariants ? "bg-blue-600" : "bg-slate-700"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                    enableVariants ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {!enableVariants ? (
+              <p className="text-[11px] text-slate-500">
+                Disabled by default. Enable to manage individual availability and stock quantities per color variant (e.g. Black, White, Blue).
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {/* Add new variant */}
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Enter color name (e.g. Black, White, Navy Blue)"
+                    value={newVariantColor}
+                    onChange={(e) => setNewVariantColor(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddVariant();
+                      }
+                    }}
+                  />
+                  <Button type="button" variant="secondary" onClick={handleAddVariant}>
+                    <Plus className="w-4 h-4" />
+                    Add Color
+                  </Button>
+                </div>
+
+                {variants.length === 0 ? (
+                  <p className="text-[11px] text-slate-500 py-2">
+                    No color variants added yet. Type a color name above and click Add Color.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {variants.map((variant, idx) => (
+                      <div
+                        key={idx}
+                        className="rounded-xl border border-slate-700/60 bg-slate-900/60 p-3.5 space-y-3"
+                      >
+                        {/* Variant header row */}
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="w-3.5 h-3.5 rounded-full border border-slate-600 flex-shrink-0"
+                              style={{
+                                backgroundColor: variant.color.startsWith("#")
+                                  ? variant.color
+                                  : "transparent",
+                              }}
+                            />
+                            <span className="text-sm font-bold text-white">{variant.color}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveVariant(idx)}
+                            className="p-1 rounded text-slate-500 hover:text-rose-400 transition-colors"
+                            aria-label={`Remove ${variant.color} variant`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Variant two independent controls */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                          {/* A. Variant Availability */}
+                          <div className="p-2.5 rounded-lg bg-slate-950/40 border border-slate-800/80 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-semibold text-slate-300">
+                                Manage Availability
+                              </span>
+                              <button
+                                type="button"
+                                role="switch"
+                                aria-checked={variant.manageAvailability}
+                                onClick={() =>
+                                  handleVariantChange(
+                                    idx,
+                                    "manageAvailability",
+                                    !variant.manageAvailability
+                                  )
+                                }
+                                className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                                  variant.manageAvailability ? "bg-blue-600" : "bg-slate-700"
+                                }`}
+                              >
+                                <span
+                                  className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                                    variant.manageAvailability ? "translate-x-3" : "translate-x-0"
+                                  }`}
+                                />
+                              </button>
+                            </div>
+
+                            {!variant.manageAvailability ? (
+                              <div className="text-[11px] text-emerald-400 font-medium">
+                                Default: In Stock
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2 pt-1">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (variant.manageQuantity && variant.stock === 0) {
+                                      setError(`Cannot mark "${variant.color}" In Stock when quantity is 0.`);
+                                      return;
+                                    }
+                                    handleVariantChange(idx, "inStock", true);
+                                  }}
+                                  className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
+                                    variant.inStock
+                                      ? "bg-emerald-600 text-white"
+                                      : "bg-slate-800 text-slate-400 hover:text-white"
+                                  }`}
+                                >
+                                  In Stock
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleVariantChange(idx, "inStock", false)}
+                                  className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
+                                    !variant.inStock
+                                      ? "bg-rose-600 text-white"
+                                      : "bg-slate-800 text-slate-400 hover:text-white"
+                                  }`}
+                                >
+                                  Out of Stock
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* B. Variant Quantity */}
+                          <div className="p-2.5 rounded-lg bg-slate-950/40 border border-slate-800/80 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-semibold text-slate-300">
+                                Manage Quantity
+                              </span>
+                              <button
+                                type="button"
+                                role="switch"
+                                aria-checked={variant.manageQuantity}
+                                onClick={() =>
+                                  handleVariantChange(idx, "manageQuantity", !variant.manageQuantity)
+                                }
+                                className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                                  variant.manageQuantity ? "bg-blue-600" : "bg-slate-700"
+                                }`}
+                              >
+                                <span
+                                  className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                                    variant.manageQuantity ? "translate-x-3" : "translate-x-0"
+                                  }`}
+                                />
+                              </button>
+                            </div>
+
+                            {variant.manageQuantity ? (
+                              <div className="flex items-center gap-2 pt-1">
+                                <label className="text-[11px] text-slate-400">Qty:</label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="1"
+                                  value={variant.stock}
+                                  onChange={(e) => {
+                                    const qty = parseInt(e.target.value, 10);
+                                    handleVariantChange(idx, "stock", isNaN(qty) ? 0 : qty);
+                                  }}
+                                  className="w-24 h-7 rounded border border-slate-700/80 bg-slate-950 px-2 text-xs font-medium text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  placeholder="0"
+                                />
+                              </div>
+                            ) : (
+                              <div className="text-[11px] text-slate-500">
+                                Unlimited / Quantity hidden
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </Card>
         </div>
 
         {/* Right Column: Taxonomy & Visibility */}
         <div className="lg:col-span-4 space-y-6">
           <Card className="space-y-4">
-            <h2 className="text-base font-bold text-white">Visibility</h2>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Publish Status</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full h-11 rounded-xl border border-slate-700/80 bg-slate-950/60 px-4 text-xs font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="ACTIVE">Active (Live in Store)</option>
-                <option value="DRAFT">Draft</option>
-                <option value="INACTIVE">Inactive (Hidden)</option>
-              </select>
-            </div>
-
-            <label className="flex items-center gap-2.5 pt-2 cursor-pointer">
-              <input
-                type="checkbox"
-                name="featured"
-                checked={formData.featured}
-                onChange={handleChange}
-                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-900 border-slate-700"
-              />
-              <span className="text-xs font-medium text-slate-200">
-                Mark as Featured Product
-              </span>
-            </label>
-          </Card>
-
-          <Card className="space-y-4">
-            <h2 className="text-base font-bold text-white">Classification</h2>
+            <h2 className="text-base font-bold text-white">Organization</h2>
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-300">Category</label>
@@ -396,7 +842,7 @@ export function ProductForm({
                 name="categoryId"
                 value={formData.categoryId}
                 onChange={handleChange}
-                className="w-full h-11 rounded-xl border border-slate-700/80 bg-slate-950/60 px-4 text-xs font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-10 rounded-xl border border-slate-700/80 bg-slate-950/60 px-3 text-xs font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               >
                 <option value="">No Category</option>
                 {categories.map((c) => (
@@ -413,7 +859,7 @@ export function ProductForm({
                 name="brandId"
                 value={formData.brandId}
                 onChange={handleChange}
-                className="w-full h-11 rounded-xl border border-slate-700/80 bg-slate-950/60 px-4 text-xs font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-10 rounded-xl border border-slate-700/80 bg-slate-950/60 px-3 text-xs font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               >
                 <option value="">No Brand</option>
                 {brands.map((b) => (
@@ -422,6 +868,46 @@ export function ProductForm({
                   </option>
                 ))}
               </select>
+            </div>
+          </Card>
+
+          <Card className="space-y-4">
+            <h2 className="text-base font-bold text-white">Visibility & Status</h2>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">Product Status</label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="w-full h-10 rounded-xl border border-slate-700/80 bg-slate-950/60 px-3 text-xs font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              >
+                <option value="ACTIVE">Active (Live in store)</option>
+                <option value="DRAFT">Draft (Hidden)</option>
+                <option value="INACTIVE">Inactive (Archived)</option>
+              </select>
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <div>
+                <p className="text-xs font-semibold text-slate-300">Featured Product</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Highlight on homepage</p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={formData.featured}
+                onClick={() => setFormData((prev) => ({ ...prev, featured: !prev.featured }))}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                  formData.featured ? "bg-blue-600" : "bg-slate-700"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                    formData.featured ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </button>
             </div>
           </Card>
         </div>

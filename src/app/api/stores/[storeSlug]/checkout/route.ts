@@ -98,9 +98,11 @@ export async function POST(request: Request, { params }: RouteProps) {
 
     // Create the order using secure order service (recalculates prices from DB)
     const order = await createOrder(store.id, {
-      items: items.map((i: { productId: string; quantity: number }) => ({
+      items: items.map((i: { productId: string; quantity: number; variantId?: string; variantColor?: string }) => ({
         productId: i.productId,
         quantity: i.quantity,
+        variantId: i.variantId,
+        variantColor: i.variantColor,
       })),
       customer: customerValidation.data,
       paymentMethod: selectedMethod === "ONLINE_PAYMENT" ? "RAZORPAY" : selectedMethod,

@@ -11,7 +11,7 @@ import type { CreateOrderInput } from "@/validations/order.schema";
  */
 export async function createOrder(storeId: string, data: CreateOrderInput) {
   // 1. Fetch actual product data from DB (never trust client prices)
-  const productIds = data.items.map((i) => i.productId);
+  const productIds = Array.from(new Set(data.items.map((i) => i.productId)));
   const products = await prisma.product.findMany({
     where: {
       id: { in: productIds },
@@ -25,6 +25,19 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
       price: true,
       salePrice: true,
       stock: true,
+      manageStockQuantity: true,
+      manageStockAvailability: true,
+      inStock: true,
+      variants: {
+        select: {
+          id: true,
+          color: true,
+          manageAvailability: true,
+          inStock: true,
+          manageQuantity: true,
+          stock: true,
+        },
+      },
     },
   });
 
@@ -38,8 +51,51 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
       errors.push(`Product not found or unavailable`);
       continue;
     }
-    if (product.stock < item.quantity) {
-      errors.push(`Insufficient stock for "${product.name}"`);
+
+    // Color variant validation
+    if (product.variants && product.variants.length > 0) {
+      const variant = product.variants.find(
+        (v) =>
+          (item.variantId && v.id === item.variantId) ||
+          (item.variantColor && v.color.toLowerCase() === item.variantColor.toLowerCase())
+      );
+
+      if (!variant) {
+        errors.push(`Please select a valid color variant for "${product.name}"`);
+        continue;
+      }
+
+      // Check variant availability
+      if (variant.manageAvailability && !variant.inStock) {
+        errors.push(`"${product.name} (${variant.color})" is currently out of stock`);
+        continue;
+      }
+
+      // Check variant quantity
+      if (variant.manageQuantity) {
+        if (variant.stock <= 0) {
+          errors.push(`"${product.name} (${variant.color})" is out of stock`);
+        } else if (variant.stock < item.quantity) {
+          errors.push(
+            `Insufficient stock for "${product.name} (${variant.color})". Available: ${variant.stock}`
+          );
+        }
+      }
+    } else {
+      // General product stock validation
+      if (product.manageStockAvailability && !product.inStock) {
+        errors.push(`"${product.name}" is currently out of stock`);
+        continue;
+      }
+
+      const isQtyManaged = product.manageStockQuantity;
+      if (isQtyManaged) {
+        if (product.stock <= 0) {
+          errors.push(`"${product.name}" is out of stock`);
+        } else if (product.stock < item.quantity) {
+          errors.push(`Insufficient stock for "${product.name}". Available: ${product.stock}`);
+        }
+      }
     }
   }
 
@@ -50,6 +106,11 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
   // 3. Calculate correct totals from DB prices
   const orderItems = data.items.map((item) => {
     const product = productMap.get(item.productId)!;
+    const variant = product.variants?.find(
+      (v) =>
+        (item.variantId && v.id === item.variantId) ||
+        (item.variantColor && v.color.toLowerCase() === item.variantColor.toLowerCase())
+    );
     const unitPrice = product.salePrice
       ? Number(product.salePrice)
       : Number(product.price);
@@ -57,8 +118,10 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
 
     return {
       productId: item.productId,
-      productName: product.name,
+      productName: variant ? `${product.name} (${variant.color})` : product.name,
       productSku: product.sku,
+      variantId: variant?.id || null,
+      variantColor: variant?.color || null,
       price: unitPrice,
       quantity: item.quantity,
       subtotal,
@@ -90,7 +153,7 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
 
   const orderNumber = generateOrderNumber();
 
-  // 5. Create order + items in a transaction
+  // 5. Create order + items and deduct stock atomically in transaction
   const order = await prisma.$transaction(async (tx) => {
     const createdOrder = await tx.order.create({
       data: {
@@ -102,7 +165,13 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
         status: "PENDING",
         paymentStatus: "PENDING",
         paymentMethod: data.paymentMethod || "COD",
-        orderChannel: data.orderChannel || (data.paymentMethod === "RAZORPAY" ? "ONLINE_PAYMENT" : (data.paymentMethod === "WHATSAPP" ? "WHATSAPP" : "COD")),
+        orderChannel:
+          data.orderChannel ||
+          (data.paymentMethod === "RAZORPAY"
+            ? "ONLINE_PAYMENT"
+            : data.paymentMethod === "WHATSAPP"
+            ? "WHATSAPP"
+            : "COD"),
         notes: data.notes || null,
         shippingAddress: {
           address: data.customer.address,
@@ -120,21 +189,54 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
       },
     });
 
-    // 6. Reduce stock for each product
-    await Promise.all(
-      data.items.map((item) =>
-        tx.product.update({
-          where: { id: item.productId },
-          data: { stock: { decrement: item.quantity } },
-        })
-      )
-    );
+    // 6. Reduce stock atomically using conditional updates to prevent overselling
+    for (const item of data.items) {
+      const product = productMap.get(item.productId)!;
+      if (product.variants && product.variants.length > 0) {
+        const variant = product.variants.find(
+          (v) =>
+            (item.variantId && v.id === item.variantId) ||
+            (item.variantColor && v.color.toLowerCase() === item.variantColor.toLowerCase())
+        );
+        if (variant && variant.manageQuantity) {
+          const res = await tx.productVariant.updateMany({
+            where: {
+              id: variant.id,
+              stock: { gte: item.quantity },
+            },
+            data: { stock: { decrement: item.quantity } },
+          });
+          if (res.count === 0) {
+            throw new Error(
+              `Insufficient stock for "${product.name} (${variant.color})". It may have just sold out.`
+            );
+          }
+        }
+      } else {
+        const isQtyManaged = product.manageStockQuantity;
+        if (isQtyManaged) {
+          const res = await tx.product.updateMany({
+            where: {
+              id: product.id,
+              stock: { gte: item.quantity },
+            },
+            data: { stock: { decrement: item.quantity } },
+          });
+          if (res.count === 0) {
+            throw new Error(
+              `Insufficient stock for "${product.name}". It may have just sold out.`
+            );
+          }
+        }
+      }
+    }
 
     return createdOrder;
   });
 
   return order;
 }
+
 
 /**
  * List orders with pagination and filters (dashboard)
