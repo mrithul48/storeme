@@ -17,6 +17,16 @@ interface StoreSettings {
   whatsappOrderEnabled?: boolean | null;
 }
 
+export interface ProductVariant {
+  id: string;
+  color: string;
+  manageAvailability: boolean;
+  inStock: boolean;
+  manageQuantity: boolean;
+  stock: number;
+  sortOrder: number;
+}
+
 interface ProductDetailClientProps {
   product: {
     id: string;
@@ -27,7 +37,11 @@ interface ProductDetailClientProps {
     salePrice?: number | string | any | null;
     sku?: string | null;
     stock: number;
+    manageStockQuantity?: boolean;
+    manageStockAvailability?: boolean;
+    inStock?: boolean;
     images: Array<{ id: string; url: string; altText?: string | null }>;
+    variants?: ProductVariant[];
     category?: { name: string } | null;
   };
   store: {
@@ -52,14 +66,66 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
+  const hasVariants = Boolean(product.variants && product.variants.length > 0);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(() => {
+    if (product.variants && product.variants.length > 0) {
+      return product.variants[0];
+    }
+    return null;
+  });
+
   const priceNum = Number(product.price);
   const salePriceNum = product.salePrice ? Number(product.salePrice) : null;
   const isSale = salePriceNum !== null && salePriceNum < priceNum;
   const discount = isSale ? calculateDiscountPercentage(priceNum, salePriceNum) : 0;
-  const isOutOfStock = product.stock <= 0;
+
+  // Determine availability based on rules
+  const isOutOfStock = React.useMemo(() => {
+    if (hasVariants && selectedVariant) {
+      if (selectedVariant.manageAvailability && !selectedVariant.inStock) {
+        return true;
+      }
+      if (selectedVariant.manageQuantity && selectedVariant.stock <= 0) {
+        return true;
+      }
+      return false;
+    }
+
+    // General product
+    if (product.manageStockAvailability && product.inStock === false) {
+      return true;
+    }
+    if (product.manageStockQuantity && product.stock <= 0) {
+      return true;
+    }
+    return false;
+  }, [hasVariants, selectedVariant, product]);
+
+  const maxStockAllowed = React.useMemo(() => {
+    if (hasVariants && selectedVariant) {
+      return selectedVariant.manageQuantity ? selectedVariant.stock : 9999;
+    }
+    return product.manageStockQuantity ? product.stock : 9999;
+  }, [hasVariants, selectedVariant, product]);
+
+  const isLowStock = React.useMemo(() => {
+    if (isOutOfStock) return false;
+    if (hasVariants && selectedVariant) {
+      return selectedVariant.manageQuantity && selectedVariant.stock <= 5;
+    }
+    return Boolean(product.manageStockQuantity && product.stock <= 5);
+  }, [isOutOfStock, hasVariants, selectedVariant, product]);
+
+  const currentStockCount = hasVariants && selectedVariant ? selectedVariant.stock : product.stock;
+  const isQuantityTracked = hasVariants && selectedVariant
+    ? selectedVariant.manageQuantity
+    : Boolean(product.manageStockQuantity);
+
   const wishlisted = isInWishlist(product.id);
 
-  const currentImage = product.images?.[0]?.url ? product.images[selectedImageIndex]?.url || product.images[0].url : undefined;
+  const currentImage = product.images?.[0]?.url
+    ? product.images[selectedImageIndex]?.url || product.images[0].url
+    : undefined;
   const whatsappNumber = store.company?.whatsapp || store.company?.phone;
 
   // ── Order method flags (default to true when settings are absent) ──────────
@@ -86,7 +152,9 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
         price: priceNum,
         salePrice: salePriceNum,
         imageUrl: currentImage,
-        stock: product.stock,
+        stock: maxStockAllowed,
+        variantId: selectedVariant?.id,
+        variantColor: selectedVariant?.color,
       },
       quantity
     );
@@ -104,7 +172,9 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
         price: priceNum,
         salePrice: salePriceNum,
         imageUrl: currentImage,
-        stock: product.stock,
+        stock: maxStockAllowed,
+        variantId: selectedVariant?.id,
+        variantColor: selectedVariant?.color,
       },
       quantity
     );
@@ -119,7 +189,9 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
       price: priceNum,
       salePrice: salePriceNum,
       imageUrl: currentImage,
-      stock: product.stock,
+      stock: maxStockAllowed,
+      variantId: selectedVariant?.id,
+      variantColor: selectedVariant?.color,
     });
   };
 
@@ -154,9 +226,9 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
               <Badge variant="neutral" size="md">
                 Out of Stock
               </Badge>
-            ) : product.stock <= 5 ? (
+            ) : isLowStock ? (
               <Badge variant="warning" size="md">
-                Only {product.stock} units left
+                Only {currentStockCount} units left
               </Badge>
             ) : null}
           </div>
@@ -244,6 +316,67 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
             </div>
           )}
 
+          {/* Color Variant Selector (if product has variants) */}
+          {hasVariants && product.variants && product.variants.length > 0 && (
+            <div className="pt-4 border-t border-slate-800/80 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider opacity-70">
+                  Select Color: <span className="font-bold text-white ml-1">{selectedVariant?.color}</span>
+                </span>
+                <span
+                  className={`text-xs font-semibold ${
+                    isOutOfStock ? "text-rose-400" : "text-emerald-400"
+                  }`}
+                >
+                  {isOutOfStock
+                    ? "Out of Stock"
+                    : isQuantityTracked
+                    ? isLowStock
+                      ? `Only ${currentStockCount} units left`
+                      : `${currentStockCount} units in stock`
+                    : "In Stock"}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {product.variants.map((v) => {
+                  const isVOutOfStock =
+                    v.manageAvailability && !v.inStock
+                      ? true
+                      : v.manageQuantity && v.stock <= 0;
+                  const isSelected = selectedVariant?.id === v.id || selectedVariant?.color === v.color;
+
+                  return (
+                    <button
+                      key={v.id || v.color}
+                      type="button"
+                      onClick={() => {
+                        setSelectedVariant(v);
+                        setQuantity(1);
+                      }}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-2 ${
+                        isSelected
+                          ? "border-blue-500 bg-blue-500/15 text-white ring-2 ring-blue-500/30"
+                          : "border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-700 hover:text-white"
+                      } ${isVOutOfStock ? "opacity-50" : ""}`}
+                    >
+                      <span
+                        className="w-3 h-3 rounded-full border border-slate-600 flex-shrink-0"
+                        style={{
+                          backgroundColor: v.color.startsWith("#") ? v.color : "transparent",
+                        }}
+                      />
+                      <span>{v.color}</span>
+                      {isVOutOfStock && (
+                        <span className="text-[10px] text-rose-400 font-medium">(Sold out)</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Quantity Selector — only shown when a cart-based checkout method is enabled */}
           {!isOutOfStock && cartCheckoutAvailable && (
             <div className="pt-4 space-y-2">
@@ -263,16 +396,22 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
                     {quantity}
                   </span>
                   <button
-                    onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
-                    disabled={quantity >= product.stock}
+                    onClick={() => setQuantity((q) => Math.min(maxStockAllowed, q + 1))}
+                    disabled={quantity >= maxStockAllowed}
                     className="p-3 text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-40"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                <span className="text-xs opacity-70">
-                  {product.stock} available in stock
-                </span>
+                {isQuantityTracked ? (
+                  <span className="text-xs opacity-70">
+                    {currentStockCount} available in stock
+                  </span>
+                ) : (
+                  <span className="text-xs text-emerald-400 font-medium">
+                    In Stock
+                  </span>
+                )}
               </div>
             </div>
           )}

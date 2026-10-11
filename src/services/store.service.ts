@@ -1,6 +1,7 @@
 // src/services/store.service.ts
 // Business logic for store operations — separated from route handlers
 
+import { cache } from "react";
 import { prisma } from "@/lib/db";
 import { generateSlug, generateUniqueSlug } from "@/lib/utils";
 import type { CreateStoreInput } from "@/validations/store.schema";
@@ -199,7 +200,7 @@ export async function createStore(ownerId: string, data: CreateStoreInput) {
 /**
  * Get the full storefront config for a given slug or custom domain (public — no auth required)
  */
-export async function getStorefrontConfig(slugOrDomain: string) {
+export const getStorefrontConfig = cache(async (slugOrDomain: string) => {
   const selectFields = {
     id: true,
     slug: true,
@@ -290,7 +291,7 @@ export async function getStorefrontConfig(slugOrDomain: string) {
   }
 
   return store;
-}
+});
 
 /**
  * Get dashboard statistics for a store — uses aggregates, not full data fetch

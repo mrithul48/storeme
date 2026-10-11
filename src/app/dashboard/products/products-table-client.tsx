@@ -107,17 +107,24 @@ export function ProductsTableClient({ initialProducts, categories }: ProductsTab
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="w-full overflow-hidden">
+            <table className="w-full table-fixed text-left text-sm">
+              <colgroup>
+                <col className="w-auto" />
+                <col className="w-24 sm:w-28" />
+                <col className="w-28 sm:w-32" />
+                <col className="w-24 sm:w-28" />
+                <col className="w-20 sm:w-24" />
+                <col className="w-20 sm:w-24" />
+              </colgroup>
               <thead className="bg-slate-900/80 text-xs font-semibold text-slate-400 uppercase border-b border-slate-800">
                 <tr>
-                  <th className="px-6 py-4">Product</th>
-                  <th className="px-6 py-4">SKU</th>
-                  <th className="px-6 py-4">Category</th>
-                  <th className="px-6 py-4">Price</th>
-                  <th className="px-6 py-4">Stock</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                  <th className="px-3 sm:px-4 py-3.5">Product</th>
+                  <th className="px-3 sm:px-4 py-3.5">Category</th>
+                  <th className="px-3 sm:px-4 py-3.5">Price</th>
+                  <th className="px-3 sm:px-4 py-3.5">Stock</th>
+                  <th className="px-3 sm:px-4 py-3.5">Status</th>
+                  <th className="px-3 sm:px-4 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -128,9 +135,9 @@ export function ProductsTableClient({ initialProducts, categories }: ProductsTab
 
                   return (
                     <tr key={p.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="relative w-12 h-12 rounded-xl bg-slate-800 overflow-hidden flex-shrink-0 border border-slate-700/50">
+                      <td className="px-3 sm:px-4 py-3.5">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="relative w-11 h-11 rounded-xl bg-slate-800 overflow-hidden flex-shrink-0 border border-slate-700/50">
                             {img ? (
                               <Image src={img} alt={p.name} fill className="object-cover" />
                             ) : (
@@ -139,35 +146,31 @@ export function ProductsTableClient({ initialProducts, categories }: ProductsTab
                               </div>
                             )}
                           </div>
-                          <div>
-                            <p className="font-semibold text-slate-200 line-clamp-1">{p.name}</p>
-                            <span className="text-xs text-slate-500 font-mono">/{p.slug}</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-slate-200 truncate">{p.name}</p>
+                            <span className="text-xs text-slate-500 font-mono truncate block">/{p.slug}</span>
                           </div>
                         </div>
                       </td>
 
-                      <td className="px-6 py-4 font-mono text-xs text-slate-400">
-                        {p.sku || "—"}
-                      </td>
-
-                      <td className="px-6 py-4 text-xs text-slate-300">
+                      <td className="px-3 sm:px-4 py-3.5 text-xs text-slate-300 truncate">
                         {p.category?.name || "Uncategorized"}
                       </td>
 
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-white">
+                      <td className="px-3 sm:px-4 py-3.5">
+                        <div className="flex flex-col whitespace-nowrap">
+                          <span className="font-bold text-white text-xs sm:text-sm">
                             {formatCurrency(salePrice || price)}
                           </span>
                           {salePrice && (
-                            <span className="text-xs text-slate-500 line-through">
+                            <span className="text-[11px] text-slate-500 line-through">
                               {formatCurrency(price)}
                             </span>
                           )}
                         </div>
                       </td>
 
-                      <td className="px-6 py-4">
+                      <td className="px-3 sm:px-4 py-3.5 whitespace-nowrap">
                         <span
                           className={`text-xs font-semibold ${
                             p.stock <= 0
@@ -181,7 +184,7 @@ export function ProductsTableClient({ initialProducts, categories }: ProductsTab
                         </span>
                       </td>
 
-                      <td className="px-6 py-4">
+                      <td className="px-3 sm:px-4 py-3.5 whitespace-nowrap">
                         <Badge
                           variant={
                             p.status === "ACTIVE"
@@ -195,12 +198,12 @@ export function ProductsTableClient({ initialProducts, categories }: ProductsTab
                         </Badge>
                       </td>
 
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-3 sm:px-4 py-3.5 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5 sm:gap-2">
                           <Link href={`/dashboard/products/${p.id}/edit`}>
                             <button
                               title="Edit product"
-                              className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                              className="p-1.5 sm:p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
@@ -210,7 +213,7 @@ export function ProductsTableClient({ initialProducts, categories }: ProductsTab
                             onClick={() => handleDelete(p.id, p.name)}
                             disabled={deletingId === p.id}
                             title="Delete product"
-                            className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors disabled:opacity-40"
+                            className="p-1.5 sm:p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors disabled:opacity-40"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>

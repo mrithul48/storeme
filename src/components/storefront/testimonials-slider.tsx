@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import React from "react";
 import { cn } from "@/lib/utils";
 
 interface Testimonial {
@@ -18,88 +17,88 @@ interface TestimonialsSliderProps {
   themeColor?: string | null;
 }
 
+// Minimum cards in one loop so the track is always wider than the screen
+const MIN_LOOP_CARDS = 6;
+// Seconds each card takes to pass; higher = slower
+const SECONDS_PER_CARD = 6;
+
 export function TestimonialsSlider({ testimonials, themeColor }: TestimonialsSliderProps) {
   const sorted = [...testimonials].sort((a, b) => a.sortOrder - b.sortOrder);
-  const [current, setCurrent] = useState(0);
-
-  const next = useCallback(() => {
-    setCurrent((c) => (c + 1) % sorted.length);
-  }, [sorted.length]);
-
-  const prev = () => setCurrent((c) => (c - 1 + sorted.length) % sorted.length);
-
-  useEffect(() => {
-    if (sorted.length <= 1) return;
-    const timer = setInterval(next, 5000);
-    return () => clearInterval(timer);
-  }, [sorted.length, next]);
 
   if (sorted.length === 0) return null;
 
-  const t = sorted[current];
+  const accent = themeColor || "#3b82f6";
+
+  // Repeat the list until one loop is long enough, then render the loop twice
+  // so translating by -50% lands exactly on the start again (seamless).
+  const repeats = Math.ceil(MIN_LOOP_CARDS / sorted.length);
+  const loop = Array.from({ length: repeats }, () => sorted).flat();
+  const track = [...loop, ...loop];
+  const duration = loop.length * SECONDS_PER_CARD;
 
   return (
-    <div className="relative max-w-2xl mx-auto">
-      {/* Card */}
-      <div
-        key={t.id}
-        className="rounded-2xl p-6 md:p-8 text-center space-y-4 transition-all duration-500"
-        style={{ backgroundColor: t.bgColor || "#1e293b" }}
-      >
-        {/* Stars */}
-        <div className="flex justify-center gap-1">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <span
-              key={star}
-              className={cn("text-xl", star <= t.rating ? "text-amber-400" : "text-slate-700")}
+    <div className="relative mx-auto w-full max-w-7xl">
+      <style>{`
+        @keyframes testimonialMarquee {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
+        }
+        .testimonial-track {
+          animation: testimonialMarquee var(--marquee-duration) linear infinite;
+        }
+        .testimonial-viewport:hover .testimonial-track,
+        .testimonial-viewport:focus-within .testimonial-track {
+          animation-play-state: paused;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .testimonial-track { animation: none; }
+          .testimonial-viewport { overflow-x: auto; }
+        }
+      `}</style>
+
+      <div className="testimonial-viewport overflow-hidden py-2">
+        <div
+          className="testimonial-track flex w-max"
+          style={{ ["--marquee-duration" as string]: `${duration}s` }}
+        >
+          {track.map((t, idx) => (
+            <article
+              key={`${t.id}-${idx}`}
+              aria-hidden={idx >= loop.length}
+              className="mr-5 flex w-[280px] shrink-0 flex-col justify-between gap-5 rounded-2xl  p-6 md:w-[340px]"
+              style={{
+                backgroundColor: t.bgColor || "#1e293b",
+              }}
             >
-              ★
-            </span>
+              <div>
+                {/* Stars */}
+                <div className="flex gap-0.5" aria-label={`${t.rating} out of 5 stars`}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      aria-hidden
+                      className={cn(
+                        "text-base",
+                        star <= t.rating ? "text-amber-400" : "text-white/15"
+                      )}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+
+                <p className="mt-4 line-clamp-5 text-sm leading-relaxed text-slate-100">
+                  &ldquo;{t.description}&rdquo;
+                </p>
+              </div>
+
+              <p className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-widest text-white/80">
+                <span className="truncate">{t.name}</span>
+              </p>
+            </article>
           ))}
         </div>
-
-        <p className="text-slate-200 text-sm md:text-base leading-relaxed italic">
-          &ldquo;{t.description}&rdquo;
-        </p>
-
-        <p className="font-bold text-white text-sm">— {t.name}</p>
       </div>
-
-      {/* Controls */}
-      {sorted.length > 1 && (
-        <>
-          <button
-            onClick={prev}
-            aria-label="Previous testimonial"
-            className="absolute -left-5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition-all border border-slate-700"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            onClick={next}
-            aria-label="Next testimonial"
-            className="absolute -right-5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition-all border border-slate-700"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-
-          {/* Dots */}
-          <div className="flex justify-center gap-2 mt-4">
-            {sorted.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrent(idx)}
-                aria-label={`Testimonial ${idx + 1}`}
-                className="w-2 h-2 rounded-full transition-all"
-                style={{
-                  backgroundColor: idx === current ? (themeColor || "#3b82f6") : "#334155",
-                  width: idx === current ? "20px" : "8px",
-                }}
-              />
-            ))}
-          </div>
-        </>
-      )}
     </div>
   );
 }

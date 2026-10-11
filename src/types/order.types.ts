@@ -9,6 +9,8 @@ export interface CartItem {
   quantity: number;
   imageUrl?: string;
   stock: number;
+  variantId?: string;
+  variantColor?: string;
 }
 
 export interface CheckoutFormData {
@@ -27,6 +29,8 @@ export interface OrderItem {
   productId: string;
   productName: string;
   productSku?: string | null;
+  variantId?: string | null;
+  variantColor?: string | null;
   price: number;
   quantity: number;
   subtotal: number;

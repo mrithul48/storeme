@@ -9,6 +9,34 @@ export const productImageSchema = z.object({
   sortOrder: z.number().int().min(0).default(0),
 });
 
+export const productVariantSchema = z
+  .object({
+    id: z.string().optional(), // present only when editing existing variant
+    color: z.string().min(1, "Color name is required").max(50),
+    manageAvailability: z.boolean().default(false),
+    inStock: z.boolean().default(true),
+    manageQuantity: z.boolean().default(false),
+    stock: z
+      .number()
+      .int("Stock must be a whole number")
+      .min(0, "Stock cannot be negative")
+      .default(0),
+    sortOrder: z.number().int().min(0).default(0),
+  })
+  .refine(
+    (data) => {
+      // If quantity is managed and stock is 0, prevent contradictory In Stock state
+      if (data.manageQuantity && data.stock === 0 && data.manageAvailability && data.inStock) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Variant cannot be marked In Stock when managed quantity is 0",
+      path: ["inStock"],
+    }
+  );
+
 export const baseProductSchema = z.object({
   name: z.string().min(1, "Product name is required").max(200),
   slug: z.string().optional(), // auto-generated if not provided
@@ -29,22 +57,40 @@ export const baseProductSchema = z.object({
     .int("Stock must be a whole number")
     .min(0, "Stock cannot be negative")
     .default(0),
+  manageStockQuantity: z.boolean().default(false),
+  manageStockAvailability: z.boolean().default(false),
+  inStock: z.boolean().default(true),
   status: z.enum(["ACTIVE", "INACTIVE", "DRAFT"]).default("ACTIVE"),
   featured: z.boolean().default(false),
   categoryId: z.string().cuid().optional().nullable(),
   brandId: z.string().cuid().optional().nullable(),
   images: z.array(productImageSchema).max(10, "Maximum 10 images per product").optional(),
+  variants: z.array(productVariantSchema).max(20, "Maximum 20 color variants").optional(),
 });
 
-export const createProductSchema = baseProductSchema.refine(
-  (data) => {
-    if (data.salePrice && data.price) {
-      return data.salePrice < data.price;
+export const createProductSchema = baseProductSchema
+  .refine(
+    (data) => {
+      if (data.salePrice && data.price) {
+        return data.salePrice < data.price;
+      }
+      return true;
+    },
+    { message: "Sale price must be less than the regular price", path: ["salePrice"] }
+  )
+  .refine(
+    (data) => {
+      // If quantity management is enabled and stock is 0, prevent contradictory In Stock setting
+      if (data.manageStockQuantity && data.stock === 0 && data.manageStockAvailability && data.inStock) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Cannot mark product In Stock when managed stock quantity is 0",
+      path: ["inStock"],
     }
-    return true;
-  },
-  { message: "Sale price must be less than the regular price", path: ["salePrice"] }
-);
+  );
 
 export const updateProductSchema = baseProductSchema.partial();
 
@@ -63,3 +109,4 @@ export const productQuerySchema = z.object({
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export type ProductQueryInput = z.infer<typeof productQuerySchema>;
+export type ProductVariantInput = z.infer<typeof productVariantSchema>;

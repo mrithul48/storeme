@@ -83,7 +83,7 @@ export function StoreHeader({ store, showAccountIcon }: StoreHeaderProps) {
 
   return (
     <header
-      className="sticky top-0 z-40 w-full border-b transition-colors duration-200 shadow-sm"
+      className="sticky top-0 z-40 w-full transition-colors duration-200 shadow-sm"
       style={{
         backgroundColor: navbarBg,
         color: navbarText,
@@ -415,7 +415,6 @@ export function StoreHeader({ store, showAccountIcon }: StoreHeaderProps) {
                     className="flex items-center justify-center gap-2 text-lg sm:text-xl font-bold tracking-wide uppercase transition-transform hover:scale-105 active:scale-95"
                     style={{ color: navbarText }}
                   >
-                    <Heart className="w-5 h-5 text-red-500 fill-red-500" />
                     <span>Wishlist</span>
                     {wishlistCount > 0 && (
                       <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-red-500 text-white">

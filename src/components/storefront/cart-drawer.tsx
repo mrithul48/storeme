@@ -114,12 +114,19 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h4
-                        className="text-sm font-semibold truncate"
-                        style={{ color: "var(--store-navbar-text, inherit)" }}
-                      >
-                        {item.name}
-                      </h4>
+                      <div className="flex items-center gap-2">
+                        <h4
+                          className="text-sm font-semibold truncate"
+                          style={{ color: "var(--store-navbar-text, inherit)" }}
+                        >
+                          {item.name}
+                        </h4>
+                        {item.variantColor && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/10 uppercase tracking-wider">
+                            {item.variantColor}
+                          </span>
+                        )}
+                      </div>
                       <p
                         className="text-sm font-bold mt-0.5"
                         style={{ color: "var(--store-primary, #3b82f6)" }}
@@ -136,7 +143,7 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
                           }}
                         >
                           <button
-                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                            onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variantId)}
                             className="p-1 hover:bg-black/5 dark:hover:bg-white/5 opacity-70 hover:opacity-100"
                             style={{ color: "var(--store-navbar-text, inherit)" }}
                           >
@@ -149,8 +156,8 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                            disabled={item.quantity >= item.stock}
+                            onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variantId)}
+                            disabled={item.stock > 0 && item.quantity >= item.stock}
                             className="p-1 hover:bg-black/5 dark:hover:bg-white/5 opacity-70 hover:opacity-100 disabled:opacity-30"
                             style={{ color: "var(--store-navbar-text, inherit)" }}
                           >
@@ -159,7 +166,7 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
                         </div>
 
                         <button
-                          onClick={() => removeItem(item.productId)}
+                          onClick={() => removeItem(item.productId, item.variantId)}
                           className="opacity-50 hover:opacity-100 hover:text-rose-500 p-1 transition-colors"
                           title="Remove item"
                         >
