@@ -6,8 +6,8 @@ import type { CartItem } from "@/types/order.types";
 interface CartContextType {
   items: CartItem[];
   addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeItem: (productId: string, variantId?: string) => void;
+  updateQuantity: (productId: string, quantity: number, variantId?: string) => void;
   clearCart: () => void;
   totalItems: number;
   subtotal: number;
@@ -57,31 +57,50 @@ export function CartProvider({
 
   const addItem = (item: Omit<CartItem, "quantity">, quantity = 1) => {
     setItems((prev) => {
-      const existing = prev.find((i) => i.productId === item.productId);
+      const existing = prev.find((i) =>
+        item.variantId
+          ? i.productId === item.productId && i.variantId === item.variantId
+          : i.productId === item.productId && !i.variantId
+      );
+      const limit = typeof item.stock === "number" && item.stock > 0 ? item.stock : 9999;
       if (existing) {
-        const newQty = Math.min(existing.quantity + quantity, item.stock);
+        const newQty = Math.min(existing.quantity + quantity, limit);
         return prev.map((i) =>
-          i.productId === item.productId ? { ...i, quantity: newQty } : i
+          (item.variantId
+            ? i.productId === item.productId && i.variantId === item.variantId
+            : i.productId === item.productId && !i.variantId)
+            ? { ...i, quantity: newQty }
+            : i
         );
       }
-      return [...prev, { ...item, quantity: Math.min(quantity, item.stock) }];
+      return [...prev, { ...item, quantity: Math.min(quantity, limit) }];
     });
     setIsOpen(true);
   };
 
-  const removeItem = (productId: string) => {
-    setItems((prev) => prev.filter((i) => i.productId !== productId));
+  const removeItem = (productId: string, variantId?: string) => {
+    setItems((prev) =>
+      prev.filter((i) =>
+        variantId
+          ? !(i.productId === productId && i.variantId === variantId)
+          : i.productId !== productId
+      )
+    );
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, variantId?: string) => {
     if (quantity <= 0) {
-      removeItem(productId);
+      removeItem(productId, variantId);
       return;
     }
     setItems((prev) =>
       prev.map((item) => {
-        if (item.productId === productId) {
-          return { ...item, quantity: Math.min(quantity, item.stock) };
+        const match = variantId
+          ? item.productId === productId && item.variantId === variantId
+          : item.productId === productId;
+        if (match) {
+          const limit = typeof item.stock === "number" && item.stock > 0 ? item.stock : 9999;
+          return { ...item, quantity: Math.min(quantity, limit) };
         }
         return item;
       })

@@ -10,6 +10,8 @@ export interface WishlistItem {
   salePrice?: number | null;
   imageUrl?: string | null;
   stock?: number;
+  variantId?: string;
+  variantColor?: string;
 }
 
 interface WishlistContextType {

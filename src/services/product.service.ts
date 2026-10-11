@@ -14,6 +14,9 @@ const productSelectFields = {
   salePrice: true,
   sku: true,
   stock: true,
+  manageStockQuantity: true,
+  manageStockAvailability: true,
+  inStock: true,
   status: true,
   featured: true,
   categoryId: true,
@@ -23,6 +26,18 @@ const productSelectFields = {
   images: {
     orderBy: { sortOrder: "asc" as const },
     select: { id: true, url: true, publicId: true, altText: true, sortOrder: true },
+  },
+  variants: {
+    orderBy: { sortOrder: "asc" as const },
+    select: {
+      id: true,
+      color: true,
+      manageAvailability: true,
+      inStock: true,
+      manageQuantity: true,
+      stock: true,
+      sortOrder: true,
+    },
   },
   category: {
     select: { id: true, name: true, slug: true },
@@ -141,7 +156,7 @@ export async function createProduct(storeId: string, data: CreateProductInput) {
     ? generateUniqueSlug(data.slug, existingSlugs)
     : generateUniqueSlug(data.name, existingSlugs);
 
-  const { images, categoryId, brandId, salePrice, sku, ...rest } = data;
+  const { images, variants, categoryId, brandId, salePrice, sku, ...rest } = data;
 
   return prisma.product.create({
     data: {
@@ -159,6 +174,18 @@ export async function createProduct(storeId: string, data: CreateProductInput) {
               publicId: img.publicId,
               altText: img.altText ?? null,
               sortOrder: img.sortOrder ?? idx,
+            })),
+          }
+        : undefined,
+      variants: variants && variants.length > 0
+        ? {
+            create: variants.map((v, idx) => ({
+              color: v.color,
+              manageAvailability: v.manageAvailability ?? false,
+              inStock: v.inStock ?? true,
+              manageQuantity: v.manageQuantity ?? false,
+              stock: v.stock ?? 0,
+              sortOrder: v.sortOrder ?? idx,
             })),
           }
         : undefined,
@@ -181,7 +208,7 @@ export async function updateProduct(
   });
   if (!existing) return null;
 
-  const { images, ...rest } = data;
+  const { images, variants, ...rest } = data;
 
   return prisma.$transaction(async (tx) => {
     // Update images: delete all existing and recreate
@@ -195,6 +222,24 @@ export async function updateProduct(
             publicId: img.publicId,
             altText: img.altText ?? null,
             sortOrder: img.sortOrder ?? idx,
+          })),
+        });
+      }
+    }
+
+    // Update variants: delete all existing and recreate
+    if (variants !== undefined) {
+      await tx.productVariant.deleteMany({ where: { productId } });
+      if (variants.length > 0) {
+        await tx.productVariant.createMany({
+          data: variants.map((v, idx) => ({
+            productId,
+            color: v.color,
+            manageAvailability: v.manageAvailability ?? false,
+            inStock: v.inStock ?? true,
+            manageQuantity: v.manageQuantity ?? false,
+            stock: v.stock ?? 0,
+            sortOrder: v.sortOrder ?? idx,
           })),
         });
       }
