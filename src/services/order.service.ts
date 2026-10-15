@@ -10,40 +10,48 @@ import type { CreateOrderInput } from "@/validations/order.schema";
  * Never trust frontend price/total values
  */
 export async function createOrder(storeId: string, data: CreateOrderInput) {
-  // 1. Fetch actual product data from DB (never trust client prices)
+  // 1. Fetch actual product data and store settings from DB
   const productIds = Array.from(new Set(data.items.map((i) => i.productId)));
-  const products = await prisma.product.findMany({
-    where: {
-      id: { in: productIds },
-      storeId, // enforce tenant isolation
-      status: "ACTIVE",
-    },
-    select: {
-      id: true,
-      name: true,
-      sku: true,
-      price: true,
-      salePrice: true,
-      stock: true,
-      manageStockQuantity: true,
-      manageStockAvailability: true,
-      inStock: true,
-      variants: {
-        select: {
-          id: true,
-          color: true,
-          manageAvailability: true,
-          inStock: true,
-          manageQuantity: true,
-          stock: true,
+  const [products, storeSettings] = await Promise.all([
+    prisma.product.findMany({
+      where: {
+        id: { in: productIds },
+        storeId, // enforce tenant isolation
+        status: "ACTIVE",
+      },
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        price: true,
+        salePrice: true,
+        stock: true,
+        manageStockQuantity: true,
+        manageStockAvailability: true,
+        inStock: true,
+        variants: {
+          select: {
+            id: true,
+            color: true,
+            manageAvailability: true,
+            inStock: true,
+            manageQuantity: true,
+            stock: true,
+          },
         },
       },
-    },
-  });
+    }),
+    prisma.storeSettings.findUnique({
+      where: { storeId },
+      select: { stockManagementType: true, colorWiseStockType: true },
+    }),
+  ]);
 
-  // 2. Validate all products exist and have sufficient stock
+  // 2. Validate all products exist and have sufficient stock based on store settings
   const errors: string[] = [];
   const productMap = new Map(products.map((p) => [p.id, p]));
+  const stockMode = storeSettings?.stockManagementType;
+  const colorStockMode = storeSettings?.colorWiseStockType;
 
   for (const item of data.items) {
     const product = productMap.get(item.productId);
@@ -52,9 +60,21 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
       continue;
     }
 
-    // Color variant validation
-    if (product.variants && product.variants.length > 0) {
-      const variant = product.variants.find(
+    if (stockMode === "AVAILABILITY") {
+      // Store-level: Manage Stock Availability
+      if (!product.inStock) {
+        errors.push(`"${product.name}" is currently out of stock`);
+      }
+    } else if (stockMode === "QUANTITY") {
+      // Store-level: Manage Stock Quantity
+      if (product.stock <= 0) {
+        errors.push(`"${product.name}" is out of stock`);
+      } else if (product.stock < item.quantity) {
+        errors.push(`Insufficient stock for "${product.name}". Available: ${product.stock}`);
+      }
+    } else if (stockMode === "COLOR_WISE") {
+      // Store-level: Color-wise Inventory
+      const variant = product.variants?.find(
         (v) =>
           (item.variantId && v.id === item.variantId) ||
           (item.variantColor && v.color.toLowerCase() === item.variantColor.toLowerCase())
@@ -65,14 +85,7 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
         continue;
       }
 
-      // Check variant availability
-      if (variant.manageAvailability && !variant.inStock) {
-        errors.push(`"${product.name} (${variant.color})" is currently out of stock`);
-        continue;
-      }
-
-      // Check variant quantity
-      if (variant.manageQuantity) {
+      if (colorStockMode === "QUANTITY") {
         if (variant.stock <= 0) {
           errors.push(`"${product.name} (${variant.color})" is out of stock`);
         } else if (variant.stock < item.quantity) {
@@ -80,20 +93,52 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
             `Insufficient stock for "${product.name} (${variant.color})". Available: ${variant.stock}`
           );
         }
+      } else {
+        // Default to color availability
+        if (!variant.inStock) {
+          errors.push(`"${product.name} (${variant.color})" is currently out of stock`);
+        }
       }
     } else {
-      // General product stock validation
-      if (product.manageStockAvailability && !product.inStock) {
-        errors.push(`"${product.name}" is currently out of stock`);
-        continue;
-      }
+      // Fallback: per-product legacy settings
+      if (product.variants && product.variants.length > 0) {
+        const variant = product.variants.find(
+          (v) =>
+            (item.variantId && v.id === item.variantId) ||
+            (item.variantColor && v.color.toLowerCase() === item.variantColor.toLowerCase())
+        );
 
-      const isQtyManaged = product.manageStockQuantity;
-      if (isQtyManaged) {
-        if (product.stock <= 0) {
-          errors.push(`"${product.name}" is out of stock`);
-        } else if (product.stock < item.quantity) {
-          errors.push(`Insufficient stock for "${product.name}". Available: ${product.stock}`);
+        if (!variant) {
+          errors.push(`Please select a valid color variant for "${product.name}"`);
+          continue;
+        }
+
+        if (variant.manageAvailability && !variant.inStock) {
+          errors.push(`"${product.name} (${variant.color})" is currently out of stock`);
+          continue;
+        }
+
+        if (variant.manageQuantity) {
+          if (variant.stock <= 0) {
+            errors.push(`"${product.name} (${variant.color})" is out of stock`);
+          } else if (variant.stock < item.quantity) {
+            errors.push(
+              `Insufficient stock for "${product.name} (${variant.color})". Available: ${variant.stock}`
+            );
+          }
+        }
+      } else {
+        if (product.manageStockAvailability && !product.inStock) {
+          errors.push(`"${product.name}" is currently out of stock`);
+          continue;
+        }
+
+        if (product.manageStockQuantity) {
+          if (product.stock <= 0) {
+            errors.push(`"${product.name}" is out of stock`);
+          } else if (product.stock < item.quantity) {
+            errors.push(`Insufficient stock for "${product.name}". Available: ${product.stock}`);
+          }
         }
       }
     }
@@ -192,13 +237,27 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
     // 6. Reduce stock atomically using conditional updates to prevent overselling
     for (const item of data.items) {
       const product = productMap.get(item.productId)!;
-      if (product.variants && product.variants.length > 0) {
-        const variant = product.variants.find(
+
+      if (stockMode === "QUANTITY") {
+        const res = await tx.product.updateMany({
+          where: {
+            id: product.id,
+            stock: { gte: item.quantity },
+          },
+          data: { stock: { decrement: item.quantity } },
+        });
+        if (res.count === 0) {
+          throw new Error(
+            `Insufficient stock for "${product.name}". It may have just sold out.`
+          );
+        }
+      } else if (stockMode === "COLOR_WISE" && colorStockMode === "QUANTITY") {
+        const variant = product.variants?.find(
           (v) =>
             (item.variantId && v.id === item.variantId) ||
             (item.variantColor && v.color.toLowerCase() === item.variantColor.toLowerCase())
         );
-        if (variant && variant.manageQuantity) {
+        if (variant) {
           const res = await tx.productVariant.updateMany({
             where: {
               id: variant.id,
@@ -212,20 +271,45 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
             );
           }
         }
+      } else if (stockMode === "AVAILABILITY" || (stockMode === "COLOR_WISE" && colorStockMode !== "QUANTITY")) {
+        // Availability-based: no numeric stock counter to decrement
       } else {
-        const isQtyManaged = product.manageStockQuantity;
-        if (isQtyManaged) {
-          const res = await tx.product.updateMany({
-            where: {
-              id: product.id,
-              stock: { gte: item.quantity },
-            },
-            data: { stock: { decrement: item.quantity } },
-          });
-          if (res.count === 0) {
-            throw new Error(
-              `Insufficient stock for "${product.name}". It may have just sold out.`
-            );
+        // Fallback: per-product legacy settings
+        if (product.variants && product.variants.length > 0) {
+          const variant = product.variants.find(
+            (v) =>
+              (item.variantId && v.id === item.variantId) ||
+              (item.variantColor && v.color.toLowerCase() === item.variantColor.toLowerCase())
+          );
+          if (variant && variant.manageQuantity) {
+            const res = await tx.productVariant.updateMany({
+              where: {
+                id: variant.id,
+                stock: { gte: item.quantity },
+              },
+              data: { stock: { decrement: item.quantity } },
+            });
+            if (res.count === 0) {
+              throw new Error(
+                `Insufficient stock for "${product.name} (${variant.color})". It may have just sold out.`
+              );
+            }
+          }
+        } else {
+          const isQtyManaged = product.manageStockQuantity;
+          if (isQtyManaged) {
+            const res = await tx.product.updateMany({
+              where: {
+                id: product.id,
+                stock: { gte: item.quantity },
+              },
+              data: { stock: { decrement: item.quantity } },
+            });
+            if (res.count === 0) {
+              throw new Error(
+                `Insufficient stock for "${product.name}". It may have just sold out.`
+              );
+            }
           }
         }
       }

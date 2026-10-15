@@ -58,8 +58,11 @@ export function WishlistDrawer({ storeSlug }: { storeSlug: string }) {
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-2 rounded-xl opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-              style={{ color: "var(--store-navbar-text, inherit)" }}
+              className="p-2 opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+              style={{
+                borderRadius: "var(--store-button-radius, 10px)",
+                color: "var(--store-navbar-text, inherit)",
+              }}
               aria-label="Close wishlist"
             >
               <X className="w-5 h-5" />
@@ -70,7 +73,10 @@ export function WishlistDrawer({ storeSlug }: { storeSlug: string }) {
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center py-16 space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
+                <div
+                  className="w-16 h-16 bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400"
+                  style={{ borderRadius: "var(--store-button-radius, 10px)" }}
+                >
                   <Heart className="w-8 h-8" />
                 </div>
                 <div className="space-y-1">
@@ -84,10 +90,11 @@ export function WishlistDrawer({ storeSlug }: { storeSlug: string }) {
                 <Link
                   href={getStoreLink(storeSlug, "/shop")}
                   onClick={() => setIsOpen(false)}
-                  className="px-5 py-2.5 rounded-xl text-xs font-semibold shadow-md transition-all active:scale-95"
+                  className="px-5 py-2.5 text-xs font-semibold shadow-md transition-all active:scale-95"
                   style={{
                     backgroundColor: "var(--store-button-bg, #22c55e)",
                     color: "var(--store-button-text, #ffffff)",
+                    borderRadius: "var(--store-button-radius, 10px)",
                   }}
                 >
                   Explore Products
@@ -99,13 +106,17 @@ export function WishlistDrawer({ storeSlug }: { storeSlug: string }) {
                 return (
                   <div
                     key={item.productId}
-                    className="flex gap-4 p-3 rounded-2xl border transition-all"
+                    className="flex gap-4 p-3 border transition-all"
                     style={{
                       borderColor: "var(--store-border, rgba(0,0,0,0.08))",
                       backgroundColor: "rgba(0,0,0,0.02)",
+                      borderRadius: "var(--store-button-radius, 10px)",
                     }}
                   >
-                    <div className="relative w-18 h-18 rounded-xl overflow-hidden bg-black/5 dark:bg-white/5 flex-shrink-0">
+                    <div
+                      className="relative w-18 h-18 overflow-hidden bg-black/5 dark:bg-white/5 flex-shrink-0"
+                      style={{ borderRadius: "var(--store-button-radius, 10px)" }}
+                    >
                       {item.imageUrl ? (
                         <Image
                           src={item.imageUrl}
@@ -148,10 +159,11 @@ export function WishlistDrawer({ storeSlug }: { storeSlug: string }) {
                       >
                         <button
                           onClick={() => handleMoveToCart(item)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all active:scale-95"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold shadow-sm transition-all active:scale-95"
                           style={{
                             backgroundColor: "var(--store-button-bg, #22c55e)",
                             color: "var(--store-button-text, #ffffff)",
+                            borderRadius: "var(--store-button-radius, 10px)",
                           }}
                         >
                           <ShoppingBag className="w-3.5 h-3.5" />
@@ -159,7 +171,8 @@ export function WishlistDrawer({ storeSlug }: { storeSlug: string }) {
                         </button>
                         <button
                           onClick={() => removeItem(item.productId)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                          style={{ borderRadius: "var(--store-button-radius, 10px)" }}
                           title="Remove from wishlist"
                         >
                           <Trash2 className="w-4 h-4" />

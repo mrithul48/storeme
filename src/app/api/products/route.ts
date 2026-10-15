@@ -60,6 +60,15 @@ export async function POST(request: Request) {
     if (error instanceof Error && error.message === "STORE_NOT_FOUND") {
       return NextResponse.json({ success: false, error: "Store not found" }, { status: 404 });
     }
+    if (error instanceof Error && error.message === "STOCK_MANAGEMENT_NOT_CONFIGURED") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Stock management is not configured. Please configure stock management in Store Settings → Product Management first.",
+        },
+        { status: 400 }
+      );
+    }
     console.error("[POST /api/products]", error);
     return NextResponse.json({ success: false, error: "Failed to create product" }, { status: 500 });
   }

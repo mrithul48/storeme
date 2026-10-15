@@ -37,9 +37,12 @@ const testimonialSchema = z.object({
 
 const badgeSchema = z.object({
   id: z.string(),
+  count: z.string().max(50).optional().default(""),
+  heading: z.string().max(100).optional().default(""),
+  description: z.string().max(300).optional().default(""),
+  text: z.string().optional().nullable(),
   icon: z.string().optional().nullable(),
   iconPublicId: z.string().optional().nullable(),
-  text: z.string().min(1).max(100),
   sortOrder: z.number().int().min(0),
 });
 
@@ -98,7 +101,7 @@ const homepageDesignSchema = z.object({
   aboutImagePublicId: z.string().optional().nullable(),
   vision: z.string().max(2000).optional().nullable(),
   mission: z.string().max(2000).optional().nullable(),
-  badges: z.array(badgeSchema).max(10).optional().nullable(),
+  badges: z.array(badgeSchema).max(4).optional().nullable(),
 
   // Contact
   contactEnabled: z.boolean().optional(),

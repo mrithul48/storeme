@@ -106,6 +106,16 @@ export function getStoreThemeVariables(theme?: ThemeConfig | null): React.CSSPro
       ? "9999px"
       : "10px";
 
+  const imageRadius =
+    theme?.buttonShape === "SQUARE"
+      ? "0px"
+      : "10px";
+
+  const inputRadius =
+    theme?.buttonShape === "SQUARE"
+      ? "0px"
+      : "10px";
+
   return {
     "--store-navbar-bg": navbarBg,
     "--store-navbar-text": navbarText,
@@ -121,6 +131,8 @@ export function getStoreThemeVariables(theme?: ThemeConfig | null): React.CSSPro
     "--store-border": surfaceBorder,
     "--store-primary": theme?.primaryColor || "#22c55e",
     "--store-button-radius": buttonRadius,
+    "--store-image-radius": imageRadius,
+    "--store-input-radius": inputRadius,
   } as React.CSSProperties;
 }
 

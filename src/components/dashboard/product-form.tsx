@@ -1,12 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Card, Input, Textarea } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Upload, X, AlertCircle, Plus, Palette, Trash2, CheckCircle2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Upload,
+  X,
+  AlertCircle,
+  Plus,
+  Palette,
+  Trash2,
+  CheckCircle2,
+  ChevronDown,
+  Check,
+  Search,
+  Sparkles,
+  Info,
+} from "lucide-react";
+import { PRODUCT_COLORS, getColorHex, type ColorOption } from "@/lib/constants/colors";
+
+export { PRODUCT_COLORS };
 
 export interface ColorVariant {
   id?: string;
@@ -16,6 +33,7 @@ export interface ColorVariant {
   manageQuantity: boolean;
   stock: number;
   sortOrder: number;
+  images?: Array<{ url: string; publicId: string; sortOrder?: number; altText?: string | null }>;
 }
 
 interface ProductFormProps {
@@ -23,6 +41,11 @@ interface ProductFormProps {
   brands: any[];
   initialData?: any;
   productId?: string;
+  storeSettings?: {
+    stockManagementType?: string | null;
+    colorWiseStockType?: string | null;
+  } | null;
+  initialCustomColors?: Array<{ id: string; name: string; hex: string }>;
 }
 
 export function ProductForm({
@@ -30,9 +53,14 @@ export function ProductForm({
   brands,
   initialData,
   productId,
+  storeSettings,
+  initialCustomColors,
 }: ProductFormProps) {
   const router = useRouter();
   const isEditing = Boolean(productId);
+
+  const stockMode = storeSettings?.stockManagementType ?? null;
+  const colorStockMode = storeSettings?.colorWiseStockType ?? "AVAILABILITY";
 
   const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -64,9 +92,10 @@ export function ProductForm({
   const [imageUrlInput, setImageUrlInput] = useState("");
 
   // ── Color Variants ─────────────────────────────────────────────────────────
-  const [enableVariants, setEnableVariants] = useState<boolean>(
-    () => Array.isArray(initialData?.variants) && initialData.variants.length > 0
-  );
+  const [enableVariants, setEnableVariants] = useState<boolean>(() => {
+    if (stockMode === "COLOR_WISE") return true;
+    return Array.isArray(initialData?.variants) && initialData.variants.length > 0;
+  });
 
   const [variants, setVariants] = useState<ColorVariant[]>(() => {
     if (Array.isArray(initialData?.variants) && initialData.variants.length > 0) {
@@ -78,12 +107,62 @@ export function ProductForm({
         manageQuantity: Boolean(v.manageQuantity),
         stock: typeof v.stock === "number" ? v.stock : 0,
         sortOrder: v.sortOrder ?? idx,
+        images: Array.isArray(v.images)
+          ? v.images.map((img: any, imgIdx: number) => ({
+              url: img.url,
+              publicId: img.publicId,
+              altText: img.altText ?? null,
+              sortOrder: img.sortOrder ?? imgIdx,
+            }))
+          : [],
       }));
     }
     return [];
   });
 
   const [newVariantColor, setNewVariantColor] = useState("");
+  const [uploadingVariantIdx, setUploadingVariantIdx] = useState<number | null>(null);
+  const [variantUrlInputs, setVariantUrlInputs] = useState<Record<number, string>>({});
+  const [customColors, setCustomColors] = useState<Array<{ id?: string; name: string; hex: string }>>(
+    initialCustomColors || []
+  );
+  const [isColorDropdownOpen, setIsColorDropdownOpen] = useState(false);
+  const [colorSearch, setColorSearch] = useState("");
+  const [isCreatingCustomColor, setIsCreatingCustomColor] = useState(false);
+  const [customColorName, setCustomColorName] = useState("");
+  const [customColorHex, setCustomColorHex] = useState("#3b82f6");
+  const [isSavingCustomColor, setIsSavingCustomColor] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsColorDropdownOpen(false);
+        setIsCreatingCustomColor(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Merge standard PRODUCT_COLORS with store customColors (deduped by name)
+  const allAvailableColors: ColorOption[] = useMemo(() => {
+    const list: ColorOption[] = [...PRODUCT_COLORS];
+    for (const c of customColors) {
+      if (!list.some((existing) => existing.name.toLowerCase() === c.name.toLowerCase())) {
+        list.push({ id: c.id, name: c.name, hex: c.hex, isCustom: true });
+      }
+    }
+    return list;
+  }, [customColors]);
+
+  const filteredColors = useMemo(() => {
+    if (!colorSearch.trim()) return allAvailableColors;
+    const q = colorSearch.toLowerCase().trim();
+    return allAvailableColors.filter(
+      (c) => c.name.toLowerCase().includes(q) || c.hex.toLowerCase().includes(q)
+    );
+  }, [allAvailableColors, colorSearch]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -149,25 +228,164 @@ export function ProductForm({
   };
 
   // ── Variant handlers ────────────────────────────────────────────────────────
-  const handleAddVariant = () => {
-    const color = newVariantColor.trim();
+  const handleAddVariant = (overrideColor?: string) => {
+    const color = (overrideColor !== undefined ? overrideColor : newVariantColor).trim();
     if (!color) return;
     if (variants.some((v) => v.color.toLowerCase() === color.toLowerCase())) {
-      setError(`Color "${color}" already exists.`);
+      setError(`Color "${color}" is already added.`);
       return;
     }
+    const isColorQty = colorStockMode === "QUANTITY";
     setVariants((prev) => [
       ...prev,
       {
         color,
-        manageAvailability: false,
+        manageAvailability: !isColorQty,
         inStock: true,
-        manageQuantity: false,
+        manageQuantity: isColorQty,
         stock: 0,
         sortOrder: prev.length,
+        images: [],
       },
     ]);
     setNewVariantColor("");
+    setError(null);
+  };
+
+  const handleVariantFileUpload = async (variantIdx: number, files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+      if (files[i].size > 5 * 1024 * 1024) {
+        setError(`"${files[i].name}" exceeds 5 MB. Please select files smaller than 5 MB.`);
+        return;
+      }
+    }
+
+    setUploadingVariantIdx(variantIdx);
+    setError(null);
+
+    try {
+      const uploaded: Array<{ url: string; publicId: string; sortOrder: number }> = [];
+      const currentCount = variants[variantIdx]?.images?.length || 0;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const data = new FormData();
+        data.append("file", file);
+        data.append("folder", "products");
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: data,
+        });
+
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.error || `Failed to upload ${file.name}`);
+        }
+
+        uploaded.push({
+          url: json.url,
+          publicId: json.publicId,
+          sortOrder: currentCount + i,
+        });
+      }
+
+      setVariants((prev) =>
+        prev.map((v, i) =>
+          i === variantIdx
+            ? { ...v, images: [...(v.images || []), ...uploaded] }
+            : v
+        )
+      );
+    } catch (err: any) {
+      console.error("Variant image upload error:", err);
+      setError(err.message || "Failed to upload variant image.");
+    } finally {
+      setUploadingVariantIdx(null);
+    }
+  };
+
+  const handleAddVariantImageUrl = (variantIdx: number) => {
+    const url = (variantUrlInputs[variantIdx] || "").trim();
+    if (!url) return;
+
+    setVariants((prev) =>
+      prev.map((v, i) =>
+        i === variantIdx
+          ? {
+              ...v,
+              images: [
+                ...(v.images || []),
+                {
+                  url,
+                  publicId: `manual_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                  sortOrder: v.images?.length || 0,
+                },
+              ],
+            }
+          : v
+      )
+    );
+
+    setVariantUrlInputs((prev) => ({ ...prev, [variantIdx]: "" }));
+  };
+
+  const handleRemoveVariantImage = (variantIdx: number, imgIdx: number) => {
+    setVariants((prev) =>
+      prev.map((v, i) =>
+        i === variantIdx
+          ? {
+              ...v,
+              images: (v.images || []).filter((_, idx) => idx !== imgIdx),
+            }
+          : v
+      )
+    );
+  };
+
+  const handleCreateCustomColor = async () => {
+    const name = customColorName.trim();
+    if (!name) {
+      setError("Please enter a color name.");
+      return;
+    }
+
+    setIsSavingCustomColor(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/colors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, hex: customColorHex }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to create color");
+      }
+
+      const created = data.data;
+      setCustomColors((prev) => {
+        if (prev.some((c) => c.name.toLowerCase() === created.name.toLowerCase())) {
+          return prev;
+        }
+        return [...prev, { id: created.id, name: created.name, hex: created.hex }];
+      });
+
+      // Automatically add as variant
+      handleAddVariant(created.name);
+
+      setCustomColorName("");
+      setCustomColorHex("#3b82f6");
+      setIsCreatingCustomColor(false);
+      setIsColorDropdownOpen(false);
+    } catch (err: any) {
+      console.error("Error creating custom color:", err);
+      setError(err.message || "Failed to save color to store.");
+    } finally {
+      setIsSavingCustomColor(false);
+    }
   };
 
   const handleRemoveVariant = (idx: number) => {
@@ -216,36 +434,128 @@ export function ProductForm({
       return;
     }
 
-    if (formData.manageStockQuantity) {
+    if (!stockMode && !isEditing) {
+      setError("Please configure stock management in Store Settings → Product Management before creating products.");
+      setLoading(false);
+      return;
+    }
+
+    let manageStockAvailability = false;
+    let manageStockQuantity = false;
+    let inStock = formData.inStock;
+    let finalStock = isNaN(stock) ? 0 : stock;
+    let payloadVariants: any[] = [];
+
+    if (stockMode === "AVAILABILITY") {
+      manageStockAvailability = true;
+      manageStockQuantity = false;
+      inStock = formData.inStock;
+      finalStock = 0;
+      payloadVariants = [];
+    } else if (stockMode === "QUANTITY") {
       if (isNaN(stock) || stock < 0) {
         setError("Stock quantity must be a non-negative whole number (0 or greater).");
         setLoading(false);
         return;
       }
-      // Contradiction prevention
-      if (stock === 0 && formData.manageStockAvailability && formData.inStock) {
-        setError("Contradictory stock state: Product cannot be marked In Stock when stock quantity is 0.");
+      manageStockQuantity = true;
+      manageStockAvailability = false;
+      finalStock = stock;
+      inStock = stock > 0;
+      payloadVariants = [];
+    } else if (stockMode === "COLOR_WISE") {
+      manageStockAvailability = false;
+      manageStockQuantity = false;
+      if (variants.length === 0) {
+        setError("Please add at least one color variant for Color-wise Inventory & Image Upload.");
         setLoading(false);
         return;
       }
-    }
-
-    // Validate variants
-    if (enableVariants) {
+      const isColorQty = colorStockMode === "QUANTITY";
       for (const v of variants) {
-        if (v.manageQuantity) {
+        if (isColorQty) {
           if (isNaN(v.stock) || v.stock < 0) {
-            setError(`Stock for variant "${v.color}" must be a non-negative number.`);
-            setLoading(false);
-            return;
-          }
-          if (v.stock === 0 && v.manageAvailability && v.inStock) {
-            setError(`Contradictory stock state for variant "${v.color}": Cannot be In Stock when stock is 0.`);
+            setError(`Stock for variant "${v.color}" must be a non-negative whole number.`);
             setLoading(false);
             return;
           }
         }
       }
+      payloadVariants = variants.map((v, idx) => ({
+        id: v.id,
+        color: v.color,
+        manageAvailability: !isColorQty,
+        inStock: isColorQty ? v.stock > 0 : v.inStock,
+        manageQuantity: isColorQty,
+        stock: isColorQty ? v.stock : 0,
+        sortOrder: idx,
+        images: v.images && v.images.length > 0
+          ? v.images.map((img, imgIdx) => ({
+              url: img.url,
+              publicId: img.publicId,
+              altText: img.altText ?? null,
+              sortOrder: img.sortOrder ?? imgIdx,
+            }))
+          : [],
+      }));
+      inStock = payloadVariants.some((v) => v.inStock);
+    } else {
+      // Fallback for legacy products
+      manageStockAvailability = formData.manageStockAvailability;
+      manageStockQuantity = formData.manageStockQuantity;
+      inStock = formData.inStock;
+      if (manageStockQuantity) {
+        if (isNaN(stock) || stock < 0) {
+          setError("Stock quantity must be a non-negative whole number (0 or greater).");
+          setLoading(false);
+          return;
+        }
+      }
+      payloadVariants = enableVariants
+        ? variants.map((v, idx) => ({
+            id: v.id,
+            color: v.color,
+            manageAvailability: v.manageAvailability,
+            inStock: v.inStock,
+            manageQuantity: v.manageQuantity,
+            stock: v.stock,
+            sortOrder: idx,
+            images: v.images && v.images.length > 0
+              ? v.images.map((img, imgIdx) => ({
+                  url: img.url,
+                  publicId: img.publicId,
+                  altText: img.altText ?? null,
+                  sortOrder: img.sortOrder ?? imgIdx,
+                }))
+              : [],
+          }))
+        : [];
+    }
+
+    let finalImages = images.map((img, idx) => ({
+      url: img.url,
+      publicId: img.publicId,
+      sortOrder: idx,
+    }));
+
+    // If COLOR_WISE mode, populate product images from variant images if empty
+    // so catalog listings, store cards, and cart previews have a cover image
+    if (stockMode === "COLOR_WISE" && finalImages.length === 0) {
+      const variantImgs: typeof finalImages = [];
+      for (const v of payloadVariants) {
+        if (v.images && v.images.length > 0) {
+          for (const vi of v.images) {
+            if (!variantImgs.some((existing) => existing.url === vi.url)) {
+              variantImgs.push({
+                url: vi.url,
+                publicId: vi.publicId,
+                sortOrder: variantImgs.length,
+              });
+            }
+          }
+        }
+      }
+      finalImages = variantImgs.slice(0, 10);
     }
 
     const payload = {
@@ -255,30 +565,16 @@ export function ProductForm({
       price,
       salePrice: salePrice || undefined,
       sku: formData.sku || undefined,
-      stock: isNaN(stock) ? 0 : stock,
-      manageStockQuantity: formData.manageStockQuantity,
-      manageStockAvailability: formData.manageStockAvailability,
-      inStock: formData.inStock,
-      categoryId: formData.categoryId || undefined,
-      brandId: formData.brandId || undefined,
+      stock: finalStock,
+      manageStockQuantity,
+      manageStockAvailability,
+      inStock,
+      categoryId: formData.categoryId ? formData.categoryId : null,
+      brandId: formData.brandId ? formData.brandId : null,
       status: formData.status,
       featured: formData.featured,
-      images: images.map((img, idx) => ({
-        url: img.url,
-        publicId: img.publicId,
-        sortOrder: idx,
-      })),
-      variants: enableVariants
-        ? variants.map((v, idx) => ({
-            id: v.id,
-            color: v.color,
-            manageAvailability: v.manageAvailability,
-            inStock: v.inStock,
-            manageQuantity: v.manageQuantity,
-            stock: v.stock,
-            sortOrder: idx,
-          }))
-        : [],
+      images: finalImages,
+      variants: payloadVariants,
     };
 
     try {
@@ -293,7 +589,16 @@ export function ProductForm({
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to save product.");
+        let msg = data.error || "Failed to save product.";
+        if (data.details?.fieldErrors) {
+          const fieldMsgs = Object.entries(data.details.fieldErrors)
+            .flatMap(([field, errors]: any) => errors.map((e: string) => `${field}: ${e}`))
+            .join(", ");
+          if (fieldMsgs) msg += `: ${fieldMsgs}`;
+        } else if (data.details?.formErrors?.length) {
+          msg += `: ${data.details.formErrors.join(", ")}`;
+        }
+        throw new Error(msg);
       }
 
       router.push("/dashboard/products");
@@ -322,11 +627,39 @@ export function ProductForm({
               Cancel
             </Button>
           </Link>
-          <Button type="submit" variant="primary" isLoading={loading}>
+          <Button
+            type="submit"
+            variant="primary"
+            isLoading={loading}
+            disabled={!stockMode && !isEditing}
+          >
             {isEditing ? "Update Product" : "Publish Product"}
           </Button>
         </div>
       </div>
+
+      {!stockMode && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 space-y-3">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-amber-300">
+                Stock Management Configuration Required
+              </h3>
+              <p className="text-xs text-amber-200/80 leading-relaxed">
+                Before creating products, you must configure how your store handles inventory (Stock Availability, Stock Quantity, or Color-wise Inventory & Image Upload) in Store Settings → Product Management.
+              </p>
+            </div>
+          </div>
+          <div className="pt-1 flex items-center gap-3">
+            <Link href="/dashboard/settings?tab=products">
+              <Button type="button" variant="primary" size="sm">
+                Configure Stock Settings
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-start gap-3">
@@ -364,68 +697,70 @@ export function ProductForm({
             </div>
           </Card>
 
-          {/* Media Images */}
-          <Card className="space-y-4">
-            <h2 className="text-base font-bold text-white">Product Images</h2>
+          {/* Media Images (Hidden in Color-wise Inventory mode since images are uploaded per color variant) */}
+          {stockMode !== "COLOR_WISE" && (
+            <Card className="space-y-4">
+              <h2 className="text-base font-bold text-white">Product Images</h2>
 
-            {/* Images grid preview */}
-            {images.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {images.map((img, idx) => (
-                  <div
-                    key={idx}
-                    className="relative aspect-square rounded-xl bg-slate-800 border border-slate-700/80 overflow-hidden group"
-                  >
-                    <Image src={img.url} alt="Product" fill className="object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(idx)}
-                      className="absolute top-1.5 right-1.5 p-1 rounded-md bg-black/70 text-slate-300 hover:text-rose-400 transition-colors"
+              {/* Images grid preview */}
+              {images.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {images.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className="relative aspect-square rounded-xl bg-slate-800 border border-slate-700/80 overflow-hidden group"
                     >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                    {idx === 0 && (
-                      <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 text-[10px] font-bold rounded bg-blue-600 text-white">
-                        Cover
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                      <Image src={img.url} alt="Product" fill className="object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(idx)}
+                        className="absolute top-1.5 right-1.5 p-1 rounded-md bg-black/70 text-slate-300 hover:text-rose-400 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                      {idx === 0 && (
+                        <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 text-[10px] font-bold rounded bg-blue-600 text-white">
+                          Cover
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
-            {/* Upload or Add URL */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <label className="flex-1 flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-700/80 hover:border-blue-500/60 rounded-2xl cursor-pointer bg-slate-950/40 hover:bg-slate-900/50 transition-all">
-                <Upload className="w-6 h-6 text-slate-400 mb-2" />
-                <span className="text-xs font-semibold text-slate-300">
-                  {uploadingImage ? "Uploading to Cloudinary..." : "Click to upload image"}
-                </span>
-                <span className="text-[11px] text-slate-500 mt-1">PNG, JPG, WEBP up to 5MB</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  disabled={uploadingImage}
-                  className="hidden"
-                />
-              </label>
-
-              <div className="flex-1 flex flex-col justify-center space-y-2">
-                <label className="text-xs font-semibold text-slate-300">Or add via Image URL</label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="https://example.com/image.jpg"
-                    value={imageUrlInput}
-                    onChange={(e) => setImageUrlInput(e.target.value)}
+              {/* Upload or Add URL */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <label className="flex-1 flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-700/80 hover:border-blue-500/60 rounded-2xl cursor-pointer bg-slate-950/40 hover:bg-slate-900/50 transition-all">
+                  <Upload className="w-6 h-6 text-slate-400 mb-2" />
+                  <span className="text-xs font-semibold text-slate-300">
+                    {uploadingImage ? "Uploading to Cloudinary..." : "Click to upload image"}
+                  </span>
+                  <span className="text-[11px] text-slate-500 mt-1">PNG, JPG, WEBP up to 5MB</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    disabled={uploadingImage}
+                    className="hidden"
                   />
-                  <Button type="button" variant="secondary" onClick={handleAddImageUrl}>
-                    Add
-                  </Button>
+                </label>
+
+                <div className="flex-1 flex flex-col justify-center space-y-2">
+                  <label className="text-xs font-semibold text-slate-300">Or add via Image URL</label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="https://example.com/image.jpg"
+                      value={imageUrlInput}
+                      onChange={(e) => setImageUrlInput(e.target.value)}
+                    />
+                    <Button type="button" variant="secondary" onClick={handleAddImageUrl}>
+                      Add
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          )}
 
           {/* Pricing & SKU */}
           <Card className="space-y-4">
@@ -470,365 +805,585 @@ export function ProductForm({
               />
             </div>
 
-            {/* 1. General Product Stock Management */}
-            {!enableVariants && (
-              <div className="rounded-xl border border-slate-700/60 bg-slate-900/40 p-4 space-y-5">
-                <div className="border-b border-slate-800 pb-2">
-                  <h3 className="text-sm font-bold text-slate-200">Stock Management</h3>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Configure stock availability and numeric quantity controls independently.
+            {/* Store-Level Stock Management Controls */}
+            {!stockMode && (
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
+                <div className="border-b border-amber-500/20 pb-2">
+                  <h3 className="text-sm font-bold text-amber-300">Stock Management</h3>
+                  <p className="text-[11px] text-amber-200/80 mt-0.5">
+                    Store-level stock management is not configured yet.
                   </p>
                 </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                  <p className="text-xs text-amber-200/90 leading-relaxed">
+                    Stock settings must be configured once under Store Settings → Product Management before creating products.
+                  </p>
+                  <Link href="/dashboard/settings?tab=products" className="shrink-0">
+                    <Button type="button" variant="secondary" size="sm">
+                      Configure Stock Settings
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            )}
 
-                {/* Control A: Stock Availability */}
-                <div className="space-y-2 rounded-lg bg-slate-950/40 p-3 border border-slate-800">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold text-slate-200">Manage Stock Availability</p>
-                      <p className="text-[11px] text-slate-500">
-                        When disabled, defaults to In Stock. When enabled, you can choose In Stock or Out of Stock.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={formData.manageStockAvailability}
-                      onClick={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          manageStockAvailability: !prev.manageStockAvailability,
-                          // If disabled, product defaults to In Stock
-                          inStock: !prev.manageStockAvailability ? prev.inStock : true,
-                        }))
-                      }
-                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
-                        formData.manageStockAvailability ? "bg-blue-600" : "bg-slate-700"
-                      }`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                          formData.manageStockAvailability ? "translate-x-4" : "translate-x-0"
-                        }`}
-                      />
-                    </button>
+            {/* Option 1: Manage Stock Availability */}
+            {stockMode === "AVAILABILITY" && (
+              <div className="rounded-xl border border-slate-700/60 bg-slate-900/40 p-4 space-y-4">
+                <div className="border-b border-slate-800 pb-2 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-200">Stock Availability</h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Configured store-wide via Store Settings → Product Management
+                    </p>
                   </div>
-
-                  {!formData.manageStockAvailability ? (
-                    <div className="flex items-center gap-2 pt-1 text-emerald-400 text-xs font-medium">
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Default: In Stock (Availability management disabled)</span>
-                    </div>
-                  ) : (
-                    <div className="pt-2 flex items-center justify-between border-t border-slate-800/80">
-                      <span className="text-xs text-slate-300 font-medium">Stock Status:</span>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (formData.manageStockQuantity && parseInt(formData.stock, 10) === 0) {
-                              setError("Cannot mark In Stock when managed stock quantity is 0.");
-                              return;
-                            }
-                            setFormData((prev) => ({ ...prev, inStock: true }));
-                          }}
-                          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                            formData.inStock
-                              ? "bg-emerald-600 text-white shadow-sm"
-                              : "bg-slate-800 text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          In Stock
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setFormData((prev) => ({ ...prev, inStock: false }))}
-                          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                            !formData.inStock
-                              ? "bg-rose-600 text-white shadow-sm"
-                              : "bg-slate-800 text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          Out of Stock
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    Availability Mode
+                  </span>
                 </div>
 
-                {/* Control B: Stock Quantity */}
-                <div className="space-y-2 rounded-lg bg-slate-950/40 p-3 border border-slate-800">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold text-slate-200">Manage Stock Quantity</p>
-                      <p className="text-[11px] text-slate-500">
-                        When disabled, quantity is unlimited. When enabled, enter available units.
-                      </p>
-                    </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-950/40 border border-slate-800">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-200">Product Availability</p>
+                    <p className="text-[11px] text-slate-500">
+                      Mark whether this product is currently in stock and purchasable by customers.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      role="switch"
-                      aria-checked={formData.manageStockQuantity}
-                      onClick={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          manageStockQuantity: !prev.manageStockQuantity,
-                        }))
-                      }
-                      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
-                        formData.manageStockQuantity ? "bg-blue-600" : "bg-slate-700"
+                      onClick={() => setFormData((prev) => ({ ...prev, inStock: true }))}
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                        formData.inStock
+                          ? "bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-500/30"
+                          : "bg-slate-800 text-slate-400 hover:text-white"
                       }`}
                     >
-                      <span
-                        className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                          formData.manageStockQuantity ? "translate-x-4" : "translate-x-0"
-                        }`}
-                      />
+                      In Stock
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, inStock: false }))}
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                        !formData.inStock
+                          ? "bg-rose-600 text-white shadow-sm ring-2 ring-rose-500/30"
+                          : "bg-slate-800 text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      Out of Stock
                     </button>
                   </div>
+                </div>
+              </div>
+            )}
 
-                  {formData.manageStockQuantity ? (
-                    <div className="pt-2 space-y-1.5 border-t border-slate-800/80">
-                      <label className="text-xs font-semibold text-slate-300">Stock Quantity *</label>
-                      <Input
-                        required
-                        type="number"
-                        min="0"
-                        step="1"
-                        name="stock"
-                        value={formData.stock}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const num = parseInt(val, 10);
-                          setFormData((prev) => ({
-                            ...prev,
-                            stock: val,
-                            // If quantity reaches 0 and availability is managed, automatically set out of stock
-                            inStock: prev.manageStockAvailability && num === 0 ? false : prev.inStock,
-                          }));
-                        }}
-                        placeholder="e.g. 100"
-                      />
-                      <p className="text-[11px] text-slate-500">
-                        Quantity of 0 prevents customers from purchasing this item.
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-[11px] text-slate-500 pt-1">
-                      Stock quantity is hidden. Customers can purchase without quantity restriction as long as the product is In Stock.
+            {/* Option 2: Manage Stock Quantity */}
+            {stockMode === "QUANTITY" && (
+              <div className="rounded-xl border border-slate-700/60 bg-slate-900/40 p-4 space-y-4">
+                <div className="border-b border-slate-800 pb-2 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-200">Stock Quantity</h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Configured store-wide via Store Settings → Product Management
                     </p>
-                  )}
+                  </div>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    Quantity Mode
+                  </span>
+                </div>
+
+                <div className="space-y-2 p-3 rounded-lg bg-slate-950/40 border border-slate-800">
+                  <label className="text-xs font-semibold text-slate-200">Available Stock Units *</label>
+                  <Input
+                    required
+                    type="number"
+                    min="0"
+                    step="1"
+                    name="stock"
+                    value={formData.stock}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData((prev) => ({
+                        ...prev,
+                        stock: val,
+                        inStock: parseInt(val, 10) > 0,
+                      }));
+                    }}
+                    placeholder="e.g. 50"
+                  />
+                  <p className="text-[11px] text-slate-500">
+                    Availability is calculated from quantity. When quantity is 0, the product is automatically marked unavailable and cannot be purchased.
+                  </p>
                 </div>
               </div>
             )}
           </Card>
 
-          {/* 2 & 3. Color-wise Product Variants */}
-          <Card className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Palette className="w-4 h-4 text-slate-400" />
-                <h2 className="text-base font-bold text-white">Enable Color-wise Inventory</h2>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={enableVariants}
-                onClick={() => setEnableVariants((v) => !v)}
-                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
-                  enableVariants ? "bg-blue-600" : "bg-slate-700"
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                    enableVariants ? "translate-x-4" : "translate-x-0"
-                  }`}
-                />
-              </button>
-            </div>
-
-            {!enableVariants ? (
-              <p className="text-[11px] text-slate-500">
-                Disabled by default. Enable to manage individual availability and stock quantities per color variant (e.g. Black, White, Blue).
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {/* Add new variant */}
+          {/* Option 3: Color-wise Inventory & Image Upload Card */}
+          {stockMode === "COLOR_WISE" && (
+            <Card className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="Enter color name (e.g. Black, White, Navy Blue)"
-                    value={newVariantColor}
-                    onChange={(e) => setNewVariantColor(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
+                  <Palette className="w-5 h-5 text-blue-400" />
+                  <div>
+                    <h2 className="text-base font-bold text-white">Color-wise Inventory & Image Upload</h2>
+                    <p className="text-[11px] text-slate-400">
+                      {colorStockMode === "QUANTITY"
+                        ? "Stock quantity and product images are managed independently for each color variant (Store Settings)."
+                        : "Stock availability (In Stock / Out of Stock) and product images are managed independently for each color variant (Store Settings)."}
+                    </p>
+                  </div>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 self-start sm:self-auto">
+                  {colorStockMode === "QUANTITY" ? "Color Quantity Mode" : "Color Availability Mode"}
+                </span>
+              </div>
+
+              {/* Informative Note / Tip for Image Upload per color */}
+              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-200">
+                <Sparkles className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                <div className="leading-relaxed">
+                  <strong className="text-white">Color-specific Media:</strong> When you add or select a color variant below, you can upload that color&apos;s product images directly. Customers will see these images when selecting that color in your store.
+                </div>
+              </div>
+
+              {/* Add New Color Variant Dropdown */}
+              <div className="space-y-2 relative" ref={dropdownRef}>
+                <div className="flex items-center gap-2">
+                  {/* Dropdown Trigger Button */}
+                  <div className="relative flex-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsColorDropdownOpen((prev) => !prev);
+                        setIsCreatingCustomColor(false);
+                      }}
+                      className="w-full h-10 px-3.5 rounded-xl border border-slate-700/80 bg-slate-950/60 flex items-center justify-between text-left hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all text-xs"
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        {newVariantColor ? (
+                          <>
+                            <span
+                              className="w-3.5 h-3.5 rounded-full border border-slate-600/80 shrink-0 shadow-sm"
+                              style={{ backgroundColor: getColorHex(newVariantColor, customColors) }}
+                            />
+                            <span className="font-semibold text-white truncate">{newVariantColor}</span>
+                            <span className="text-[11px] font-mono text-slate-500">
+                              ({getColorHex(newVariantColor, customColors)})
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Palette className="w-4 h-4 text-slate-500 shrink-0" />
+                            <span className="text-slate-400">Choose a color from dropdown or create custom...</span>
+                          </>
+                        )}
+                      </div>
+                      <ChevronDown
+                        className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
+                          isColorDropdownOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      if (newVariantColor) {
                         handleAddVariant();
+                      } else {
+                        setIsColorDropdownOpen(true);
                       }
                     }}
-                  />
-                  <Button type="button" variant="secondary" onClick={handleAddVariant}>
+                    disabled={!newVariantColor && isColorDropdownOpen}
+                  >
                     <Plus className="w-4 h-4" />
                     Add Color
                   </Button>
                 </div>
 
-                {variants.length === 0 ? (
-                  <p className="text-[11px] text-slate-500 py-2">
-                    No color variants added yet. Type a color name above and click Add Color.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {variants.map((variant, idx) => (
-                      <div
-                        key={idx}
-                        className="rounded-xl border border-slate-700/60 bg-slate-900/60 p-3.5 space-y-3"
-                      >
-                        {/* Variant header row */}
-                        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="w-3.5 h-3.5 rounded-full border border-slate-600 flex-shrink-0"
-                              style={{
-                                backgroundColor: variant.color.startsWith("#")
-                                  ? variant.color
-                                  : "transparent",
-                              }}
-                            />
-                            <span className="text-sm font-bold text-white">{variant.color}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveVariant(idx)}
-                            className="p-1 rounded text-slate-500 hover:text-rose-400 transition-colors"
-                            aria-label={`Remove ${variant.color} variant`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                {/* Dropdown Menu Popover */}
+                {isColorDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl p-3 space-y-3 backdrop-blur-xl">
+                    {/* Search box inside dropdown */}
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="Search colors or type to filter..."
+                        value={colorSearch}
+                        onChange={(e) => setColorSearch(e.target.value)}
+                        className="w-full h-8 pl-8 pr-3 rounded-lg bg-slate-950/70 border border-slate-800 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50"
+                        autoFocus
+                      />
+                    </div>
 
-                        {/* Variant two independent controls */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                          {/* A. Variant Availability */}
-                          <div className="p-2.5 rounded-lg bg-slate-950/40 border border-slate-800/80 space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-semibold text-slate-300">
-                                Manage Availability
-                              </span>
-                              <button
-                                type="button"
-                                role="switch"
-                                aria-checked={variant.manageAvailability}
-                                onClick={() =>
-                                  handleVariantChange(
-                                    idx,
-                                    "manageAvailability",
-                                    !variant.manageAvailability
-                                  )
-                                }
-                                className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
-                                  variant.manageAvailability ? "bg-blue-600" : "bg-slate-700"
-                                }`}
-                              >
-                                <span
-                                  className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                                    variant.manageAvailability ? "translate-x-3" : "translate-x-0"
-                                  }`}
-                                />
-                              </button>
-                            </div>
-
-                            {!variant.manageAvailability ? (
-                              <div className="text-[11px] text-emerald-400 font-medium">
-                                Default: In Stock
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-2 pt-1">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (variant.manageQuantity && variant.stock === 0) {
-                                      setError(`Cannot mark "${variant.color}" In Stock when quantity is 0.`);
-                                      return;
-                                    }
-                                    handleVariantChange(idx, "inStock", true);
-                                  }}
-                                  className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
-                                    variant.inStock
-                                      ? "bg-emerald-600 text-white"
-                                      : "bg-slate-800 text-slate-400 hover:text-white"
-                                  }`}
-                                >
-                                  In Stock
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleVariantChange(idx, "inStock", false)}
-                                  className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
-                                    !variant.inStock
-                                      ? "bg-rose-600 text-white"
-                                      : "bg-slate-800 text-slate-400 hover:text-white"
-                                  }`}
-                                >
-                                  Out of Stock
-                                </button>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* B. Variant Quantity */}
-                          <div className="p-2.5 rounded-lg bg-slate-950/40 border border-slate-800/80 space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-semibold text-slate-300">
-                                Manage Quantity
-                              </span>
-                              <button
-                                type="button"
-                                role="switch"
-                                aria-checked={variant.manageQuantity}
-                                onClick={() =>
-                                  handleVariantChange(idx, "manageQuantity", !variant.manageQuantity)
-                                }
-                                className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
-                                  variant.manageQuantity ? "bg-blue-600" : "bg-slate-700"
-                                }`}
-                              >
-                                <span
-                                  className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                                    variant.manageQuantity ? "translate-x-3" : "translate-x-0"
-                                  }`}
-                                />
-                              </button>
-                            </div>
-
-                            {variant.manageQuantity ? (
-                              <div className="flex items-center gap-2 pt-1">
-                                <label className="text-[11px] text-slate-400">Qty:</label>
-                                <input
-                                  type="number"
-                                  min="0"
-                                  step="1"
-                                  value={variant.stock}
-                                  onChange={(e) => {
-                                    const qty = parseInt(e.target.value, 10);
-                                    handleVariantChange(idx, "stock", isNaN(qty) ? 0 : qty);
-                                  }}
-                                  className="w-24 h-7 rounded border border-slate-700/80 bg-slate-950 px-2 text-xs font-medium text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                  placeholder="0"
-                                />
-                              </div>
-                            ) : (
-                              <div className="text-[11px] text-slate-500">
-                                Unlimited / Quantity hidden
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                    {/* Color List */}
+                    <div className="max-h-56 overflow-y-auto space-y-1 pr-1 scrollbar-thin">
+                      <div className="flex items-center justify-between px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        <span>Available Colors ({filteredColors.length})</span>
+                        <span>Hex Code</span>
                       </div>
-                    ))}
+
+                      {filteredColors.length === 0 ? (
+                        <div className="py-4 text-center text-xs text-slate-400 space-y-1">
+                          <p>No matching color found</p>
+                          <p className="text-[11px] text-slate-500">
+                            You can create &quot;{colorSearch}&quot; as a new store color below.
+                          </p>
+                        </div>
+                      ) : (
+                        filteredColors.map((c) => {
+                          const isAlreadyAdded = variants.some(
+                            (v) => v.color.toLowerCase() === c.name.toLowerCase()
+                          );
+                          const isSelected = newVariantColor.toLowerCase() === c.name.toLowerCase();
+
+                          return (
+                            <button
+                              key={c.name}
+                              type="button"
+                              onClick={() => {
+                                setNewVariantColor(c.name);
+                                handleAddVariant(c.name);
+                                setIsColorDropdownOpen(false);
+                                setColorSearch("");
+                              }}
+                              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors group ${
+                                isSelected
+                                  ? "bg-blue-600/20 text-white border border-blue-500/30"
+                                  : "hover:bg-slate-800/80 text-slate-300"
+                              } ${isAlreadyAdded ? "opacity-60" : ""}`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <span
+                                  className="w-4 h-4 rounded-full border border-slate-700/80 shrink-0 shadow-sm"
+                                  style={{ backgroundColor: c.hex }}
+                                />
+                                <span className="font-medium text-slate-200 group-hover:text-white truncate">
+                                  {c.name}
+                                </span>
+                                {c.isCustom && (
+                                  <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                    Custom
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="font-mono text-[11px] text-slate-500 uppercase">
+                                  {c.hex}
+                                </span>
+                                {isAlreadyAdded ? (
+                                  <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                                    <Check className="w-3 h-3" />
+                                    Added
+                                  </span>
+                                ) : (
+                                  <span className="text-[11px] text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
+                                    + Add
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {/* Bottom: Create New Custom Color */}
+                    <div className="pt-2 border-t border-slate-800">
+                      {!isCreatingCustomColor ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsCreatingCustomColor(true);
+                            if (colorSearch.trim()) {
+                              setCustomColorName(colorSearch.trim());
+                            }
+                          }}
+                          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-dashed border-slate-700 hover:border-blue-500/50 hover:bg-blue-500/5 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-all"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Create Custom Color & Save to Store</span>
+                        </button>
+                      ) : (
+                        <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                              <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                              Create New Store Color
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setIsCreatingCustomColor(false)}
+                              className="text-slate-500 hover:text-slate-300 text-xs"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="space-y-2">
+                            <div>
+                              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                                Color Name
+                              </label>
+                              <Input
+                                placeholder="e.g. Lavender Blush, Royal Indigo"
+                                value={customColorName}
+                                onChange={(e) => setCustomColorName(e.target.value)}
+                              />
+                            </div>
+
+                            <div>
+                              <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                                Color Code (Hex)
+                              </label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="color"
+                                  value={customColorHex.startsWith("#") ? customColorHex : `#${customColorHex}`}
+                                  onChange={(e) => setCustomColorHex(e.target.value)}
+                                  className="w-10 h-10 rounded-lg border border-slate-700 bg-transparent cursor-pointer p-0.5 shrink-0"
+                                />
+                                <Input
+                                  placeholder="#3b82f6"
+                                  value={customColorHex}
+                                  onChange={(e) => setCustomColorHex(e.target.value)}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-1">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setIsCreatingCustomColor(false)}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="primary"
+                                isLoading={isSavingCustomColor}
+                                onClick={handleCreateCustomColor}
+                              >
+                                <Plus className="w-3.5 h-3.5 mr-1" />
+                                Save & Add Color
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
-            )}
-          </Card>
+
+              {variants.length === 0 ? (
+                <div className="p-5 rounded-xl border border-dashed border-slate-700/80 text-center space-y-1 bg-slate-950/20">
+                  <p className="text-xs text-slate-300 font-medium">No color variants added yet</p>
+                  <p className="text-[11px] text-slate-400">
+                    Select a color from the dropdown above or create a custom one to configure inventory and upload product images for each color.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {variants.map((variant, idx) => (
+                    <div
+                      key={idx}
+                      className="rounded-xl border border-slate-700/60 bg-slate-900/60 p-3.5 space-y-3"
+                    >
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-slate-600 flex-shrink-0"
+                            style={{
+                              backgroundColor: getColorHex(variant.color, customColors),
+                            }}
+                          />
+                          <span className="text-sm font-bold text-white">{variant.color}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveVariant(idx)}
+                          className="p-1 rounded text-slate-500 hover:text-rose-400 transition-colors"
+                          aria-label={`Remove ${variant.color} variant`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Sub-option 1: Manage Stock Availability */}
+                      {colorStockMode === "AVAILABILITY" && (
+                        <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/40 border border-slate-800/80">
+                          <div>
+                            <span className="text-xs font-semibold text-slate-300 block">
+                              Variant Availability:
+                            </span>
+                            <span className="text-[11px] text-slate-500">
+                              {variant.inStock ? "Available for purchase" : "Marked unavailable"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleVariantChange(idx, "inStock", true)}
+                              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                                variant.inStock
+                                  ? "bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-500/30"
+                                  : "bg-slate-800 text-slate-400 hover:text-white"
+                              }`}
+                            >
+                              In Stock
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleVariantChange(idx, "inStock", false)}
+                              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                                !variant.inStock
+                                  ? "bg-rose-600 text-white shadow-sm ring-2 ring-rose-500/30"
+                                  : "bg-slate-800 text-slate-400 hover:text-white"
+                              }`}
+                            >
+                              Out of Stock
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Sub-option 2: Manage Stock Quantity */}
+                      {colorStockMode === "QUANTITY" && (
+                        <div className="space-y-1.5 p-2.5 rounded-lg bg-slate-950/40 border border-slate-800/80">
+                          <label className="text-xs font-semibold text-slate-300">
+                            Stock Units ({variant.color}) *
+                          </label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={variant.stock}
+                            onChange={(e) => {
+                              const num = parseInt(e.target.value, 10);
+                              const safeNum = isNaN(num) ? 0 : Math.max(0, num);
+                              setVariants((prev) =>
+                                prev.map((v, i) =>
+                                  i === idx ? { ...v, stock: safeNum, inStock: safeNum > 0 } : v
+                                )
+                              );
+                            }}
+                            placeholder="e.g. 25"
+                          />
+                          <p className="text-[11px] text-slate-500">
+                            {variant.stock <= 0
+                              ? "0 units — this color variant will be marked Out of Stock and cannot be purchased."
+                              : `${variant.stock} units available for customer purchase.`}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Sub-option 3: Color Variant Product Images */}
+                      <div className="pt-3 border-t border-slate-800/80 space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-slate-200">
+                              Product Images ({variant.color})
+                            </span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-slate-800 text-slate-300 border border-slate-700/60">
+                              {(variant.images?.length || 0)} {variant.images?.length === 1 ? "image" : "images"}
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-slate-500">
+                            Shows in gallery when customer selects {variant.color}
+                          </span>
+                        </div>
+
+                        {/* Variant images thumbnail preview */}
+                        {variant.images && variant.images.length > 0 && (
+                          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
+                            {variant.images.map((img, imgIdx) => (
+                              <div
+                                key={img.publicId || imgIdx}
+                                className="relative aspect-square rounded-lg bg-slate-950 border border-slate-800 overflow-hidden group shadow-sm"
+                              >
+                                <Image
+                                  src={img.url}
+                                  alt={`${variant.color} image ${imgIdx + 1}`}
+                                  fill
+                                  className="object-cover"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveVariantImage(idx, imgIdx)}
+                                  className="absolute top-1 right-1 p-1 rounded bg-black/75 text-slate-300 hover:text-rose-400 transition-colors"
+                                  title="Remove image"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                                {imgIdx === 0 && (
+                                  <span className="absolute bottom-1 left-1 px-1.5 py-0.2 text-[9px] font-bold rounded bg-blue-600 text-white">
+                                    Main
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Upload Controls for this variant */}
+                        <div className="flex flex-col sm:flex-row gap-2.5">
+                          <label className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 border border-dashed border-slate-700/80 hover:border-blue-500/60 rounded-xl cursor-pointer bg-slate-950/60 hover:bg-slate-950 transition-all text-xs text-slate-300">
+                            <Upload className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                            <span className="font-medium truncate">
+                              {uploadingVariantIdx === idx
+                                ? "Uploading to Cloudinary..."
+                                : `Upload ${variant.color} images`}
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              disabled={uploadingVariantIdx === idx}
+                              onChange={(e) => {
+                                handleVariantFileUpload(idx, e.target.files);
+                                e.target.value = "";
+                              }}
+                              className="hidden"
+                            />
+                          </label>
+
+                          <div className="flex-1 flex gap-2">
+                            <Input
+                              placeholder="Or paste image URL"
+                              value={variantUrlInputs[idx] || ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setVariantUrlInputs((prev) => ({ ...prev, [idx]: val }));
+                              }}
+                              className="text-xs h-9"
+                            />
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => handleAddVariantImageUrl(idx)}
+                              disabled={!variantUrlInputs[idx]?.trim()}
+                            >
+                              Add
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          )}
         </div>
 
         {/* Right Column: Taxonomy & Visibility */}

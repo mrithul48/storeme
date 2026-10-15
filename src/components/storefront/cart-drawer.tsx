@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useCart } from "@/context/cart-context";
 import { formatCurrency } from "@/lib/utils";
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export function CartDrawer({ storeSlug }: { storeSlug: string }) {
   const { items, isOpen, setIsOpen, updateQuantity, removeItem, subtotal, totalItems } =
@@ -53,8 +52,11 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-2 rounded-lg opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-              style={{ color: "var(--store-navbar-text, inherit)" }}
+              className="p-2 opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+              style={{
+                borderRadius: "var(--store-button-radius, 10px)",
+                color: "var(--store-navbar-text, inherit)",
+              }}
               aria-label="Close cart"
             >
               <X className="w-5 h-5" />
@@ -79,9 +81,18 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
                     Add products from the store to see them here.
                   </p>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => setIsOpen(false)}>
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="px-5 py-2.5 text-xs font-semibold shadow-sm transition-all active:scale-95"
+                  style={{
+                    backgroundColor: "var(--store-button-bg, #22c55e)",
+                    color: "var(--store-button-text, #ffffff)",
+                    borderRadius: "var(--store-button-radius, 10px)",
+                  }}
+                >
                   Continue Browsing
-                </Button>
+                </button>
               </div>
             ) : (
               items.map((item) => {
@@ -92,13 +103,17 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
                 return (
                   <div
                     key={item.productId}
-                    className="flex gap-4 p-3 rounded-xl border items-center transition-all"
+                    className="flex gap-4 p-3 border items-center transition-all"
                     style={{
                       borderColor: "var(--store-border, rgba(0, 0, 0, 0.08))",
                       backgroundColor: "rgba(0, 0, 0, 0.02)",
+                      borderRadius: "var(--store-button-radius, 10px)",
                     }}
                   >
-                    <div className="relative w-16 h-16 rounded-lg bg-black/5 dark:bg-white/5 overflow-hidden flex-shrink-0">
+                    <div
+                      className="relative w-16 h-16 bg-black/5 dark:bg-white/5 overflow-hidden flex-shrink-0"
+                      style={{ borderRadius: "var(--store-button-radius, 10px)" }}
+                    >
                       {item.imageUrl ? (
                         <Image
                           src={item.imageUrl}
@@ -136,10 +151,11 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
 
                       <div className="flex items-center gap-2 mt-2">
                         <div
-                          className="flex items-center border rounded-lg overflow-hidden"
+                          className="flex items-center border overflow-hidden"
                           style={{
                             borderColor: "var(--store-border, rgba(0, 0, 0, 0.15))",
                             backgroundColor: "rgba(0, 0, 0, 0.02)",
+                            borderRadius: "var(--store-button-radius, 10px)",
                           }}
                         >
                           <button
@@ -167,7 +183,8 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
 
                         <button
                           onClick={() => removeItem(item.productId, item.variantId)}
-                          className="opacity-50 hover:opacity-100 hover:text-rose-500 p-1 transition-colors"
+                          className="opacity-50 hover:opacity-100 hover:text-rose-500 p-1.5 transition-colors"
+                          style={{ borderRadius: "var(--store-button-radius, 10px)" }}
                           title="Remove item"
                         >
                           <Trash2 className="w-4 h-4" />

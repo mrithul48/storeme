@@ -78,6 +78,8 @@ export const updateStoreSettingsSchema = z.object({
   codEnabled: z.boolean().optional(),
   onlinePaymentEnabled: z.boolean().optional(),
   whatsappOrderEnabled: z.boolean().optional(),
+  stockManagementType: z.enum(["AVAILABILITY", "QUANTITY", "COLOR_WISE"]).optional().nullable(),
+  colorWiseStockType: z.enum(["AVAILABILITY", "QUANTITY"]).optional().nullable(),
   razorpayKeyId: z.string().optional(),
   razorpaySecret: z.string().optional(),
   brevoApiKey: z.string().optional(),

@@ -41,7 +41,7 @@ export function StoreDesignClient({
   const hp = homePage as Record<string, unknown> | null;
 
   // ── Tab ──
-  const [activeTab, setActiveTab] = useState<"homepage" | "header" | "about" | "contact">("homepage");
+  const [activeTab, setActiveTab] = useState<"homepage" | "header" | "about" | "contact">("header");
 
   // ── Notifications ──
   const [saving, setSaving] = useState(false);
@@ -117,9 +117,6 @@ export function StoreDesignClient({
   );
 
   // ── Header ──
-  const [headerDeliveryInfo, setHeaderDeliveryInfo] = useState<string>(
-    (hp?.headerDeliveryInfo as string) ?? ""
-  );
   const [showAccountIcon, setShowAccountIcon] = useState<boolean>(
     (hp?.showAccountIcon as boolean) ?? true
   );
@@ -186,7 +183,7 @@ export function StoreDesignClient({
       showSalePrice,
       showOriginalPrice,
       whatsappEnabled,
-      headerDeliveryInfo: headerDeliveryInfo || null,
+      headerDeliveryInfo: null,
       showAccountIcon,
       aboutEnabled,
       aboutHeading: aboutHeading || null,
@@ -241,10 +238,19 @@ export function StoreDesignClient({
   // ─── Badge helpers ─────────────────────────────────────────────────────────
 
   const addBadge = () => {
-    setBadges((prev) => [
-      ...prev,
-      { id: genId(), icon: null, iconPublicId: null, text: "", sortOrder: prev.length },
-    ]);
+    setBadges((prev) => {
+      if (prev.length >= 4) return prev;
+      return [
+        ...prev,
+        {
+          id: genId(),
+          count: "",
+          heading: "",
+          description: "",
+          sortOrder: prev.length,
+        },
+      ];
+    });
   };
 
   const updateBadge = (idx: number, field: keyof Badge, value: unknown) => {
@@ -292,9 +298,9 @@ export function StoreDesignClient({
   // ─── Tab Buttons ──────────────────────────────────────────────────────────
 
   const tabs: { id: typeof activeTab; label: string; icon: React.ElementType }[] = [
-    { id: "homepage", label: "Homepage", icon: Layout },
     { id: "header", label: "Header", icon: Tag },
-    { id: "about", label: "About & Vision", icon: Info },
+    { id: "homepage", label: "Home page", icon: Layout },
+    { id: "about", label: "About page", icon: Info },
     { id: "contact", label: "Contact Page", icon: MessageCircle },
   ];
 
@@ -407,8 +413,6 @@ export function StoreDesignClient({
 
       {activeTab === "header" && (
         <HeaderTab
-          headerDeliveryInfo={headerDeliveryInfo}
-          setHeaderDeliveryInfo={setHeaderDeliveryInfo}
           showAccountIcon={showAccountIcon}
           setShowAccountIcon={setShowAccountIcon}
         />

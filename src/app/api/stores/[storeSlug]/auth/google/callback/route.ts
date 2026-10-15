@@ -22,7 +22,7 @@ export async function GET(
   const proto = request.headers.get("x-forwarded-proto") || "http";
   const origin = `${proto}://${host}`;
 
-  const loginRedirect = `${origin}${getStoreLink(storeSlug, "/account/login?error=oauth_failed")}`;
+  const loginRedirect = `${origin}${getStoreLink(storeSlug, "/?auth=login&error=oauth_failed")}`;
 
   if (errorParam || !code || !state) {
     console.error("[Google OAuth Callback] Error or missing code/state:", errorParam);

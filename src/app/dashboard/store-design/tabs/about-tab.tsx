@@ -5,7 +5,7 @@ import { Info, Sparkles, Star, Trash2, Plus, GripVertical } from "lucide-react";
 import { Input, Textarea } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Section, Toggle } from "../_ui/primitives";
-import { ImageUploader, BadgeIconUpload } from "../_ui/image-uploader";
+import { ImageUploader } from "../_ui/image-uploader";
 import { Badge } from "../_ui/types";
 
 interface AboutTabProps {
@@ -126,12 +126,17 @@ export function AboutTab({
 
           <Section title="Achievement Badges" icon={Star} defaultOpen={false}>
             <div className="space-y-4 pt-2">
-              <p className="text-xs text-slate-500">
-                Highlight key stats or achievements (e.g. &quot;500+ Happy Customers&quot;, &quot;5 Years in Business&quot;)
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-500">
+                  Highlight key stats or achievements (e.g. &quot;500+&quot;, &quot;Happy Customers&quot;)
+                </p>
+                <span className="text-xs text-slate-400 font-medium">
+                  {badges.length}/4
+                </span>
+              </div>
               <div className="space-y-3">
                 {badges.map((badge, idx) => (
-                  <div key={badge.id} className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/60 space-y-2">
+                  <div key={badge.id} className="p-3.5 rounded-xl bg-slate-800/40 border border-slate-700/60 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
                         <GripVertical className="w-3.5 h-3.5 text-slate-600" />
@@ -140,39 +145,51 @@ export function AboutTab({
                       <button
                         type="button"
                         onClick={() => removeBadge(idx)}
-                        className="p-1 text-rose-400 hover:text-rose-300"
+                        className="p-1 text-rose-400 hover:text-rose-300 transition-colors"
+                        title="Remove badge"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                       <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-slate-400">Badge Text</label>
+                        <label className="text-[11px] font-semibold text-slate-400">Count / Value</label>
                         <Input
-                          value={badge.text}
-                          onChange={(e) => updateBadge(idx, "text", e.target.value)}
-                          placeholder="e.g. 500+ Happy Customers"
+                          value={badge.count ?? badge.text ?? ""}
+                          onChange={(e) => updateBadge(idx, "count", e.target.value)}
+                          placeholder="e.g. 500+ or 5 Years"
+                          maxLength={50}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-slate-400">Heading</label>
+                        <Input
+                          value={badge.heading ?? ""}
+                          onChange={(e) => updateBadge(idx, "heading", e.target.value)}
+                          placeholder="e.g. Happy Customers"
                           maxLength={100}
                         />
                       </div>
-                      <BadgeIconUpload
-                        icon={badge.icon}
-                        onUpload={(r) => {
-                          updateBadge(idx, "icon", r.url);
-                          updateBadge(idx, "iconPublicId", r.publicId);
-                        }}
-                        onRemove={() => {
-                          updateBadge(idx, "icon", null);
-                          updateBadge(idx, "iconPublicId", null);
-                        }}
-                      />
+                      <div className="space-y-1 sm:col-span-2 md:col-span-1">
+                        <label className="text-[11px] font-semibold text-slate-400">Description</label>
+                        <Input
+                          value={badge.description ?? ""}
+                          onChange={(e) => updateBadge(idx, "description", e.target.value)}
+                          placeholder="e.g. Across the country"
+                          maxLength={300}
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
-              <Button type="button" variant="outline" size="sm" onClick={addBadge}>
-                <Plus className="w-4 h-4 mr-1" /> Add Badge
-              </Button>
+              {badges.length < 4 ? (
+                <Button type="button" variant="outline" size="sm" onClick={addBadge}>
+                  <Plus className="w-4 h-4 mr-1" /> Add Badge
+                </Button>
+              ) : (
+                <p className="text-xs text-slate-500 italic">Maximum 4 badges added.</p>
+              )}
             </div>
           </Section>
         </>
