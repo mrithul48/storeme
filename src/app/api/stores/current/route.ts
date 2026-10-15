@@ -72,16 +72,75 @@ export async function PUT(request: Request) {
       }
 
       if (settings) {
-        await tx.storeSettings.update({
+        const existingSettings = await tx.storeSettings.findUnique({
           where: { storeId: store.id },
-          data: {
+          select: { stockManagementType: true, colorWiseStockType: true },
+        });
+
+        const isStockTypeChanging =
+          Boolean(existingSettings?.stockManagementType) &&
+          Boolean(settings.stockManagementType) &&
+          (existingSettings?.stockManagementType !== settings.stockManagementType ||
+            (settings.stockManagementType === "COLOR_WISE" &&
+              Boolean(settings.colorWiseStockType) &&
+              existingSettings?.colorWiseStockType !== settings.colorWiseStockType));
+
+        await tx.storeSettings.upsert({
+          where: { storeId: store.id },
+          create: {
+            storeId: store.id,
+            brandsEnabled: settings.brandsEnabled ?? false,
+            ordersEnabled: settings.ordersEnabled ?? true,
+            codEnabled: settings.codEnabled ?? true,
+            onlinePaymentEnabled: settings.onlinePaymentEnabled ?? true,
+            whatsappOrderEnabled: settings.whatsappOrderEnabled ?? false,
+            stockManagementType: settings.stockManagementType ?? null,
+            colorWiseStockType: settings.colorWiseStockType ?? null,
+          },
+          update: {
             ...(settings.brandsEnabled !== undefined ? { brandsEnabled: settings.brandsEnabled } : {}),
             ...(settings.ordersEnabled !== undefined ? { ordersEnabled: settings.ordersEnabled } : {}),
             ...(settings.codEnabled !== undefined ? { codEnabled: settings.codEnabled } : {}),
             ...(settings.onlinePaymentEnabled !== undefined ? { onlinePaymentEnabled: settings.onlinePaymentEnabled } : {}),
             ...(settings.whatsappOrderEnabled !== undefined ? { whatsappOrderEnabled: settings.whatsappOrderEnabled } : {}),
+            ...(settings.stockManagementType !== undefined ? { stockManagementType: settings.stockManagementType } : {}),
+            ...(settings.colorWiseStockType !== undefined ? { colorWiseStockType: settings.colorWiseStockType } : {}),
           },
         });
+
+        if (isStockTypeChanging) {
+          if (settings.stockManagementType === "AVAILABILITY") {
+            await tx.product.updateMany({
+              where: { storeId: store.id },
+              data: {
+                manageStockAvailability: true,
+                manageStockQuantity: false,
+                inStock: true,
+                stock: 0,
+              },
+            });
+          } else if (settings.stockManagementType === "QUANTITY") {
+            await tx.product.updateMany({
+              where: { storeId: store.id },
+              data: {
+                manageStockQuantity: true,
+                manageStockAvailability: false,
+                stock: 0,
+                inStock: false,
+              },
+            });
+          } else if (settings.stockManagementType === "COLOR_WISE") {
+            await tx.product.updateMany({
+              where: { storeId: store.id },
+              data: {
+                manageStockAvailability: false,
+                manageStockQuantity: false,
+                stock: 0,
+                inStock: false,
+              },
+            });
+          }
+        }
       }
     });
 

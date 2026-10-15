@@ -38,9 +38,12 @@ interface ProductCardProps {
   whatsappNumber?: string | null;
   themeColor?: string | null;
   // Design settings from Live Store Design
+  // Design settings from Live Store Design
   cardRadiusClass?: string;
   showSalePrice?: boolean;
   showOriginalPrice?: boolean;
+  stockManagementType?: string | null;
+  colorWiseStockType?: string | null;
 }
 
 export function ProductCard({
@@ -52,6 +55,8 @@ export function ProductCard({
   cardRadiusClass = "rounded-2xl",
   showSalePrice = true,
   showOriginalPrice = true,
+  stockManagementType,
+  colorWiseStockType,
 }: ProductCardProps) {
   const { addItem, items } = useCart();
   const { isInWishlist, addItem: addToWishlist, removeItem: removeFromWishlist } = useWishlist();
@@ -63,19 +68,38 @@ export function ProductCard({
   const discount = isSale ? calculateDiscountPercentage(priceNum, salePriceNum) : 0;
 
   const hasVariants = Boolean(product.variants && product.variants.length > 0);
-  const isOutOfStock = hasVariants
-    ? product.variants!.every(
-        (v: any) =>
-          (v.manageAvailability && !v.inStock) || (v.manageQuantity && v.stock <= 0)
-      )
-    : product.manageStockAvailability && product.inStock === false
-    ? true
-    : Boolean(product.manageStockQuantity && product.stock <= 0);
+  const isOutOfStock = React.useMemo(() => {
+    if (stockManagementType === "COLOR_WISE") {
+      if (hasVariants) {
+        if (colorWiseStockType === "QUANTITY") {
+          return product.variants!.every((v: any) => (v.stock ?? 0) <= 0);
+        } else {
+          return product.variants!.every((v: any) => v.inStock === false);
+        }
+      }
+      return false;
+    }
+    if (stockManagementType === "QUANTITY") {
+      return (product.stock ?? 0) <= 0 || product.inStock === false;
+    }
+    if (stockManagementType === "AVAILABILITY") {
+      return product.inStock === false;
+    }
+    return hasVariants
+      ? product.variants!.every(
+          (v: any) =>
+            (v.manageAvailability && !v.inStock) || (v.manageQuantity && (v.stock ?? 0) <= 0)
+        )
+      : product.manageStockAvailability && product.inStock === false
+      ? true
+      : Boolean(product.manageStockQuantity && (product.stock ?? 0) <= 0);
+  }, [stockManagementType, colorWiseStockType, hasVariants, product]);
+
   const isLowStock =
     !isOutOfStock &&
     !hasVariants &&
-    Boolean(product.manageStockQuantity) &&
-    product.stock <= 5;
+    (stockManagementType === "QUANTITY" || Boolean(product.manageStockQuantity)) &&
+    (product.stock ?? 0) <= 5;
   const cartItem = items.find((i) => i.productId === product.id);
   const imageUrl = product.images?.[0]?.url;
 

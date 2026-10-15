@@ -504,6 +504,9 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
               isLoading={loading}
               disabled={!codEnabled && !onlineEnabled && !whatsappEnabled}
               className="w-full mt-4"
+              style={{
+                borderRadius: "var(--store-button-radius, 10px)",
+              }}
             >
               {paymentMethod === "RAZORPAY"
                 ? `Pay ${formatCurrency(subtotal)} Online`

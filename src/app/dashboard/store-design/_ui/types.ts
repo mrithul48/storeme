@@ -27,9 +27,12 @@ export interface Testimonial {
 }
 export interface Badge {
   id: string;
+  count?: string;
+  heading?: string;
+  description?: string;
+  text?: string;
   icon?: string | null;
   iconPublicId?: string | null;
-  text: string;
   sortOrder: number;
 }
 
@@ -65,7 +68,7 @@ export interface DesignState {
   // WhatsApp
   whatsappEnabled: boolean;
   // Header
-  headerDeliveryInfo: string;
+  headerDeliveryInfo?: string | null;
   // About
   aboutEnabled: boolean;
   aboutHeading: string;

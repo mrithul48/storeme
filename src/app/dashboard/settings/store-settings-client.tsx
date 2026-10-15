@@ -1,60 +1,204 @@
 "use client";
 
-import React, { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Input, Textarea } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Check, AlertCircle } from "lucide-react";
+
 import {
-  Store,
-  Palette,
-  Upload,
-  Check,
-  AlertCircle,
-  ExternalLink,
-  Copy,
-  CreditCard,
-  Banknote,
-  MessageCircle,
-  Globe,
-  RefreshCw,
-  Sliders,
-  Type,
-  Eye,
-  Unplug,
-  Plug,
-  ShieldCheck,
-  Loader2,
-  Lock,
-  Key,
-} from "lucide-react";
-import { getContrastRatio } from "@/lib/store-theme";
-
-interface StoreSettingsClientProps {
-  store: any;
-}
-
-const colorPresets = [
-  { name: "Ocean Blue", primary: "#3b82f6", buttonBg: "#3b82f6", navbarBg: "#0f172a" },
-  { name: "Emerald Luxe", primary: "#10b981", buttonBg: "#10b981", navbarBg: "#064e3b" },
-  { name: "Royal Violet", primary: "#8b5cf6", buttonBg: "#8b5cf6", navbarBg: "#2e1065" },
-  { name: "Rose Crimson", primary: "#f43f5e", buttonBg: "#f43f5e", navbarBg: "#4c0519" },
-  { name: "Amber Sunset", primary: "#f97316", buttonBg: "#f97316", navbarBg: "#431407" },
-  { name: "Midnight Teal", primary: "#06b6d4", buttonBg: "#06b6d4", navbarBg: "#083344" },
-];
-
-const supportedFonts = [
-  { id: "Inter", name: "Inter (Clean & Modern)" },
-  { id: "Poppins", name: "Poppins (Geometric & Trendy)" },
-  { id: "Roboto", name: "Roboto (Neutral & Legible)" },
-  { id: "Playfair Display", name: "Playfair Display (Editorial & Luxury)" },
-  { id: "Montserrat", name: "Montserrat (Bold & Contemporary)" },
-];
+  SettingsTab,
+  StockManagementType,
+  ColorWiseStockType,
+  StoreSettingsClientProps,
+  RazorpayStatus,
+} from "./types";
+import { StoreUrlBanner } from "./components/store-url-banner";
+import { SettingsTabsNav } from "./components/settings-tabs-nav";
+import { StockConfirmModal } from "./components/stock-confirm-modal";
+import { GeneralTab } from "./tabs/general-tab";
+import { ProductsTab } from "./tabs/products-tab";
+import { OrdersTab } from "./tabs/orders-tab";
+import { ThemeTab } from "./tabs/theme-tab";
+import { DomainTab } from "./tabs/domain-tab";
+import { PaymentsTab } from "./tabs/payments-tab";
+import { CustomerAuthTab } from "./tabs/customer-auth-tab";
 
 export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"general" | "orders" | "theme" | "domain" | "payments" | "customerAuth">("general");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("general");
+
+  // Stock Management state
+  const [savedStockType, setSavedStockType] = useState<StockManagementType>(
+    store.settings?.stockManagementType || null
+  );
+  const [savedColorWiseType, setSavedColorWiseType] = useState<ColorWiseStockType>(
+    store.settings?.colorWiseStockType || "AVAILABILITY"
+  );
+
+  const [stockManagementType, setStockManagementType] = useState<StockManagementType>(
+    store.settings?.stockManagementType || null
+  );
+  const [colorWiseStockType, setColorWiseStockType] = useState<ColorWiseStockType>(
+    store.settings?.colorWiseStockType || "AVAILABILITY"
+  );
+  const [savingStockSettings, setSavingStockSettings] = useState(false);
+  const [stockSuccess, setStockSuccess] = useState<string | null>(null);
+  const [stockError, setStockError] = useState<string | null>(null);
+
+  // Sync saved stock settings if store prop updates
+  useEffect(() => {
+    if (store?.settings?.stockManagementType !== undefined) {
+      setSavedStockType(store.settings?.stockManagementType || null);
+    }
+    if (store?.settings?.colorWiseStockType) {
+      setSavedColorWiseType(store.settings.colorWiseStockType);
+    }
+  }, [store?.settings?.stockManagementType, store?.settings?.colorWiseStockType]);
+
+  // Stock Type Change Confirmation state
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmModalForSave, setConfirmModalForSave] = useState(false);
+  const [pendingStockType, setPendingStockType] = useState<StockManagementType>(null);
+  const [pendingColorWiseType, setPendingColorWiseType] = useState<ColorWiseStockType | null>(null);
+
+  const handleRequestStockTypeChange = (newType: "AVAILABILITY" | "QUANTITY" | "COLOR_WISE") => {
+    // 1. If user is selecting for the first time, do not show confirmation message
+    if (!savedStockType) {
+      setStockManagementType(newType);
+      return;
+    }
+
+    // 2. If clicking what is already active on screen, do nothing
+    if (newType === stockManagementType) return;
+
+    // 3. If clicking back to what is ALREADY saved in store settings, switch directly without modal
+    const isAlreadySaved =
+      newType === savedStockType &&
+      (newType !== "COLOR_WISE" || colorWiseStockType === savedColorWiseType);
+
+    if (isAlreadySaved) {
+      setStockManagementType(newType);
+      if (newType === "COLOR_WISE") {
+        setColorWiseStockType(savedColorWiseType);
+      }
+      return;
+    }
+
+    // 4. Truly switching away from saved configuration -> prompt confirmation message
+    setPendingStockType(newType);
+    setPendingColorWiseType(newType === "COLOR_WISE" ? colorWiseStockType : null);
+    setConfirmModalForSave(false);
+    setShowConfirmModal(true);
+  };
+
+  const handleRequestColorWiseTypeChange = (newSubType: "AVAILABILITY" | "QUANTITY") => {
+    // 1. If user is selecting for the first time, do not show confirmation message
+    if (!savedStockType) {
+      setColorWiseStockType(newSubType);
+      return;
+    }
+
+    if (newSubType === colorWiseStockType) return;
+
+    // 2. If COLOR_WISE is already saved and switching back to saved sub-type, switch directly without modal
+    if (savedStockType === "COLOR_WISE" && newSubType === savedColorWiseType) {
+      setColorWiseStockType(newSubType);
+      return;
+    }
+
+    // 3. If store already has COLOR_WISE configured and sub-type changes -> prompt confirmation
+    if (savedStockType === "COLOR_WISE") {
+      setPendingStockType("COLOR_WISE");
+      setPendingColorWiseType(newSubType);
+      setConfirmModalForSave(false);
+      setShowConfirmModal(true);
+    } else {
+      setColorWiseStockType(newSubType);
+    }
+  };
+
+  const executeSaveStock = async (
+    targetType: "AVAILABILITY" | "QUANTITY" | "COLOR_WISE",
+    targetColorType: "AVAILABILITY" | "QUANTITY" | null
+  ) => {
+    setSavingStockSettings(true);
+    setStockError(null);
+    setStockSuccess(null);
+    const isChangingType =
+      savedStockType !== null &&
+      (targetType !== savedStockType ||
+        (targetType === "COLOR_WISE" && targetColorType !== savedColorWiseType));
+
+    try {
+      const res = await fetch("/api/stores/current", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          settings: {
+            stockManagementType: targetType,
+            colorWiseStockType: targetType === "COLOR_WISE" ? targetColorType : null,
+          },
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to update stock management settings.");
+      }
+      setSavedStockType(targetType);
+      if (targetColorType) {
+        setSavedColorWiseType(targetColorType);
+      }
+      setStockSuccess(
+        isChangingType
+          ? "Stock management type updated! All products stocks have been reset and reconfigured to match this setting."
+          : "Stock management configuration saved successfully! All store products now follow this setting."
+      );
+      router.refresh();
+    } catch (err: any) {
+      setStockError(err.message || "Failed to save stock settings.");
+    } finally {
+      setSavingStockSettings(false);
+    }
+  };
+
+  const handleConfirmChange = async (autoSave = false) => {
+    const nextStock = pendingStockType || stockManagementType;
+    const nextColor = pendingColorWiseType || colorWiseStockType;
+    if (pendingStockType) {
+      setStockManagementType(pendingStockType);
+    }
+    if (pendingColorWiseType) {
+      setColorWiseStockType(pendingColorWiseType);
+    }
+    setShowConfirmModal(false);
+
+    if (autoSave && nextStock) {
+      await executeSaveStock(nextStock, nextStock === "COLOR_WISE" ? nextColor : null);
+    }
+
+    setPendingStockType(null);
+    setPendingColorWiseType(null);
+  };
+
+  const handleCancelChange = () => {
+    setShowConfirmModal(false);
+    setPendingStockType(null);
+    setPendingColorWiseType(null);
+  };
+
+  // Read URL query parameter for tab
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (
+        tabParam &&
+        ["general", "products", "orders", "theme", "domain", "payments", "customerAuth"].includes(tabParam)
+      ) {
+        setActiveTab(tabParam as SettingsTab);
+      }
+    }
+  }, []);
 
   // Customer Auth state
   const [googleAuthEnabled, setGoogleAuthEnabled] = useState(false);
@@ -117,7 +261,7 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
   };
 
   // Razorpay connection state
-  const [rzpStatus, setRzpStatus] = useState<{ connected: boolean; keyId?: string; mode?: string } | null>(null);
+  const [rzpStatus, setRzpStatus] = useState<RazorpayStatus>(null);
   const [rzpLoading, setRzpLoading] = useState(false);
   const [rzpSaving, setRzpSaving] = useState(false);
   const [rzpKeyId, setRzpKeyId] = useState("");
@@ -211,7 +355,7 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
     }
   };
 
-  // Connect / Update Razorpay (plain function — not a form handler to avoid nested <form>)
+  // Connect / Update Razorpay
   const handleRzpConnect = async () => {
     if (!rzpKeyId.trim() || !rzpKeySecret.trim()) {
       setRzpError("Please enter both Key ID and Key Secret.");
@@ -293,6 +437,33 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
     }
   };
 
+  const handleSaveStockSettings = async (e?: React.FormEvent, forceSave = false) => {
+    if (e) e.preventDefault();
+    if (!stockManagementType) {
+      setStockError("Please select one of the stock management options.");
+      return;
+    }
+
+    // If changing from an already configured stock type and not forced
+    const isChangingType =
+      savedStockType !== null &&
+      (stockManagementType !== savedStockType ||
+        (stockManagementType === "COLOR_WISE" && colorWiseStockType !== savedColorWiseType));
+
+    if (isChangingType && !forceSave && !showConfirmModal) {
+      setPendingStockType(stockManagementType);
+      setPendingColorWiseType(stockManagementType === "COLOR_WISE" ? colorWiseStockType : null);
+      setConfirmModalForSave(true);
+      setShowConfirmModal(true);
+      return;
+    }
+
+    await executeSaveStock(
+      stockManagementType,
+      stockManagementType === "COLOR_WISE" ? colorWiseStockType : null
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -327,6 +498,8 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
             codEnabled,
             onlinePaymentEnabled,
             whatsappOrderEnabled,
+            stockManagementType,
+            colorWiseStockType: stockManagementType === "COLOR_WISE" ? colorWiseStockType : null,
           },
         }),
       });
@@ -477,1303 +650,183 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
       )}
 
       {/* Shareable Storefront Link Banner */}
-      <Card className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-blue-950/40 via-slate-900 to-slate-900 border-blue-500/20">
-        <div className="space-y-1">
-          <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">
-            Your Public Store URL
-          </span>
-          <p className="font-mono text-sm text-slate-200 truncate">{storeUrl}</p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={handleCopyLink}>
-            {copied ? <Check className="w-4 h-4 mr-1 text-emerald-400" /> : <Copy className="w-4 h-4 mr-1" />}
-            {copied ? "Copied!" : "Copy Link"}
-          </Button>
-
-          <Link href={`/store/${store.slug}`} target="_blank">
-            <Button type="button" variant="primary" size="sm">
-              <ExternalLink className="w-4 h-4 mr-1" />
-              Visit Store
-            </Button>
-          </Link>
-        </div>
-      </Card>
+      <StoreUrlBanner
+        storeUrl={storeUrl}
+        storeSlug={store.slug}
+        copied={copied}
+        onCopyLink={handleCopyLink}
+      />
 
       {/* Settings Navigation Tabs */}
-      <div className="flex border-b border-slate-800 space-x-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab("general")}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all ${
-            activeTab === "general"
-              ? "border-blue-500 text-white"
-              : "border-transparent text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <Store className="w-4 h-4" />
-          General & Brand
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("orders")}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all ${
-            activeTab === "orders"
-              ? "border-blue-500 text-white"
-              : "border-transparent text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <Sliders className="w-4 h-4" />
-          Order Methods
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("theme")}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all ${
-            activeTab === "theme"
-              ? "border-blue-500 text-white"
-              : "border-transparent text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <Palette className="w-4 h-4" />
-          Theme & Styling
-        </button>
-
-        <button
-          type="button"
-          onClick={handleDomainTabClick}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all ${
-            activeTab === "domain"
-              ? "border-blue-500 text-white"
-              : "border-transparent text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <Globe className="w-4 h-4" />
-          Custom Domain
-        </button>
-
-        <button
-          type="button"
-          onClick={handlePaymentsTabClick}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all ${
-            activeTab === "payments"
-              ? "border-blue-500 text-white"
-              : "border-transparent text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <CreditCard className="w-4 h-4" />
-          Payments
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setActiveTab("customerAuth");
-            loadCustomerAuthConfig();
-          }}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all ${
-            activeTab === "customerAuth"
-              ? "border-blue-500 text-white"
-              : "border-transparent text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <ShieldCheck className="w-4 h-4" />
-          Customer Auth
-        </button>
-      </div>
+      <SettingsTabsNav
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onDomainTabClick={handleDomainTabClick}
+        onPaymentsTabClick={handlePaymentsTabClick}
+        onCustomerAuthTabClick={() => {
+          setActiveTab("customerAuth");
+          loadCustomerAuthConfig();
+        }}
+      />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* TAB 1: GENERAL & BRAND */}
         {activeTab === "general" && (
-          <div className="space-y-6">
-            <Card className="space-y-6">
-              <div className="border-b border-slate-800 pb-3">
-                <h2 className="text-base font-bold text-white">Business Details</h2>
-                <p className="text-xs text-slate-400">
-                  Basic identifying details displayed across your storefront and order receipts.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Store Name *</label>
-                  <Input
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Lumina Apparel"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Business Category</label>
-                  <Input
-                    value={businessType}
-                    onChange={(e) => setBusinessType(e.target.value)}
-                    placeholder="e.g. Fashion & Lifestyle"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Store Description</label>
-                <Textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Tell customers what makes your products and store special..."
-                />
-              </div>
-
-              {/* Logo Upload */}
-              <div className="space-y-3 pt-2">
-                <label className="text-xs font-semibold text-slate-300">Brand Logo</label>
-                <div className="flex items-center gap-4">
-                  <div className="relative w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center flex-shrink-0">
-                    {logoUrl ? (
-                      <Image src={logoUrl} alt="Logo" fill className="object-cover" />
-                    ) : (
-                      <Store className="w-8 h-8 text-slate-500" />
-                    )}
-                  </div>
-                  <div>
-                    <label className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 cursor-pointer transition-all border border-slate-700">
-                      <Upload className="w-3.5 h-3.5" />
-                      Upload New Logo
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="hidden"
-                      />
-                    </label>
-                    <p className="text-[11px] text-slate-500 mt-1">PNG, JPG or SVG up to 2MB</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="space-y-4">
-              <div className="border-b border-slate-800 pb-3">
-                <h2 className="text-base font-bold text-white">Contact & Support Details</h2>
-                <p className="text-xs text-slate-400">
-                  Customers use these details to contact your store regarding inquiries and orders.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Support Email</label>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="contact@yourstore.com"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Phone Number</label>
-                  <Input
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 9876543210"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">WhatsApp Number</label>
-                  <Input
-                    value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
-                    placeholder="+91 9876543210"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Physical Address</label>
-                <Input
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="e.g. 74 Fashion Blvd, Indiranagar, Bengaluru, KA 560038"
-                />
-              </div>
-            </Card>
-          </div>
+          <GeneralTab
+            name={name}
+            setName={setName}
+            businessType={businessType}
+            setBusinessType={setBusinessType}
+            description={description}
+            setDescription={setDescription}
+            logoUrl={logoUrl}
+            onLogoUpload={handleLogoUpload}
+            email={email}
+            setEmail={setEmail}
+            phone={phone}
+            setPhone={setPhone}
+            whatsapp={whatsapp}
+            setWhatsapp={setWhatsapp}
+            address={address}
+            setAddress={setAddress}
+          />
         )}
 
-        {/* TAB 2: ORDER METHODS */}
+        {/* TAB 2: PRODUCT MANAGEMENT (STOCK MANAGEMENT) */}
+        {activeTab === "products" && (
+          <ProductsTab
+            stockManagementType={stockManagementType}
+            colorWiseStockType={colorWiseStockType}
+            savedStockType={savedStockType}
+            savedColorWiseType={savedColorWiseType}
+            savingStockSettings={savingStockSettings}
+            stockSuccess={stockSuccess}
+            stockError={stockError}
+            onRequestStockTypeChange={handleRequestStockTypeChange}
+            onRequestColorWiseTypeChange={handleRequestColorWiseTypeChange}
+            onSaveStockSettings={() => handleSaveStockSettings()}
+          />
+        )}
+
+        {/* TAB 3: ORDER METHODS */}
         {activeTab === "orders" && (
-          <div className="space-y-6">
-            <Card className="space-y-6">
-              <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
-                <div>
-                  <h2 className="text-base font-bold text-white">Checkout & Order Channels</h2>
-                  <p className="text-xs text-slate-400">
-                    Enable or disable the ordering methods available to customers on your storefront.
-                  </p>
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <span className="text-xs font-semibold text-slate-300">Store Ordering:</span>
-                  <input
-                    type="checkbox"
-                    checked={ordersEnabled}
-                    onChange={(e) => setOrdersEnabled(e.target.checked)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className={`text-xs font-bold ${ordersEnabled ? "text-emerald-400" : "text-rose-400"}`}>
-                    {ordersEnabled ? "OPEN" : "PAUSED"}
-                  </span>
-                </label>
-              </div>
-
-              <div className="space-y-4">
-                {/* Method 1: COD */}
-                <div className="p-4 rounded-xl border border-slate-800 bg-slate-950/40 flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                      <Banknote className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-white">Cash on Delivery (COD)</h4>
-                      <p className="text-xs text-slate-400">
-                        Allow customers to place orders online and pay cash directly upon delivery.
-                      </p>
-                    </div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={codEnabled}
-                    onChange={(e) => setCodEnabled(e.target.checked)}
-                    className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 mt-1 cursor-pointer"
-                  />
-                </div>
-
-                {/* Method 2: Online Payment */}
-                <div className="p-4 rounded-xl border border-slate-800 bg-slate-950/40 flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                      <CreditCard className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-white">Online Payment (Razorpay)</h4>
-                      <p className="text-xs text-slate-400">
-                        Accept instant UPI, credit/debit cards, and NetBanking payments securely.
-                      </p>
-                    </div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={onlinePaymentEnabled}
-                    onChange={(e) => setOnlinePaymentEnabled(e.target.checked)}
-                    className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 mt-1 cursor-pointer"
-                  />
-                </div>
-
-                {/* Method 3: WhatsApp Ordering */}
-                <div className="p-4 rounded-xl border border-slate-800 bg-slate-950/40 flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      <MessageCircle className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-white">WhatsApp Direct Order</h4>
-                      <p className="text-xs text-slate-400">
-                        Saves order in database and opens WhatsApp with a pre-filled summary to complete with customer.
-                      </p>
-                    </div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={whatsappOrderEnabled}
-                    onChange={(e) => setWhatsappOrderEnabled(e.target.checked)}
-                    className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 mt-1 cursor-pointer"
-                  />
-                </div>
-              </div>
-            </Card>
-          </div>
+          <OrdersTab
+            ordersEnabled={ordersEnabled}
+            setOrdersEnabled={setOrdersEnabled}
+            codEnabled={codEnabled}
+            setCodEnabled={setCodEnabled}
+            onlinePaymentEnabled={onlinePaymentEnabled}
+            setOnlinePaymentEnabled={setOnlinePaymentEnabled}
+            whatsappOrderEnabled={whatsappOrderEnabled}
+            setWhatsappOrderEnabled={setWhatsappOrderEnabled}
+          />
         )}
 
-        {/* TAB 3: THEME & STYLING WITH LIVE PREVIEW */}
+        {/* TAB 4: THEME & STYLING WITH LIVE PREVIEW */}
         {activeTab === "theme" && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Controls Column */}
-              <div className="lg:col-span-7 space-y-6">
-                <Card className="space-y-6">
-                  <div className="border-b border-slate-800 pb-3">
-                    <h2 className="text-base font-bold text-white">Color Presets</h2>
-                    <p className="text-xs text-slate-400">
-                      Choose a harmonious designer palette or customize every element individually.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                    {colorPresets.map((preset) => (
-                      <button
-                        type="button"
-                        key={preset.name}
-                        onClick={() => {
-                          setPrimaryColor(preset.primary);
-                          setButtonBg(preset.buttonBg);
-                          setNavbarBg(preset.navbarBg);
-                          setNavbarText("#ffffff");
-                        }}
-                        className="p-3 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-slate-700 flex items-center gap-2.5 transition-all text-left"
-                      >
-                        <div
-                          className="w-5 h-5 rounded-full shadow-sm flex-shrink-0"
-                          style={{ backgroundColor: preset.primary }}
-                        />
-                        <span className="text-xs font-semibold text-slate-200 truncate">
-                          {preset.name}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Typography Selector */}
-                  <div className="space-y-1.5 pt-2">
-                    <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                      <Type className="w-4 h-4 text-blue-400" />
-                      Storefront Font Style
-                    </label>
-                    <select
-                      value={primaryFont}
-                      onChange={(e) => setPrimaryFont(e.target.value)}
-                      className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3.5 text-xs font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      {supportedFonts.map((f) => (
-                        <option key={f.id} value={f.id}>
-                          {f.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Button Shape */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Button Shape</label>
-                    <select
-                      value={buttonShape}
-                      onChange={(e) => setButtonShape(e.target.value)}
-                      className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3.5 text-xs font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="SQUARE">Sharp Corners (Square)</option>
-                      <option value="MEDIUM_ROUNDED">Rounded Corners (Standard)</option>
-                      <option value="FULLY_ROUNDED">Pill Shaped (Fully Rounded)</option>
-                    </select>
-                  </div>
-                </Card>
-
-                {/* Detailed Color Pickers */}
-                <Card className="space-y-4">
-                  <div className="border-b border-slate-800 pb-3">
-                    <h2 className="text-base font-bold text-white">Element Colors</h2>
-                    <p className="text-xs text-slate-400">
-                      Exact HEX colors for specific storefront sections.
-                    </p>
-                  </div>
-
-                  {/* Contrast Accessibility Warning */}
-                  {(() => {
-                    const navContrast = getContrastRatio(navbarBg, navbarText);
-                    const pageContrast = getContrastRatio(backgroundColor, textColor);
-                    const btnContrast = getContrastRatio(buttonBg, buttonText);
-                    const hasLow = navContrast < 2.5 || pageContrast < 2.5 || btnContrast < 2.5;
-                    if (!hasLow) return null;
-                    return (
-                      <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-xs text-amber-300">
-                        <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <strong className="text-white block mb-0.5">Accessibility Warning: Low Contrast Detected</strong>
-                          <span>
-                            {pageContrast < 2.5 && "Page background and page text have low contrast. Text may be hard to read or invisible. "}
-                            {navContrast < 2.5 && "Navbar background and text have low contrast. "}
-                            {btnContrast < 2.5 && "Button background and text have low contrast. "}
-                            Ensure text elements contrast with their backgrounds.
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Navbar Background</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={navbarBg}
-                          onChange={(e) => setNavbarBg(e.target.value)}
-                          className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
-                        />
-                        <Input value={navbarBg} onChange={(e) => setNavbarBg(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Navbar Text Color</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={navbarText}
-                          onChange={(e) => setNavbarText(e.target.value)}
-                          className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
-                        />
-                        <Input value={navbarText} onChange={(e) => setNavbarText(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Button Background</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={buttonBg}
-                          onChange={(e) => setButtonBg(e.target.value)}
-                          className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
-                        />
-                        <Input value={buttonBg} onChange={(e) => setButtonBg(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Button Text Color</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={buttonText}
-                          onChange={(e) => setButtonText(e.target.value)}
-                          className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
-                        />
-                        <Input value={buttonText} onChange={(e) => setButtonText(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Page Background</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={backgroundColor}
-                          onChange={(e) => setBackgroundColor(e.target.value)}
-                          className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
-                        />
-                        <Input value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Heading 1 (H1) Color</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={h1Color}
-                          onChange={(e) => setH1Color(e.target.value)}
-                          className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
-                        />
-                        <Input value={h1Color} onChange={(e) => setH1Color(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Heading 2 (H2) Color</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={h2Color}
-                          onChange={(e) => setH2Color(e.target.value)}
-                          className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
-                        />
-                        <Input value={h2Color} onChange={(e) => setH2Color(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Paragraph Text Color</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={paragraphColor}
-                          onChange={(e) => setParagraphColor(e.target.value)}
-                          className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
-                        />
-                        <Input value={paragraphColor} onChange={(e) => setParagraphColor(e.target.value)} />
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {/* Live Preview Column */}
-              <div className="lg:col-span-5 space-y-4">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-400">
-                  <Eye className="w-4 h-4" />
-                  Live Theme Preview
-                </div>
-
-                <div
-                  className="rounded-2xl border border-slate-700 shadow-2xl overflow-hidden transition-all sticky top-24"
-                  style={{
-                    backgroundColor,
-                    fontFamily: primaryFont,
-                  }}
-                >
-                  {/* Mock Navbar */}
-                  <div
-                    className="p-4 flex items-center justify-between border-b border-black/10 transition-colors"
-                    style={{ backgroundColor: navbarBg, color: navbarText }}
-                  >
-                    <div className="flex items-center gap-2">
-                      {logoUrl ? (
-                        <div className="relative h-6 max-w-[120px] flex items-center">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={logoUrl}
-                            alt="Logo"
-                            className="h-6 w-auto max-w-[120px] object-contain object-left"
-                          />
-                        </div>
-                      ) : (
-                        <div
-                          className="w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs"
-                          style={{ backgroundColor: buttonBg, color: buttonText }}
-                        >
-                          {name[0] || "S"}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 text-xs opacity-90">
-                      <span>Products</span>
-                      <span>Cart (2)</span>
-                    </div>
-                  </div>
-
-                  {/* Mock Hero Section */}
-                  <div className="p-6 space-y-4">
-                    <h1
-                      className="text-xl font-extrabold tracking-tight transition-colors"
-                      style={{ color: h1Color }}
-                    >
-                      New Summer Collection
-                    </h1>
-                    <h2
-                      className="text-sm font-semibold transition-colors"
-                      style={{ color: h2Color }}
-                    >
-                      Handcrafted contemporary essentials
-                    </h2>
-                    <p
-                      className="text-xs leading-relaxed transition-colors"
-                      style={{ color: paragraphColor }}
-                    >
-                      Engineered for timeless aesthetic, sustainable materials, and ultimate everyday comfort.
-                    </p>
-
-                    <div className="pt-2">
-                      <button
-                        type="button"
-                        className={`px-5 py-2.5 text-xs font-bold transition-all shadow-md active:scale-95 ${
-                          buttonShape === "FULLY_ROUNDED"
-                            ? "rounded-full"
-                            : buttonShape === "SQUARE"
-                            ? "rounded-none"
-                            : "rounded-xl"
-                        }`}
-                        style={{
-                          backgroundColor: buttonBg,
-                          color: buttonText,
-                        }}
-                      >
-                        Shop Now • ₹1,299
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ThemeTab
+            name={name}
+            logoUrl={logoUrl}
+            primaryColor={primaryColor}
+            setPrimaryColor={setPrimaryColor}
+            navbarBg={navbarBg}
+            setNavbarBg={setNavbarBg}
+            navbarText={navbarText}
+            setNavbarText={setNavbarText}
+            buttonBg={buttonBg}
+            setButtonBg={setButtonBg}
+            buttonText={buttonText}
+            setButtonText={setButtonText}
+            backgroundColor={backgroundColor}
+            setBackgroundColor={setBackgroundColor}
+            textColor={textColor}
+            setTextColor={setTextColor}
+            h1Color={h1Color}
+            setH1Color={setH1Color}
+            h2Color={h2Color}
+            setH2Color={setH2Color}
+            paragraphColor={paragraphColor}
+            setParagraphColor={setParagraphColor}
+            buttonShape={buttonShape}
+            setButtonShape={setButtonShape}
+            primaryFont={primaryFont}
+            setPrimaryFont={setPrimaryFont}
+          />
         )}
 
-        {/* TAB 4: CUSTOM DOMAIN */}
+        {/* TAB 5: CUSTOM DOMAIN */}
         {activeTab === "domain" && (
-          <div className="space-y-6">
-            {/* Active Connected Domain Hero Banner */}
-            {(domainStatus === "CONNECTED" || domainStatus === "VERIFIED") && customDomain && (
-              <Card className="bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-900 border-emerald-500/30">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-                        Custom Domain Active & Verified
-                      </span>
-                    </div>
-                    <p className="text-xl font-mono font-bold text-white tracking-tight">
-                      https://{customDomain}
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      Your store catalog, cart, checkout, and themes are live on your custom domain.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <a
-                      href={`https://${customDomain}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex"
-                    >
-                      <Button type="button" variant="primary" size="sm">
-                        <ExternalLink className="w-4 h-4 mr-1.5" />
-                        Visit Storefront
-                      </Button>
-                    </a>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
-                      isLoading={disconnectingDomain}
-                      onClick={handleDisconnectDomain}
-                    >
-                      <Unplug className="w-4 h-4 mr-1.5" />
-                      Disconnect
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* Domain Configuration Form Card */}
-            <Card className="space-y-6">
-              <div className="border-b border-slate-800 pb-3 flex items-center justify-between flex-wrap gap-2">
-                <div>
-                  <h2 className="text-base font-bold text-white">Custom Domain Mapping</h2>
-                  <p className="text-xs text-slate-400">
-                    Connect your own custom root or subdomain (e.g. shop.yourbrand.com or yourbrand.com).
-                  </p>
-                </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    domainStatus === "CONNECTED" || domainStatus === "VERIFIED"
-                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                      : domainStatus === "PENDING_VERIFICATION"
-                      ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                      : domainStatus === "VERIFICATION_FAILED" || domainStatus === "FAILED"
-                      ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                      : "bg-slate-800 text-slate-400"
-                  }`}
-                >
-                  Status: {domainStatus.replace(/_/g, " ")}
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-xs font-semibold text-slate-300">Custom Domain Hostname</label>
-                <div className="flex gap-2 flex-col sm:flex-row">
-                  <Input
-                    value={customDomain}
-                    onChange={(e) => setCustomDomain(e.target.value)}
-                    placeholder="e.g. store.yourbrand.com or yourbrand.com"
-                    className="flex-1"
-                  />
-                  <Button type="button" variant="primary" onClick={handleSaveDomain} isLoading={loading}>
-                    <Globe className="w-4 h-4 mr-1.5" />
-                    {domainStatus === "CONNECTED" || domainStatus === "VERIFIED" ? "Update Domain" : "Register Domain"}
-                  </Button>
-                </div>
-                <p className="text-[11px] text-slate-500">
-                  Enter your domain name without <span className="font-mono text-slate-400">https://</span> or trailing slashes.
-                </p>
-              </div>
-
-              {/* DNS Instructions Section */}
-              {verificationToken && (
-                <div className="p-4 sm:p-5 rounded-xl bg-slate-950 border border-slate-800 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4" />
-                      DNS Configuration Instructions
-                    </h4>
-                    <span className="text-[11px] text-slate-400">Hostinger, GoDaddy, Namecheap, Cloudflare</span>
-                  </div>
-
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Log in to your domain registrar and create the following DNS records to verify ownership and route traffic:
-                  </p>
-
-                  <div className="space-y-3">
-                    {/* Record 1: Routing Record */}
-                    {customDomain.split(".").length > 2 ? (
-                      <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800/80 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">
-                            Record 1: Traffic Routing (CNAME)
-                          </span>
-                          <span className="text-[10px] text-slate-400">Points subdomain to platform</span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
-                          <div>
-                            <span className="text-slate-500 block text-[10px]">TYPE</span>
-                            <span className="text-white font-bold">CNAME</span>
-                          </div>
-                          <div>
-                            <span className="text-slate-500 block text-[10px]">HOST / NAME</span>
-                            <span className="text-white font-bold">{customDomain.split(".")[0]}</span>
-                          </div>
-                          <div>
-                            <span className="text-slate-500 block text-[10px]">TARGET / VALUE</span>
-                            <div className="flex items-center justify-between gap-1">
-                              <span className="text-blue-300 font-bold break-all">cname.vercel-dns.com</span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  navigator.clipboard.writeText("cname.vercel-dns.com");
-                                  setCopiedRouting(true);
-                                  setTimeout(() => setCopiedRouting(false), 2000);
-                                }}
-                                className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
-                                title="Copy Value"
-                              >
-                                {copiedRouting ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800/80 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">
-                            Record 1: Traffic Routing (A Record)
-                          </span>
-                          <span className="text-[10px] text-slate-400">Points root domain to platform IP</span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
-                          <div>
-                            <span className="text-slate-500 block text-[10px]">TYPE</span>
-                            <span className="text-white font-bold">A</span>
-                          </div>
-                          <div>
-                            <span className="text-slate-500 block text-[10px]">HOST / NAME</span>
-                            <span className="text-white font-bold">@</span>
-                          </div>
-                          <div>
-                            <span className="text-slate-500 block text-[10px]">TARGET / IP</span>
-                            <div className="flex items-center justify-between gap-1">
-                              <span className="text-blue-300 font-bold break-all">76.76.21.21</span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  navigator.clipboard.writeText("76.76.21.21");
-                                  setCopiedRouting(true);
-                                  setTimeout(() => setCopiedRouting(false), 2000);
-                                }}
-                                className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
-                                title="Copy IP"
-                              >
-                                {copiedRouting ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Record 2: TXT Verification Record */}
-                    <div className="bg-slate-900/90 p-3.5 rounded-lg border border-slate-800/80 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                          Record 2: Ownership Verification (TXT)
-                        </span>
-                        <span className="text-[10px] text-slate-400">Proves domain ownership</span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
-                        <div>
-                          <span className="text-slate-500 block text-[10px]">TYPE</span>
-                          <span className="text-white font-bold">TXT</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-500 block text-[10px]">HOST / NAME</span>
-                          <span className="text-white font-bold">@</span>
-                        </div>
-                        <div>
-                          <span className="text-slate-500 block text-[10px]">RECORD VALUE</span>
-                          <div className="flex items-center justify-between gap-1">
-                            <span className="text-emerald-400 font-bold break-all text-[11px]">{verificationToken}</span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                navigator.clipboard.writeText(verificationToken);
-                                setCopiedToken(true);
-                                setTimeout(() => setCopiedToken(false), 2000);
-                              }}
-                              className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
-                              title="Copy Token"
-                            >
-                              {copiedToken ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="text-[11px] text-slate-400 italic">
-                    Note: DNS records usually propagate within 5-30 minutes, but can occasionally take up to 24 hours depending on your registrar.
-                  </p>
-
-                  <div className="pt-2 flex items-center gap-3 flex-wrap">
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="sm"
-                      isLoading={verifyingDomain}
-                      onClick={handleVerifyDomain}
-                    >
-                      <RefreshCw className="w-4 h-4 mr-1.5" />
-                      Verify DNS Configuration
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="border-rose-500/20 text-rose-400 hover:bg-rose-500/10"
-                      isLoading={disconnectingDomain}
-                      onClick={handleDisconnectDomain}
-                    >
-                      <Unplug className="w-4 h-4 mr-1.5" />
-                      Disconnect Domain
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </Card>
-          </div>
+          <DomainTab
+            customDomain={customDomain}
+            setCustomDomain={setCustomDomain}
+            domainStatus={domainStatus}
+            verificationToken={verificationToken}
+            loading={loading}
+            verifyingDomain={verifyingDomain}
+            disconnectingDomain={disconnectingDomain}
+            copiedToken={copiedToken}
+            copiedRouting={copiedRouting}
+            onSaveDomain={handleSaveDomain}
+            onVerifyDomain={handleVerifyDomain}
+            onDisconnectDomain={handleDisconnectDomain}
+            onCopyToken={() => {
+              navigator.clipboard.writeText(verificationToken);
+              setCopiedToken(true);
+              setTimeout(() => setCopiedToken(false), 2000);
+            }}
+            onCopyRouting={(val) => {
+              navigator.clipboard.writeText(val);
+              setCopiedRouting(true);
+              setTimeout(() => setCopiedRouting(false), 2000);
+            }}
+          />
         )}
 
-        {/* TAB 5: PAYMENTS — Merchant Razorpay Integration */}
+        {/* TAB 6: PAYMENTS */}
         {activeTab === "payments" && (
-          <div className="space-y-6">
-            {/* Razorpay Status / Notifications */}
-            {rzpSuccess && (
-              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-2">
-                <Check className="w-5 h-5 flex-shrink-0" />
-                <span>{rzpSuccess}</span>
-              </div>
-            )}
-            {rzpError && (
-              <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                <span>{rzpError}</span>
-              </div>
-            )}
-
-            {rzpLoading ? (
-              <Card className="flex items-center justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
-                <span className="ml-3 text-slate-400 text-sm">Loading payment settings...</span>
-              </Card>
-            ) : (
-              <>
-                {/* Connection Status Card */}
-                {rzpStatus?.connected && (
-                  <Card className="bg-gradient-to-br from-emerald-950/40 to-slate-900 border-emerald-500/20">
-                    <div className="flex items-start justify-between flex-wrap gap-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                          <span className="text-sm font-bold text-emerald-400">Razorpay Connected</span>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                            rzpStatus.mode === "live"
-                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                              : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                          }`}>
-                            {rzpStatus.mode ?? "test"}
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-400">
-                          Key ID:{" "}
-                          <span className="font-mono text-slate-200">
-                            {rzpStatus.keyId
-                              ? `${rzpStatus.keyId.slice(0, 12)}${"..".padEnd(8, "●")}`
-                              : "—"}
-                          </span>
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          Secret: <span className="font-mono">●●●●●●●●●●●●●●●●</span>
-                        </p>
-                      </div>
-
-                      <div className="flex gap-2 flex-wrap">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setRzpConfirmDisconnect(true)}
-                        >
-                          <Unplug className="w-4 h-4 mr-1.5" />
-                          Disconnect
-                        </Button>
-                      </div>
-                    </div>
-
-                    {rzpConfirmDisconnect && (
-                      <div className="mt-4 p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 space-y-3">
-                        <p className="text-sm text-rose-300 font-semibold">
-                          Disconnect Razorpay?
-                        </p>
-                        <p className="text-xs text-slate-400">
-                          Online payments will be disabled until you reconnect. Existing orders and payment records remain intact.
-                        </p>
-                        <div className="flex gap-2">
-                          <Button
-                            type="button"
-                            variant="primary"
-                            size="sm"
-                            isLoading={rzpDisconnecting}
-                            onClick={handleRzpDisconnect}
-                            className="!bg-rose-600 hover:!bg-rose-700"
-                          >
-                            Yes, Disconnect
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setRzpConfirmDisconnect(false)}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </Card>
-                )}
-
-                {/* Connect / Update Form */}
-                <Card className="space-y-5">
-                  <div className="border-b border-slate-800 pb-3">
-                    <h2 className="text-base font-bold text-white flex items-center gap-2">
-                      <CreditCard className="w-5 h-5 text-blue-400" />
-                      {rzpStatus?.connected ? "Update Razorpay Credentials" : "Connect Razorpay"}
-                    </h2>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Connect your Razorpay account so customers can pay online directly into your Razorpay account.
-                      Your credentials are encrypted and stored securely — never visible to anyone.
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    {/* Mode selector */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Account Mode</label>
-                      <div className="flex gap-3">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="rzpMode"
-                            value="test"
-                            checked={rzpMode === "test"}
-                            onChange={() => setRzpMode("test")}
-                            className="accent-blue-500"
-                          />
-                          <span className="text-sm text-slate-300">Test Mode</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="rzpMode"
-                            value="live"
-                            checked={rzpMode === "live"}
-                            onChange={() => setRzpMode("live")}
-                            className="accent-emerald-500"
-                          />
-                          <span className="text-sm text-slate-300">Live Mode</span>
-                        </label>
-                      </div>
-                      {rzpMode === "live" && (
-                        <p className="text-[11px] text-amber-400">⚠ Live mode will charge real money. Ensure your credentials are from a verified Razorpay account.</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Key ID *</label>
-                      <Input
-                        required
-                        value={rzpKeyId}
-                        onChange={(e) => setRzpKeyId(e.target.value)}
-                        placeholder={rzpMode === "live" ? "rzp_live_..." : "rzp_test_..."}
-                        autoComplete="off"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Key Secret *</label>
-                      <div className="relative">
-                        <Input
-                          required
-                          type={rzpShowSecret ? "text" : "password"}
-                          value={rzpKeySecret}
-                          onChange={(e) => setRzpKeySecret(e.target.value)}
-                          placeholder="Enter your Razorpay Key Secret"
-                          autoComplete="new-password"
-                          className="pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setRzpShowSecret(!rzpShowSecret)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <p className="text-[11px] text-slate-500">
-                        Your secret is encrypted with AES-256-GCM before storage. It is never visible or logged after saving.
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-3 pt-2">
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="md"
-                        isLoading={rzpSaving}
-                        onClick={handleRzpConnect}
-                      >
-                        <Plug className="w-4 h-4 mr-1.5" />
-                        {rzpStatus?.connected ? "Update Credentials" : "Connect Razorpay"}
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Help Card */}
-                <Card className="bg-slate-900/60 border-slate-800 space-y-3">
-                  <h3 className="text-sm font-semibold text-slate-300">Need help?</h3>
-                  <div className="flex flex-wrap gap-3">
-                    <a
-                      href="https://razorpay.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Button type="button" variant="outline" size="sm">
-                        <ExternalLink className="w-4 h-4 mr-1.5" />
-                        Create Razorpay Account
-                      </Button>
-                    </a>
-                    <a
-                      href="https://dashboard.razorpay.com/app/keys"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Button type="button" variant="outline" size="sm">
-                        <ExternalLink className="w-4 h-4 mr-1.5" />
-                        Get API Keys
-                      </Button>
-                    </a>
-                  </div>
-                  <p className="text-xs text-slate-500">
-                    Find your API keys at Dashboard → Settings → API Keys in your Razorpay account.
-                  </p>
-                </Card>
-              </>
-            )}
-          </div>
+          <PaymentsTab
+            rzpStatus={rzpStatus}
+            rzpLoading={rzpLoading}
+            rzpSaving={rzpSaving}
+            rzpDisconnecting={rzpDisconnecting}
+            rzpKeyId={rzpKeyId}
+            setRzpKeyId={setRzpKeyId}
+            rzpKeySecret={rzpKeySecret}
+            setRzpKeySecret={setRzpKeySecret}
+            rzpMode={rzpMode}
+            setRzpMode={setRzpMode}
+            rzpShowSecret={rzpShowSecret}
+            setRzpShowSecret={setRzpShowSecret}
+            rzpError={rzpError}
+            rzpSuccess={rzpSuccess}
+            rzpConfirmDisconnect={rzpConfirmDisconnect}
+            setRzpConfirmDisconnect={setRzpConfirmDisconnect}
+            onConnect={handleRzpConnect}
+            onDisconnect={handleRzpDisconnect}
+          />
         )}
 
-        {/* TAB 6: CUSTOMER AUTHENTICATION (GOOGLE OAUTH) */}
+        {/* TAB 7: CUSTOMER AUTHENTICATION (GOOGLE OAUTH) */}
         {activeTab === "customerAuth" && (
-          <div className="space-y-6">
-            {googleAuthError && (
-              <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                {googleAuthError}
-              </div>
-            )}
-
-            {googleAuthSuccess && (
-              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-sm text-emerald-400 flex items-center gap-2">
-                <Check className="w-4 h-4 flex-shrink-0" />
-                {googleAuthSuccess}
-              </div>
-            )}
-
-            <Card className="space-y-6">
-              <div className="border-b border-slate-800 pb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h2 className="text-base font-bold text-white">Google Customer Authentication</h2>
-                    <p className="text-xs text-slate-400">
-                      Allow your store customers to sign in with their Google accounts using your store credentials.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {googleAuthLoading ? (
-                <div className="flex items-center justify-center py-12 text-slate-400 gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Loading authentication settings…</span>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Enable Toggle */}
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-200">Enable Google Login</p>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        Displays &ldquo;Continue with Google&rdquo; on your storefront customer login page.
-                      </p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={googleAuthEnabled}
-                        onChange={(e) => setGoogleAuthEnabled(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-
-                  {/* Client ID */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                      <Key className="w-4 h-4 text-slate-400" />
-                      Google Client ID
-                    </label>
-                    <Input
-                      value={googleClientId}
-                      onChange={(e) => setGoogleClientId(e.target.value)}
-                      placeholder="e.g. 1234567890-abc123xyz.apps.googleusercontent.com"
-                    />
-                    <p className="text-[11px] text-slate-500">
-                      Obtain this from your Google Cloud Console OAuth 2.0 Client credentials.
-                    </p>
-                  </div>
-
-                  {/* Client Secret */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                      <Lock className="w-4 h-4 text-slate-400" />
-                      Google Client Secret
-                    </label>
-                    {hasGoogleClientSecret && !isEditingSecret ? (
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 px-4 py-2.5 rounded-xl border border-slate-800 bg-slate-950 font-mono text-sm text-slate-400 tracking-wider">
-                          ••••••••••••••••••••••••••••••••
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setIsEditingSecret(true);
-                            setGoogleClientSecret("");
-                          }}
-                        >
-                          Change Secret
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <Input
-                          type="password"
-                          value={googleClientSecret}
-                          onChange={(e) => setGoogleClientSecret(e.target.value)}
-                          placeholder="Enter your Google Client Secret"
-                        />
-                        {hasGoogleClientSecret && (
-                          <button
-                            type="button"
-                            onClick={() => setIsEditingSecret(false)}
-                            className="text-xs text-slate-400 hover:text-slate-200 underline"
-                          >
-                            Cancel and keep existing secret
-                          </button>
-                        )}
-                      </div>
-                    )}
-                    <p className="text-[11px] text-slate-500">
-                      Encrypted server-side using AES-256-GCM. Never exposed to browser or storefront.
-                    </p>
-                  </div>
-
-                  {/* Authorized Redirect URI */}
-                  <div className="space-y-2 pt-2">
-                    <label className="text-xs font-semibold text-slate-300">
-                      Authorized Redirect URI (Copy to Google Cloud Console)
-                    </label>
-                    {(() => {
-                      const origin =
-                        typeof window !== "undefined"
-                          ? window.location.origin
-                          : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-                      const defaultCallback = `${origin}/api/stores/${store.slug}/auth/google/callback`;
-                      return (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            readOnly
-                            value={defaultCallback}
-                            className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 select-all"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              navigator.clipboard.writeText(defaultCallback);
-                              setCopiedCallback(true);
-                              setTimeout(() => setCopiedCallback(false), 2000);
-                            }}
-                          >
-                            {copiedCallback ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                            {copiedCallback ? "Copied" : "Copy"}
-                          </Button>
-                        </div>
-                      );
-                    })()}
-                    <p className="text-[11px] text-slate-500">
-                      In Google Cloud Console under Credentials &gt; OAuth 2.0 Client IDs, add this exact URL into &ldquo;Authorized redirect URIs&rdquo;.
-                    </p>
-                  </div>
-
-                  {/* Save Button for Customer Auth */}
-                  <div className="flex items-center justify-end pt-4 border-t border-slate-800">
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="md"
-                      isLoading={googleAuthSaving}
-                      onClick={handleSaveCustomerAuth}
-                    >
-                      Save Authentication Settings
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </Card>
-
-            {/* Email/Password Info Card */}
-            <Card className="bg-slate-900/60 border-slate-800 space-y-2">
-              <h3 className="text-sm font-semibold text-slate-200">Email &amp; Username Authentication</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Email and Username + Password login is always active for your storefront customers with built-in secure scrypt hashing, account registration, and password recovery.
-              </p>
-            </Card>
-          </div>
+          <CustomerAuthTab
+            storeSlug={store.slug}
+            googleAuthEnabled={googleAuthEnabled}
+            setGoogleAuthEnabled={setGoogleAuthEnabled}
+            googleClientId={googleClientId}
+            setGoogleClientId={setGoogleClientId}
+            googleClientSecret={googleClientSecret}
+            setGoogleClientSecret={setGoogleClientSecret}
+            hasGoogleClientSecret={hasGoogleClientSecret}
+            googleAuthLoading={googleAuthLoading}
+            googleAuthSaving={googleAuthSaving}
+            googleAuthSuccess={googleAuthSuccess}
+            googleAuthError={googleAuthError}
+            isEditingSecret={isEditingSecret}
+            setIsEditingSecret={setIsEditingSecret}
+            copiedCallback={copiedCallback}
+            setCopiedCallback={setCopiedCallback}
+            onSave={handleSaveCustomerAuth}
+          />
         )}
 
         {/* Global Save Button (for General, Order Methods and Theme only) */}
@@ -1785,6 +838,21 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
           </div>
         )}
       </form>
+
+      {/* Stock Management Type Change Confirmation Modal */}
+      <StockConfirmModal
+        isOpen={showConfirmModal}
+        confirmModalForSave={confirmModalForSave}
+        savedStockType={savedStockType}
+        savedColorWiseType={savedColorWiseType}
+        pendingStockType={pendingStockType}
+        pendingColorWiseType={pendingColorWiseType}
+        stockManagementType={stockManagementType}
+        colorWiseStockType={colorWiseStockType}
+        savingStockSettings={savingStockSettings}
+        onConfirm={handleConfirmChange}
+        onCancel={handleCancelChange}
+      />
     </div>
   );
 }

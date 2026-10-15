@@ -197,7 +197,7 @@ export function LoginForm({ storeSlug, googleEnabled }: LoginFormProps) {
       <div className="text-center pt-2">
         <p
           className="text-xs"
-          style={{ color: "var(--store-page-muted, #94a3b8)" }}
+          style={{ color: "var(--store-page-paragraph, #94a3b8)" }}
         >
           Don&apos;t have an account?{" "}
           <Link

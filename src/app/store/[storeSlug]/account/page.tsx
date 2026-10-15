@@ -46,7 +46,7 @@ export default async function CustomerAccountPage({ params }: AccountPageProps) 
 
   const customer = await getCurrentCustomer(store.id);
   if (!customer) {
-    redirect(getStoreLink(storeSlug, "/account/login"));
+    redirect(getStoreLink(storeSlug, "/?auth=login"));
   }
 
   // Fetch tenant-scoped customer orders
@@ -82,7 +82,7 @@ export default async function CustomerAccountPage({ params }: AccountPageProps) 
             showAccountIcon={(store.homePage as { showAccountIcon?: boolean })?.showAccountIcon !== false}
           />
 
-          <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
             {/* Header with Customer Info & Logout */}
             <div
               className="p-6 rounded-2xl border shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-all"
@@ -111,7 +111,7 @@ export default async function CustomerAccountPage({ params }: AccountPageProps) 
                   </h1>
                   <p
                     className="text-xs"
-                    style={{ color: "var(--store-page-muted, #94a3b8)" }}
+                    style={{ color: "var(--store-page-paragraph, #94a3b8)" }}
                   >
                     {customer.email}
                     {customer.username && ` · @${customer.username}`}
@@ -167,7 +167,7 @@ export default async function CustomerAccountPage({ params }: AccountPageProps) 
                     </h3>
                     <p
                       className="text-xs mt-0.5"
-                      style={{ color: "var(--store-page-muted, #94a3b8)" }}
+                      style={{ color: "var(--store-page-paragraph, #94a3b8)" }}
                     >
                       Browse our catalog and make your first purchase!
                     </p>
@@ -217,14 +217,14 @@ export default async function CustomerAccountPage({ params }: AccountPageProps) 
                           </div>
                           <p
                             className="text-xs"
-                            style={{ color: "var(--store-page-muted, #94a3b8)" }}
+                            style={{ color: "var(--store-page-paragraph, #94a3b8)" }}
                           >
                             Placed on {formatDate(order.createdAt)} · {order.items.length} item
                             {order.items.length !== 1 ? "s" : ""}
                           </p>
                           <div
                             className="text-xs"
-                            style={{ color: "var(--store-page-muted, #94a3b8)" }}
+                            style={{ color: "var(--store-page-paragraph, #94a3b8)" }}
                           >
                             {order.items.map((i: OrderItem) => i.productName).join(", ")}
                           </div>

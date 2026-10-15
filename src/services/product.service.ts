@@ -3,6 +3,7 @@
 
 import { prisma } from "@/lib/db";
 import { generateSlug, generateUniqueSlug } from "@/lib/utils";
+import { deleteImage } from "@/lib/cloudinary";
 import type { CreateProductInput, UpdateProductInput } from "@/validations/product.schema";
 
 const productSelectFields = {
@@ -37,6 +38,10 @@ const productSelectFields = {
       manageQuantity: true,
       stock: true,
       sortOrder: true,
+      images: {
+        orderBy: { sortOrder: "asc" as const },
+        select: { id: true, url: true, publicId: true, altText: true, sortOrder: true },
+      },
     },
   },
   category: {
@@ -146,11 +151,22 @@ export async function getProductBySlug(storeId: string, slug: string) {
  * Create a product (auto-generates unique slug per store)
  */
 export async function createProduct(storeId: string, data: CreateProductInput) {
-  // Get existing slugs for this store to ensure uniqueness
-  const existingProducts = await prisma.product.findMany({
-    where: { storeId },
-    select: { slug: true },
-  });
+  // Get existing slugs and store settings for this store
+  const [existingProducts, storeSettings] = await Promise.all([
+    prisma.product.findMany({
+      where: { storeId },
+      select: { slug: true },
+    }),
+    prisma.storeSettings.findUnique({
+      where: { storeId },
+      select: { stockManagementType: true, colorWiseStockType: true },
+    }),
+  ]);
+
+  if (!storeSettings?.stockManagementType) {
+    throw new Error("STOCK_MANAGEMENT_NOT_CONFIGURED");
+  }
+
   const existingSlugs = existingProducts.map((p) => p.slug);
   const slug = data.slug
     ? generateUniqueSlug(data.slug, existingSlugs)
@@ -158,9 +174,49 @@ export async function createProduct(storeId: string, data: CreateProductInput) {
 
   const { images, variants, categoryId, brandId, salePrice, sku, ...rest } = data;
 
+  // Determine stock configuration based on store settings
+  let manageStockAvailability = false;
+  let manageStockQuantity = false;
+  let inStock = rest.inStock ?? true;
+  let stock = rest.stock ?? 0;
+  let finalVariants = variants;
+
+  if (storeSettings.stockManagementType === "AVAILABILITY") {
+    manageStockAvailability = true;
+    manageStockQuantity = false;
+    inStock = rest.inStock ?? true;
+    stock = 0;
+    finalVariants = undefined;
+  } else if (storeSettings.stockManagementType === "QUANTITY") {
+    manageStockQuantity = true;
+    manageStockAvailability = false;
+    stock = typeof rest.stock === "number" ? Math.max(0, rest.stock) : 0;
+    inStock = stock > 0;
+    finalVariants = undefined;
+  } else if (storeSettings.stockManagementType === "COLOR_WISE") {
+    manageStockAvailability = false;
+    manageStockQuantity = false;
+    const isColorQty = storeSettings.colorWiseStockType === "QUANTITY";
+    if (finalVariants && finalVariants.length > 0) {
+      finalVariants = finalVariants.map((v, idx) => ({
+        ...v,
+        manageAvailability: !isColorQty,
+        inStock: isColorQty ? (v.stock ?? 0) > 0 : v.inStock ?? true,
+        manageQuantity: isColorQty,
+        stock: isColorQty ? Math.max(0, v.stock ?? 0) : 0,
+        sortOrder: v.sortOrder ?? idx,
+      }));
+      inStock = finalVariants.some((v) => v.inStock);
+    }
+  }
+
   return prisma.product.create({
     data: {
       ...rest,
+      manageStockAvailability,
+      manageStockQuantity,
+      inStock,
+      stock,
       slug,
       storeId,
       salePrice: salePrice ?? null,
@@ -177,15 +233,25 @@ export async function createProduct(storeId: string, data: CreateProductInput) {
             })),
           }
         : undefined,
-      variants: variants && variants.length > 0
+      variants: finalVariants && finalVariants.length > 0
         ? {
-            create: variants.map((v, idx) => ({
+            create: finalVariants.map((v, idx) => ({
               color: v.color,
               manageAvailability: v.manageAvailability ?? false,
               inStock: v.inStock ?? true,
               manageQuantity: v.manageQuantity ?? false,
               stock: v.stock ?? 0,
               sortOrder: v.sortOrder ?? idx,
+              images: v.images && v.images.length > 0
+                ? {
+                    create: v.images.map((img, imgIdx) => ({
+                      url: img.url,
+                      publicId: img.publicId,
+                      altText: img.altText ?? null,
+                      sortOrder: img.sortOrder ?? imgIdx,
+                    })),
+                  }
+                : undefined,
             })),
           }
         : undefined,
@@ -202,15 +268,88 @@ export async function updateProduct(
   productId: string,
   data: UpdateProductInput
 ) {
-  // First verify ownership
-  const existing = await prisma.product.findFirst({
-    where: { id: productId, storeId },
-  });
+  // First verify ownership and retrieve store settings
+  const [existing, storeSettings] = await Promise.all([
+    prisma.product.findFirst({
+      where: { id: productId, storeId },
+    }),
+    prisma.storeSettings.findUnique({
+      where: { storeId },
+      select: { stockManagementType: true, colorWiseStockType: true },
+    }),
+  ]);
   if (!existing) return null;
 
   const { images, variants, ...rest } = data;
 
-  return prisma.$transaction(async (tx) => {
+  // Adapt fields if store settings are configured
+  const updateData: any = { ...rest };
+  let adaptedVariants = variants;
+
+  if (storeSettings?.stockManagementType === "AVAILABILITY") {
+    updateData.manageStockAvailability = true;
+    updateData.manageStockQuantity = false;
+    if (rest.inStock !== undefined) {
+      updateData.inStock = rest.inStock;
+    }
+    adaptedVariants = [];
+  } else if (storeSettings?.stockManagementType === "QUANTITY") {
+    updateData.manageStockQuantity = true;
+    updateData.manageStockAvailability = false;
+    if (rest.stock !== undefined) {
+      updateData.stock = Math.max(0, rest.stock);
+      updateData.inStock = updateData.stock > 0;
+    }
+    adaptedVariants = [];
+  } else if (storeSettings?.stockManagementType === "COLOR_WISE") {
+    updateData.manageStockQuantity = false;
+    updateData.manageStockAvailability = false;
+    const isColorQty = storeSettings.colorWiseStockType === "QUANTITY";
+    if (adaptedVariants !== undefined) {
+      adaptedVariants = adaptedVariants.map((v, idx) => ({
+        ...v,
+        manageAvailability: !isColorQty,
+        inStock: isColorQty ? (v.stock ?? 0) > 0 : v.inStock ?? true,
+        manageQuantity: isColorQty,
+        stock: isColorQty ? Math.max(0, v.stock ?? 0) : 0,
+        sortOrder: v.sortOrder ?? idx,
+      }));
+      updateData.inStock = adaptedVariants.some((v) => v.inStock);
+    }
+  }
+
+  // Pre-collect existing variant and product images for safe cleanup
+  let removedPublicIds: string[] = [];
+  if (adaptedVariants !== undefined || images !== undefined) {
+    const [existingProdImages, existingVarImages] = await Promise.all([
+      images !== undefined
+        ? prisma.productImage.findMany({ where: { productId }, select: { publicId: true } })
+        : Promise.resolve([]),
+      adaptedVariants !== undefined
+        ? prisma.productVariantImage.findMany({ where: { variant: { productId } }, select: { publicId: true } })
+        : Promise.resolve([]),
+    ]);
+
+    const retainedPublicIds = new Set<string>();
+    if (images !== undefined) {
+      images.forEach((img) => retainedPublicIds.add(img.publicId));
+    }
+    if (adaptedVariants !== undefined) {
+      adaptedVariants.forEach((v) => {
+        v.images?.forEach((img) => retainedPublicIds.add(img.publicId));
+      });
+    }
+
+    const candidateIds = [
+      ...existingProdImages.map((i) => i.publicId),
+      ...existingVarImages.map((i) => i.publicId),
+    ];
+    removedPublicIds = candidateIds.filter(
+      (pid) => !retainedPublicIds.has(pid) && !pid.startsWith("manual_")
+    );
+  }
+
+  const updatedProduct = await prisma.$transaction(async (tx) => {
     // Update images: delete all existing and recreate
     if (images !== undefined) {
       await tx.productImage.deleteMany({ where: { productId } });
@@ -227,36 +366,69 @@ export async function updateProduct(
       }
     }
 
-    // Update variants: delete all existing and recreate
-    if (variants !== undefined) {
+    // Update variants: delete all existing and recreate with variant images
+    if (adaptedVariants !== undefined) {
       await tx.productVariant.deleteMany({ where: { productId } });
-      if (variants.length > 0) {
-        await tx.productVariant.createMany({
-          data: variants.map((v, idx) => ({
-            productId,
-            color: v.color,
-            manageAvailability: v.manageAvailability ?? false,
-            inStock: v.inStock ?? true,
-            manageQuantity: v.manageQuantity ?? false,
-            stock: v.stock ?? 0,
-            sortOrder: v.sortOrder ?? idx,
-          })),
-        });
+      if (adaptedVariants.length > 0) {
+        for (const [idx, v] of adaptedVariants.entries()) {
+          await tx.productVariant.create({
+            data: {
+              productId,
+              color: v.color,
+              manageAvailability: v.manageAvailability ?? false,
+              inStock: v.inStock ?? true,
+              manageQuantity: v.manageQuantity ?? false,
+              stock: v.stock ?? 0,
+              sortOrder: v.sortOrder ?? idx,
+              images: v.images && v.images.length > 0
+                ? {
+                    create: v.images.map((img, imgIdx) => ({
+                      url: img.url,
+                      publicId: img.publicId,
+                      altText: img.altText ?? null,
+                      sortOrder: img.sortOrder ?? imgIdx,
+                    })),
+                  }
+                : undefined,
+            },
+          });
+        }
       }
     }
 
     return tx.product.update({
       where: { id: productId },
       data: {
-        ...rest,
-        ...(rest.salePrice !== undefined ? { salePrice: rest.salePrice ?? null } : {}),
-        ...(rest.sku !== undefined ? { sku: rest.sku ?? null } : {}),
-        ...(rest.categoryId !== undefined ? { categoryId: rest.categoryId ?? null } : {}),
-        ...(rest.brandId !== undefined ? { brandId: rest.brandId ?? null } : {}),
+        ...updateData,
+        ...(updateData.salePrice !== undefined ? { salePrice: updateData.salePrice ?? null } : {}),
+        ...(updateData.sku !== undefined ? { sku: updateData.sku ?? null } : {}),
+        ...(updateData.categoryId !== undefined ? { categoryId: updateData.categoryId ?? null } : {}),
+        ...(updateData.brandId !== undefined ? { brandId: updateData.brandId ?? null } : {}),
       },
       select: productSelectFields,
     });
   });
+
+  // Asynchronously clean up unreferenced removed images from Cloudinary
+  if (removedPublicIds.length > 0) {
+    (async () => {
+      for (const pid of removedPublicIds) {
+        try {
+          const [countProdImg, countVarImg] = await Promise.all([
+            prisma.productImage.count({ where: { publicId: pid } }),
+            prisma.productVariantImage.count({ where: { publicId: pid } }),
+          ]);
+          if (countProdImg === 0 && countVarImg === 0) {
+            await deleteImage(pid);
+          }
+        } catch (err) {
+          console.error(`Failed to delete Cloudinary asset ${pid}:`, err);
+        }
+      }
+    })().catch(() => {});
+  }
+
+  return updatedProduct;
 }
 
 /**
@@ -265,10 +437,44 @@ export async function updateProduct(
 export async function deleteProduct(storeId: string, productId: string): Promise<boolean> {
   const existing = await prisma.product.findFirst({
     where: { id: productId, storeId },
+    include: {
+      images: { select: { publicId: true } },
+      variants: { include: { images: { select: { publicId: true } } } },
+    },
   });
   if (!existing) return false;
 
+  const publicIdsToDelete: string[] = [];
+  existing.images.forEach((img) => {
+    if (!img.publicId.startsWith("manual_")) publicIdsToDelete.push(img.publicId);
+  });
+  existing.variants.forEach((v) => {
+    v.images?.forEach((img) => {
+      if (!img.publicId.startsWith("manual_")) publicIdsToDelete.push(img.publicId);
+    });
+  });
+
   await prisma.product.delete({ where: { id: productId } });
+
+  // Cleanup Cloudinary images not used elsewhere
+  if (publicIdsToDelete.length > 0) {
+    (async () => {
+      for (const pid of publicIdsToDelete) {
+        try {
+          const [countProdImg, countVarImg] = await Promise.all([
+            prisma.productImage.count({ where: { publicId: pid } }),
+            prisma.productVariantImage.count({ where: { publicId: pid } }),
+          ]);
+          if (countProdImg === 0 && countVarImg === 0) {
+            await deleteImage(pid);
+          }
+        } catch (err) {
+          console.error(`Failed to delete Cloudinary image ${pid}:`, err);
+        }
+      }
+    })().catch(() => {});
+  }
+
   return true;
 }
 

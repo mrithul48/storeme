@@ -53,6 +53,7 @@ export default async function DashboardProductsPage({ searchParams }: ProductsPa
       <ProductsTableClient
         initialProducts={initialProducts}
         categories={categories}
+        storeSettings={store?.settings}
       />
     </div>
   );

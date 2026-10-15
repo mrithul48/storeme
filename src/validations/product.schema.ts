@@ -3,9 +3,9 @@
 import { z } from "zod";
 
 export const productImageSchema = z.object({
-  url: z.string().url(),
-  publicId: z.string().min(1),
-  altText: z.string().max(200).optional(),
+  url: z.string().min(1, "Image URL is required"),
+  publicId: z.string().min(1, "Public ID is required"),
+  altText: z.string().max(200).optional().nullable(),
   sortOrder: z.number().int().min(0).default(0),
 });
 
@@ -22,6 +22,7 @@ export const productVariantSchema = z
       .min(0, "Stock cannot be negative")
       .default(0),
     sortOrder: z.number().int().min(0).default(0),
+    images: z.array(productImageSchema).max(10, "Maximum 10 images per variant").optional(),
   })
   .refine(
     (data) => {
@@ -39,8 +40,8 @@ export const productVariantSchema = z
 
 export const baseProductSchema = z.object({
   name: z.string().min(1, "Product name is required").max(200),
-  slug: z.string().optional(), // auto-generated if not provided
-  description: z.string().max(5000).optional(),
+  slug: z.string().optional().nullable(), // auto-generated if not provided
+  description: z.string().max(5000).optional().nullable(),
   price: z
     .number()
     .positive("Price must be positive")
@@ -51,7 +52,7 @@ export const baseProductSchema = z.object({
     .max(9999999.99)
     .optional()
     .nullable(),
-  sku: z.string().max(100).optional().nullable(),
+  sku: z.string().max(100).optional().nullable().transform((val) => (val && val.trim() !== "" ? val : null)),
   stock: z
     .number()
     .int("Stock must be a whole number")
@@ -62,8 +63,8 @@ export const baseProductSchema = z.object({
   inStock: z.boolean().default(true),
   status: z.enum(["ACTIVE", "INACTIVE", "DRAFT"]).default("ACTIVE"),
   featured: z.boolean().default(false),
-  categoryId: z.string().cuid().optional().nullable(),
-  brandId: z.string().cuid().optional().nullable(),
+  categoryId: z.string().optional().nullable().transform((val) => (val && val.trim() !== "" ? val : null)),
+  brandId: z.string().optional().nullable().transform((val) => (val && val.trim() !== "" ? val : null)),
   images: z.array(productImageSchema).max(10, "Maximum 10 images per product").optional(),
   variants: z.array(productVariantSchema).max(20, "Maximum 20 color variants").optional(),
 });

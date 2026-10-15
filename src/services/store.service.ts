@@ -227,6 +227,8 @@ export const getStorefrontConfig = cache(async (slugOrDomain: string) => {
         codEnabled: true,
         onlinePaymentEnabled: true,
         whatsappOrderEnabled: true,
+        stockManagementType: true,
+        colorWiseStockType: true,
       },
     },
     theme: {

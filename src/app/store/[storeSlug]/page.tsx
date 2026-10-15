@@ -11,7 +11,6 @@ import { StoreFooter } from "@/components/storefront/store-footer";
 import { HeroSlider } from "@/components/storefront/hero-slider";
 import { WhatsAppFloat } from "@/components/storefront/whatsapp-float";
 import { StoreThemeWrapper } from "@/components/storefront/store-theme-wrapper";
-import { DeliveryInfoBar } from "@/components/storefront/delivery-info-bar";
 import { BrandSection } from "@/components/storefront/brand-section";
 import { CategorySection } from "@/components/storefront/category-section";
 import { NewArrivalsSection } from "@/components/storefront/new-arrivals-section";
@@ -152,7 +151,6 @@ export default async function StorefrontPage({ params }: StorePageProps) {
   const showOriginalPrice = (hp?.showOriginalPrice as boolean) ?? true;
 
   const whatsappEnabled = (hp?.whatsappEnabled as boolean) ?? false;
-  const headerDeliveryInfo = hp?.headerDeliveryInfo as string | null | undefined;
 
   const themeColor = store.theme?.primaryColor || "#3b82f6";
 
@@ -286,9 +284,6 @@ export default async function StorefrontPage({ params }: StorePageProps) {
     <CartProvider storeSlug={store.slug}>
       <WishlistProvider storeSlug={store.slug}>
         <StoreThemeWrapper theme={store.theme}>
-          {/* Delivery info bar */}
-          <DeliveryInfoBar message={headerDeliveryInfo} />
-
           {/* Header */}
           <StoreHeader store={store} showAccountIcon={showAccountIcon} />
 
