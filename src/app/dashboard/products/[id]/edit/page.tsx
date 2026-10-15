@@ -1,6 +1,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { getStoreByOwnerId } from "@/services/store.service";
 import { getProduct } from "@/services/product.service";
 import { listCategories, listBrands } from "@/services/category.service";
@@ -15,10 +16,15 @@ export default async function EditProductPage({ params }: EditProductProps) {
   const session = await auth();
   const store = await getStoreByOwnerId(session!.user.id);
 
-  const [product, categories, brands] = await Promise.all([
+  const [product, categories, brands, customColors] = await Promise.all([
     getProduct(store!.id, id),
     listCategories(store!.id),
     listBrands(store!.id),
+    prisma.storeColor.findMany({
+      where: { storeId: store!.id },
+      orderBy: { createdAt: "asc" },
+      select: { id: true, name: true, hex: true },
+    }),
   ]);
 
   if (!product) {
@@ -45,6 +51,8 @@ export default async function EditProductPage({ params }: EditProductProps) {
         initialData={serializedProduct}
         categories={categories}
         brands={brands}
+        storeSettings={store?.settings}
+        initialCustomColors={customColors}
       />
     </div>
   );

@@ -36,7 +36,6 @@ export default async function ContactPage({ params }: ContactPageProps) {
   const hp = store.homePage as Record<string, unknown> | null;
   const whatsappEnabled = (hp?.whatsappEnabled as boolean) ?? false;
   const whatsappNumber = store.company?.whatsapp || store.company?.phone;
-  const headerDeliveryInfo = hp?.headerDeliveryInfo as string | null | undefined;
   const showAccountIcon = (hp?.showAccountIcon as boolean) ?? true;
 
   const company = store.company;
@@ -45,18 +44,6 @@ export default async function ContactPage({ params }: ContactPageProps) {
     <CartProvider storeSlug={store.slug}>
       <WishlistProvider storeSlug={store.slug}>
         <StoreThemeWrapper theme={store.theme}>
-          {headerDeliveryInfo && (
-            <div
-              className="w-full py-2 px-4 text-center text-xs font-semibold"
-              style={{
-                backgroundColor: "var(--store-primary, #3b82f6)",
-                color: "#ffffff",
-              }}
-            >
-              {headerDeliveryInfo}
-            </div>
-          )}
-
           <StoreHeader store={store} showAccountIcon={showAccountIcon} />
 
           <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 w-full">
@@ -70,7 +57,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
               </h1>
               <p
                 className="mt-3 text-sm max-w-xl mx-auto"
-                style={{ color: "var(--store-page-muted, #94a3b8)" }}
+                style={{ color: "var(--store-page-paragraph, #94a3b8)" }}
               >
                 Have a question or need assistance? Send us a message and our team will get back to you shortly.
               </p>
@@ -79,13 +66,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               {/* ── Contact Info ──────────────────────────────────────────── */}
               <div className="space-y-6">
-                <div
-                  className="p-6 rounded-2xl border space-y-4 shadow-sm"
-                  style={{
-                    backgroundColor: "var(--store-surface, #0f172a)",
-                    borderColor: "var(--store-border, rgba(255,255,255,0.1))",
-                  }}
-                >
+                <div className="p-0 md:p-6 rounded-none md:rounded-2xl border-0 md:border shadow-none md:shadow-sm bg-transparent md:bg-[var(--store-surface,#0f172a)] md:border-[var(--store-border,rgba(255,255,255,0.1))] space-y-4">
                   <h2
                     className="text-base font-bold"
                     style={{ color: "var(--store-page-heading, #ffffff)" }}
@@ -97,7 +78,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
                     <a
                       href={`mailto:${company.email}`}
                       className="flex items-center gap-3 text-sm hover:underline transition-colors"
-                      style={{ color: "var(--store-page-text, #f8fafc)" }}
+                      style={{ color: "var(--store-page-paragraph, var(--store-page-text, #f8fafc))" }}
                     >
                       <div
                         className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -105,7 +86,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
                       >
                         <Mail className="w-4 h-4" />
                       </div>
-                      {company.email}
+                      <p style={{ color: "var(--store-page-paragraph, var(--store-page-text, #f8fafc))" }}>{company.email}</p>
                     </a>
                   )}
 
@@ -113,7 +94,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
                     <a
                       href={`tel:${company.phone}`}
                       className="flex items-center gap-3 text-sm hover:underline transition-colors"
-                      style={{ color: "var(--store-page-text, #f8fafc)" }}
+                      style={{ color: "var(--store-page-paragraph, var(--store-page-text, #f8fafc))" }}
                     >
                       <div
                         className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -121,14 +102,14 @@ export default async function ContactPage({ params }: ContactPageProps) {
                       >
                         <Phone className="w-4 h-4" />
                       </div>
-                      {company.phone}
+                      <p style={{ color: "var(--store-page-paragraph, var(--store-page-text, #f8fafc))" }}>{company.phone}</p>
                     </a>
                   )}
 
                   {company?.address && (
                     <div
                       className="flex items-start gap-3 text-sm"
-                      style={{ color: "var(--store-page-text, #f8fafc)" }}
+                      style={{ color: "var(--store-page-paragraph, var(--store-page-text, #f8fafc))" }}
                     >
                       <div
                         className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
@@ -136,20 +117,14 @@ export default async function ContactPage({ params }: ContactPageProps) {
                       >
                         <MapPin className="w-4 h-4" />
                       </div>
-                      <span className="whitespace-pre-line">{company.address}</span>
+                      <p className="whitespace-pre-line" style={{ color: "var(--store-page-paragraph, var(--store-page-text, #f8fafc))" }}>{company.address}</p>
                     </div>
                   )}
                 </div>
 
                 {/* Working hours */}
                 {store.workingHours && store.workingHours.length > 0 && (
-                  <div
-                    className="p-6 rounded-2xl border space-y-4 shadow-sm"
-                    style={{
-                      backgroundColor: "var(--store-surface, #0f172a)",
-                      borderColor: "var(--store-border, rgba(255,255,255,0.1))",
-                    }}
-                  >
+                  <div className="p-0 md:p-6 rounded-none md:rounded-2xl border-0 md:border shadow-none md:shadow-sm bg-transparent md:bg-[var(--store-surface,#0f172a)] md:border-[var(--store-border,rgba(255,255,255,0.1))] space-y-4">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4" style={{ color: "var(--store-primary, #3b82f6)" }} />
                       <h2
@@ -167,17 +142,17 @@ export default async function ContactPage({ params }: ContactPageProps) {
                           className="flex items-center justify-between text-xs py-1 border-b last:border-0"
                           style={{ borderColor: "var(--store-border)" }}
                         >
-                          <span style={{ color: "var(--store-page-muted, #94a3b8)" }}>
+                          <p style={{ color: "var(--store-page-paragraph, #94a3b8)" }}>
                             {DAY_NAMES[wh.dayOfWeek]}
-                          </span>
-                          <span
+                          </p>
+                          <p
                             className="font-medium"
-                            style={{ color: "var(--store-page-text, #f8fafc)" }}
+                            style={{ color: "var(--store-page-paragraph, #f8fafc)" }}
                           >
                             {wh.isOpen
                               ? `${wh.openTime || "09:00"} – ${wh.closeTime || "18:00"}`
                               : "Closed"}
-                          </span>
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -186,13 +161,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
               </div>
 
               {/* ── Enquiry Form ──────────────────────────────────────────── */}
-              <div
-                className="p-8 rounded-2xl border shadow-xl"
-                style={{
-                  backgroundColor: "var(--store-surface, #0f172a)",
-                  borderColor: "var(--store-border, rgba(255,255,255,0.1))",
-                }}
-              >
+              <div className="p-0 md:p-8 rounded-none md:rounded-2xl border-0 md:border shadow-none md:shadow-xl bg-transparent md:bg-[var(--store-surface,#0f172a)] md:border-[var(--store-border,rgba(255,255,255,0.1))]">
                 <h2
                   className="text-lg font-bold mb-2"
                   style={{ color: "var(--store-page-heading, #ffffff)" }}
@@ -201,7 +170,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
                 </h2>
                 <p
                   className="text-xs mb-6"
-                  style={{ color: "var(--store-page-muted, #94a3b8)" }}
+                  style={{ color: "var(--store-page-paragraph, #94a3b8)" }}
                 >
                   Fill out the form below and we will get back to you as soon as possible.
                 </p>

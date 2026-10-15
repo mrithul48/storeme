@@ -89,13 +89,22 @@ export function ContactForm({ storeSlug }: ContactFormProps) {
 
   const inputStyle = {
     borderColor: "var(--store-border, rgba(255,255,255,0.15))",
-    color: "var(--store-page-text, #ffffff)",
+    color: "var(--store-page-heading, #ffffff)",
+    borderRadius: "var(--store-input-radius, 10px)",
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
+        <div
+          className="p-3 border text-xs flex items-center gap-2"
+          style={{
+            borderRadius: "var(--store-input-radius, 10px)",
+            backgroundColor: "rgba(244, 63, 94, 0.1)",
+            borderColor: "rgba(244, 63, 94, 0.2)",
+            color: "#fb7185",
+          }}
+        >
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           {error}
         </div>
@@ -105,7 +114,7 @@ export function ContactForm({ storeSlug }: ContactFormProps) {
         <div className="space-y-1">
           <label
             className="text-xs font-semibold block"
-            style={{ color: "var(--store-page-text, #ffffff)" }}
+            style={{ color: "var(--store-page-heading, #ffffff)" }}
           >
             Your Name *
           </label>
@@ -113,17 +122,17 @@ export function ContactForm({ storeSlug }: ContactFormProps) {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="John Doe"
+            placeholder="Enter name"
             maxLength={100}
             required
-            className="flex h-11 w-full rounded-xl border bg-black/5 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+            className="flex h-11 w-full border bg-black/5 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
             style={inputStyle}
           />
         </div>
         <div className="space-y-1">
           <label
             className="text-xs font-semibold block"
-            style={{ color: "var(--store-page-text, #ffffff)" }}
+            style={{ color: "var(--store-page-heading, #ffffff)" }}
           >
             Email Address *
           </label>
@@ -131,10 +140,10 @@ export function ContactForm({ storeSlug }: ContactFormProps) {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="john@example.com"
+            placeholder="Enter email"
             maxLength={200}
             required
-            className="flex h-11 w-full rounded-xl border bg-black/5 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+            className="flex h-11 w-full border bg-black/5 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
             style={inputStyle}
           />
         </div>
@@ -143,7 +152,7 @@ export function ContactForm({ storeSlug }: ContactFormProps) {
       <div className="space-y-1">
         <label
           className="text-xs font-semibold block"
-          style={{ color: "var(--store-page-text, #ffffff)" }}
+          style={{ color: "var(--store-page-heading, #ffffff)" }}
         >
           Phone Number
         </label>
@@ -151,9 +160,9 @@ export function ContactForm({ storeSlug }: ContactFormProps) {
           type="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          placeholder="+91 98765 43210 (optional)"
+          placeholder="Enter phone number"
           maxLength={20}
-          className="flex h-11 w-full rounded-xl border bg-black/5 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+          className="flex h-11 w-full border bg-black/5 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
           style={inputStyle}
         />
       </div>
@@ -161,18 +170,18 @@ export function ContactForm({ storeSlug }: ContactFormProps) {
       <div className="space-y-1">
         <label
           className="text-xs font-semibold block"
-          style={{ color: "var(--store-page-text, #ffffff)" }}
+          style={{ color: "var(--store-page-heading, #ffffff)" }}
         >
           Your Message *
         </label>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Tell us how we can help you..."
+          placeholder="Enter message"
           maxLength={2000}
           required
           rows={5}
-          className="flex min-h-[120px] w-full rounded-xl border bg-black/5 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all resize-none"
+          className="flex min-h-[120px] w-full border bg-black/5 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all resize-none"
           style={inputStyle}
         />
       </div>
@@ -180,7 +189,7 @@ export function ContactForm({ storeSlug }: ContactFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 h-11 rounded-xl text-sm font-bold shadow-md transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-2 h-11 text-sm font-bold shadow-md transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
         style={{
           backgroundColor: "var(--store-button-bg, #22c55e)",
           color: "var(--store-button-text, #ffffff)",

@@ -66,7 +66,6 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
   const showOriginalPrice = (hp?.showOriginalPrice as boolean) ?? true;
   const whatsappEnabled = (hp?.whatsappEnabled as boolean) ?? false;
   const whatsappNumber = store.company?.whatsapp || store.company?.phone;
-  const headerDeliveryInfo = hp?.headerDeliveryInfo as string | null | undefined;
   const showAccountIcon = (hp?.showAccountIcon as boolean) ?? true;
 
   const isNewArrival = newArrival === "true";
@@ -171,31 +170,19 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
     <CartProvider storeSlug={store.slug}>
       <WishlistProvider storeSlug={store.slug}>
         <StoreThemeWrapper theme={store.theme}>
-          {headerDeliveryInfo && (
-            <div
-              className="w-full py-2 px-4 text-center text-xs font-semibold"
-              style={{
-                backgroundColor: "var(--store-primary, #3b82f6)",
-                color: "#ffffff",
-              }}
-            >
-              {headerDeliveryInfo}
-            </div>
-          )}
-
           <StoreHeader store={store} showAccountIcon={showAccountIcon} />
 
           <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Page Title & Breadcrumbs */}
-            <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b pb-4" style={{ borderColor: "var(--store-border)" }}>
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2" style={{ borderColor: "var(--store-border)" }}>
               <div>
                 <h1
-                  className="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-2"
+                  className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2"
                   style={{ color: "var(--store-page-heading, #ffffff)" }}
                 >
                   {isNewArrival ? (
                     <>
-                      <Sparkles className="w-6 h-6 text-amber-400" />
+                     
                       New Arrivals
                     </>
                   ) : (
@@ -204,59 +191,73 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
                 </h1>
                 <p
                   className="text-xs sm:text-sm mt-1"
-                  style={{ color: "var(--store-page-muted, #94a3b8)" }}
+                  style={{ color: "var(--store-page-paragraph, #94a3b8)" }}
                 >
                   {isNewArrival
                     ? "Explore the latest additions to our store collection."
                     : `Browse our full catalog (${totalCount} item${totalCount !== 1 ? "s" : ""})`}
                 </p>
               </div>
-
               {hasAnyFilter && (
                 <Link
                   href={getStoreLink(storeSlug, "/shop")}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all hover:opacity-80"
+                  className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border transition-all hover:opacity-80"
                   style={{
                     borderColor: "var(--store-border)",
-                    color: "var(--store-page-text)",
+                    color: "var(--store-page-paragraph, #94a3b8)",
+                    borderRadius: "var(--store-button-radius, 10px)",
                   }}
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  Clear Filters
+                  <p style={{ color: "var(--store-page-paragraph, #94a3b8)" }}>Clear Filters</p>
                 </Link>
               )}
             </div>
 
             <div className="flex gap-8">
               {/* ── Left Sidebar Filters (Desktop) ────────────────────── */}
-              <aside className="hidden md:block w-64 flex-shrink-0 space-y-6">
+              <aside className="hidden md:block w-64 flex-shrink-0 space-y-6 self-start sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-1 scrollbar-thin">
                 {/* Categories */}
                 {categories.length > 0 && (
                   <div className="space-y-2.5">
-                    <h3 className="text-xs font-bold uppercase tracking-wider opacity-60">Categories</h3>
+                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--store-page-paragraph, #94a3b8)" }}>Categories</p>
                     <div className="space-y-1">
                       <Link
                         href={buildShopUrl(storeSlug, { brand, search, sort, minPrice, maxPrice, availability, newArrival })}
-                        className={`block px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                        style={{
+                          borderRadius: "var(--store-button-radius, 10px)",
+                          color: !category ? undefined : "var(--store-page-paragraph, #94a3b8)",
+                        }}
+                        className={`block px-3 py-2 text-xs font-medium transition-colors ${
                           !category
                             ? "bg-blue-600/15 text-blue-400 font-bold"
-                            : "opacity-80 hover:bg-black/5 hover:opacity-100"
+                            : "hover:bg-white/10 hover:opacity-100"
                         }`}
                       >
-                        All Categories
+                        <p className={!category ? "text-blue-400 font-bold" : undefined} style={{ color: !category ? undefined : "var(--store-page-paragraph, #94a3b8)" }}>
+                          All Categories
+                        </p>
                       </Link>
                       {categories.map((cat) => (
                         <Link
                           key={cat.id}
                           href={buildShopUrl(storeSlug, { category: cat.id, brand, search, sort, minPrice, maxPrice, availability, newArrival })}
-                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                          style={{
+                            borderRadius: "var(--store-button-radius, 10px)",
+                            color: category === cat.id ? undefined : "var(--store-page-paragraph, #94a3b8)",
+                          }}
+                          className={`flex items-center justify-between px-3 py-2 text-xs font-medium transition-colors ${
                             category === cat.id
                               ? "bg-blue-600/15 text-blue-400 font-bold"
-                              : "opacity-80 hover:bg-black/5 hover:opacity-100"
+                              : "hover:bg-white/10 hover:opacity-100"
                           }`}
                         >
-                          <span>{cat.name}</span>
-                          <span className="text-[11px] opacity-50">{cat._count.products}</span>
+                          <p className={category === cat.id ? "text-blue-400 font-bold" : undefined} style={{ color: category === cat.id ? undefined : "var(--store-page-paragraph, #94a3b8)" }}>
+                            {cat.name}
+                          </p>
+                          <p className="text-[11px] opacity-75" style={{ color: category === cat.id ? undefined : "var(--store-page-paragraph, #94a3b8)" }}>
+                            {cat._count.products}
+                          </p>
                         </Link>
                       ))}
                     </div>
@@ -266,30 +267,44 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
                 {/* Brands */}
                 {brands.length > 0 && (
                   <div className="space-y-2.5">
-                    <h3 className="text-xs font-bold uppercase tracking-wider opacity-60">Brands</h3>
+                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--store-page-paragraph, #94a3b8)" }}>Brands</p>
                     <div className="space-y-1">
                       <Link
                         href={buildShopUrl(storeSlug, { category, search, sort, minPrice, maxPrice, availability, newArrival })}
-                        className={`block px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                        style={{
+                          borderRadius: "var(--store-button-radius, 10px)",
+                          color: !brand ? undefined : "var(--store-page-paragraph, #94a3b8)",
+                        }}
+                        className={`block px-3 py-2 text-xs font-medium transition-colors ${
                           !brand
                             ? "bg-blue-600/15 text-blue-400 font-bold"
-                            : "opacity-80 hover:bg-black/5 hover:opacity-100"
+                            : "hover:bg-white/10 hover:opacity-100"
                         }`}
                       >
-                        All Brands
+                        <p className={!brand ? "text-blue-400 font-bold" : undefined} style={{ color: !brand ? undefined : "var(--store-page-paragraph, #94a3b8)" }}>
+                          All Brands
+                        </p>
                       </Link>
                       {brands.map((b) => (
                         <Link
                           key={b.id}
                           href={buildShopUrl(storeSlug, { category, brand: b.id, search, sort, minPrice, maxPrice, availability, newArrival })}
-                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                          style={{
+                            borderRadius: "var(--store-button-radius, 10px)",
+                            color: brand === b.id ? undefined : "var(--store-page-paragraph, #94a3b8)",
+                          }}
+                          className={`flex items-center justify-between px-3 py-2 text-xs font-medium transition-colors ${
                             brand === b.id
                               ? "bg-blue-600/15 text-blue-400 font-bold"
-                              : "opacity-80 hover:bg-black/5 hover:opacity-100"
+                              : "hover:bg-white/10 hover:opacity-100"
                           }`}
                         >
-                          <span>{b.name}</span>
-                          <span className="text-[11px] opacity-50">{b._count.products}</span>
+                          <p className={brand === b.id ? "text-blue-400 font-bold" : undefined} style={{ color: brand === b.id ? undefined : "var(--store-page-paragraph, #94a3b8)" }}>
+                            {b.name}
+                          </p>
+                          <p className="text-[11px] opacity-75" style={{ color: brand === b.id ? undefined : "var(--store-page-paragraph, #94a3b8)" }}>
+                            {b._count.products}
+                          </p>
                         </Link>
                       ))}
                     </div>
@@ -298,50 +313,68 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
 
                 {/* Availability Filter */}
                 <div className="space-y-2.5">
-                  <h3 className="text-xs font-bold uppercase tracking-wider opacity-60">Availability</h3>
+                  <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--store-page-paragraph, #94a3b8)" }}>Availability</p>
                   <div className="space-y-1">
                     {[
                       { value: undefined, label: "All Items" },
                       { value: "in-stock", label: "In Stock Only" },
                       { value: "out-of-stock", label: "Out of Stock" },
-                    ].map((opt) => (
-                      <Link
-                        key={opt.label}
-                        href={buildShopUrl(storeSlug, { category, brand, search, sort, minPrice, maxPrice, availability: opt.value, newArrival })}
-                        className={`block px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
-                          availability === opt.value || (!availability && !opt.value)
-                            ? "bg-blue-600/15 text-blue-400 font-bold"
-                            : "opacity-80 hover:bg-black/5 hover:opacity-100"
-                        }`}
-                      >
-                        {opt.label}
-                      </Link>
-                    ))}
+                    ].map((opt) => {
+                      const isActive = availability === opt.value || (!availability && !opt.value);
+                      return (
+                        <Link
+                          key={opt.label}
+                          href={buildShopUrl(storeSlug, { category, brand, search, sort, minPrice, maxPrice, availability: opt.value, newArrival })}
+                          style={{
+                            borderRadius: "var(--store-button-radius, 10px)",
+                            color: isActive ? undefined : "var(--store-page-paragraph, #94a3b8)",
+                          }}
+                          className={`block px-3 py-2 text-xs font-medium transition-colors ${
+                            isActive
+                              ? "bg-blue-600/15 text-blue-400 font-bold"
+                              : "hover:bg-white/10 hover:opacity-100"
+                          }`}
+                        >
+                          <p className={isActive ? "text-blue-400 font-bold" : undefined} style={{ color: isActive ? undefined : "var(--store-page-paragraph, #94a3b8)" }}>
+                            {opt.label}
+                          </p>
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Sort By Filter */}
                 <div className="space-y-2.5">
-                  <h3 className="text-xs font-bold uppercase tracking-wider opacity-60">Sort By</h3>
+                  <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--store-page-paragraph, #94a3b8)" }}>Sort By</p>
                   <div className="space-y-1">
                     {[
                       { value: "newest", label: "Newest First" },
                       { value: "price-asc", label: "Price: Low to High" },
                       { value: "price-desc", label: "Price: High to Low" },
                       { value: "oldest", label: "Oldest First" },
-                    ].map((opt) => (
-                      <Link
-                        key={opt.value}
-                        href={buildShopUrl(storeSlug, { category, brand, search, sort: opt.value, minPrice, maxPrice, availability, newArrival: opt.value === "newest" && isNewArrival ? "true" : undefined })}
-                        className={`block px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
-                          safeSort === opt.value
-                            ? "bg-blue-600/15 text-blue-400 font-bold"
-                            : "opacity-80 hover:bg-black/5 hover:opacity-100"
-                        }`}
-                      >
-                        {opt.label}
-                      </Link>
-                    ))}
+                    ].map((opt) => {
+                      const isActive = safeSort === opt.value;
+                      return (
+                        <Link
+                          key={opt.value}
+                          href={buildShopUrl(storeSlug, { category, brand, search, sort: opt.value, minPrice, maxPrice, availability, newArrival: opt.value === "newest" && isNewArrival ? "true" : undefined })}
+                          style={{
+                            borderRadius: "var(--store-button-radius, 10px)",
+                            color: isActive ? undefined : "var(--store-page-paragraph, #94a3b8)",
+                          }}
+                          className={`block px-3 py-2 text-xs font-medium transition-colors ${
+                            isActive
+                              ? "bg-blue-600/15 text-blue-400 font-bold"
+                              : "hover:bg-white/10 hover:opacity-100"
+                          }`}
+                        >
+                          <p className={isActive ? "text-blue-400 font-bold" : undefined} style={{ color: isActive ? undefined : "var(--store-page-paragraph, #94a3b8)" }}>
+                            {opt.label}
+                          </p>
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               </aside>
@@ -364,15 +397,15 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
                 />
 
                 {/* Product Count & Active Search note */}
-                <div className="flex items-center justify-between text-xs opacity-70">
-                  <span>
+                <div className="flex items-center justify-between text-xs" style={{ color: "var(--store-page-paragraph, #94a3b8)" }}>
+                  <p>
                     {totalCount === 0
                       ? "No products found"
                       : `${totalCount} product${totalCount !== 1 ? "s" : ""} found`}
                     {search && (
                       <span> for &ldquo;<strong>{search}</strong>&rdquo;</span>
                     )}
-                  </span>
+                  </p>
                 </div>
 
                 {normalizedProducts.length === 0 ? (
@@ -395,17 +428,18 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
                       </h3>
                       <p
                         className="text-xs"
-                        style={{ color: "var(--store-page-muted, #94a3b8)" }}
+                        style={{ color: "var(--store-page-paragraph, #94a3b8)" }}
                       >
                         Try selecting another category or clearing your active filters.
                       </p>
                     </div>
                     <Link
                       href={getStoreLink(storeSlug, "/shop")}
-                      className="px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all"
+                      className="px-4 py-2 text-xs font-semibold shadow-sm transition-all"
                       style={{
                         backgroundColor: "var(--store-button-bg, #22c55e)",
                         color: "var(--store-button-text, #ffffff)",
+                        borderRadius: "var(--store-button-radius, 10px)",
                       }}
                     >
                       Reset All Filters
@@ -424,6 +458,8 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
                         cardRadiusClass={cardRadiusClass}
                         showSalePrice={showSalePrice}
                         showOriginalPrice={showOriginalPrice}
+                        stockManagementType={store.settings?.stockManagementType}
+                        colorWiseStockType={store.settings?.colorWiseStockType}
                       />
                     ))}
                   </div>
@@ -435,8 +471,11 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
                     {pageNum > 1 && (
                       <Link
                         href={buildShopUrl(storeSlug, { category, brand, search, sort, minPrice, maxPrice, availability, newArrival, page: String(pageNum - 1) })}
-                        className="flex items-center gap-1 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all hover:bg-black/5"
-                        style={{ borderColor: "var(--store-border)" }}
+                        className="flex items-center gap-1 px-3.5 py-2 border text-xs font-semibold transition-all hover:bg-black/5"
+                        style={{
+                          borderColor: "var(--store-border)",
+                          borderRadius: "var(--store-button-radius, 10px)",
+                        }}
                       >
                         <ChevronLeft className="w-3.5 h-3.5" />
                         Previous
@@ -450,8 +489,11 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
                     {pageNum < totalPages && (
                       <Link
                         href={buildShopUrl(storeSlug, { category, brand, search, sort, minPrice, maxPrice, availability, newArrival, page: String(pageNum + 1) })}
-                        className="flex items-center gap-1 px-3.5 py-2 rounded-xl border text-xs font-semibold transition-all hover:bg-black/5"
-                        style={{ borderColor: "var(--store-border)" }}
+                        className="flex items-center gap-1 px-3.5 py-2 border text-xs font-semibold transition-all hover:bg-black/5"
+                        style={{
+                          borderColor: "var(--store-border)",
+                          borderRadius: "var(--store-button-radius, 10px)",
+                        }}
                       >
                         Next
                         <ChevronRight className="w-3.5 h-3.5" />

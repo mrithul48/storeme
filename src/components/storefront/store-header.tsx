@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { getStoreLink } from "@/lib/store-url";
+import { CustomerAuthModal, type CustomerAuthMode } from "./customer-auth-modal";
 
 interface StoreHeaderProps {
   store: {
@@ -34,6 +35,10 @@ interface StoreHeaderProps {
       navbarText?: string | null;
     } | null;
     homePage?: unknown;
+    authConfig?: {
+      googleEnabled?: boolean | null;
+      googleClientId?: string | null;
+    } | null;
   };
   showAccountIcon?: boolean;
 }
@@ -47,8 +52,60 @@ export function StoreHeader({ store, showAccountIcon }: StoreHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [customer, setCustomer] = useState<{ id: string; name: string } | null>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<CustomerAuthMode>("login");
+
   const navbarBg = store.theme?.navbarBg || "#ffffff";
   const navbarText = store.theme?.navbarText || "#111827";
+
+  // Check customer authentication status
+  useEffect(() => {
+    let isMounted = true;
+    fetch(`/api/stores/${store.slug}/auth/me`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && data?.success && data.customer) {
+          setCustomer(data.customer);
+        }
+      })
+      .catch(() => { });
+    return () => {
+      isMounted = false;
+    };
+  }, [store.slug]);
+
+  // Check URL query parameters for ?auth=login, ?auth=register, or ?auth=forgot_password
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const auth = params.get("auth");
+      if (auth === "login" || auth === "register") {
+        setAuthModalMode(auth);
+        setAuthModalOpen(true);
+      } else if (auth === "reset_password" || params.get("token")) {
+        setAuthModalMode("reset_password");
+        setAuthModalOpen(true);
+      } else if (auth === "forgot_password" || auth === "forgot-password") {
+        setAuthModalMode("forgot_password");
+        setAuthModalOpen(true);
+      } else if (params.get("login") === "true") {
+        setAuthModalMode("login");
+        setAuthModalOpen(true);
+      }
+
+    }
+  }, []);
+
+  const handleAccountClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (customer) {
+      router.push(getStoreLink(store.slug, "/account"));
+    } else {
+      setAuthModalMode("login");
+      setAuthModalOpen(true);
+    }
+  };
 
   // Prevent background scrolling when mobile menu is open
   useEffect(() => {
@@ -75,8 +132,8 @@ export function StoreHeader({ store, showAccountIcon }: StoreHeaderProps) {
 
   const navLinks = [
     { label: "Home", href: getStoreLink(store.slug, "") },
-    { label: "Shop All", href: getStoreLink(store.slug, "/shop") },
     { label: "New Arrival", href: getStoreLink(store.slug, "/shop?newArrival=true") },
+    { label: "Shop All", href: getStoreLink(store.slug, "/shop") },
     { label: "About Us", href: getStoreLink(store.slug, "/about") },
     { label: "Contact", href: getStoreLink(store.slug, "/contact") },
   ];
@@ -183,14 +240,16 @@ export function StoreHeader({ store, showAccountIcon }: StoreHeaderProps) {
 
           {/* 4. Account Icon */}
           {isAccountVisible && (
-            <Link
-              href={getStoreLink(store.slug, "/account")}
-              aria-label="My Account"
+            <button
+              type="button"
+              onClick={handleAccountClick}
+              aria-label={customer ? "My Account" : "Sign In / Register"}
+              title={customer ? "My Account" : "Sign In / Register"}
               className="p-2.5 rounded-xl transition-all hover:bg-black/5 active:scale-95 flex items-center"
               style={{ color: navbarText }}
             >
               <User className="w-5 h-5" />
-            </Link>
+            </button>
           )}
         </div>
 
@@ -263,24 +322,27 @@ export function StoreHeader({ store, showAccountIcon }: StoreHeaderProps) {
                   style={{ color: navbarText }}
                 />
                 <input
-                  type="search"
+                  type="text"
+                  autoComplete="off"
                   autoFocus
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search products in this store…"
-                  className="w-full h-11 pl-10 pr-4 rounded-xl border bg-black/5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                  className="w-full h-11 pl-10 pr-4 border bg-black/5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                   style={{
                     color: navbarText,
                     borderColor: "var(--store-border, rgba(0,0,0,0.15))",
+                    borderRadius: "var(--store-button-radius, 10px)",
                   }}
                 />
               </div>
               <button
                 type="submit"
-                className="h-11 px-5 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95"
+                className="h-11 px-5 text-xs font-semibold shadow-sm transition-all active:scale-95"
                 style={{
                   backgroundColor: "var(--store-button-bg, #22c55e)",
                   color: "var(--store-button-text, #ffffff)",
+                  borderRadius: "var(--store-button-radius, 10px)",
                 }}
               >
                 Search
@@ -288,8 +350,11 @@ export function StoreHeader({ store, showAccountIcon }: StoreHeaderProps) {
               <button
                 type="button"
                 onClick={() => setSearchOpen(false)}
-                className="p-2.5 rounded-xl hover:bg-black/5 text-xs opacity-70"
-                style={{ color: navbarText }}
+                className="p-2.5 hover:bg-black/5 text-xs opacity-70"
+                style={{
+                  color: navbarText,
+                  borderRadius: "var(--store-button-radius, 10px)",
+                }}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -437,15 +502,18 @@ export function StoreHeader({ store, showAccountIcon }: StoreHeaderProps) {
                     }}
                     className="w-full flex justify-center"
                   >
-                    <Link
-                      href={getStoreLink(store.slug, "/account")}
-                      onClick={() => setMobileMenuOpen(false)}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        setMobileMenuOpen(false);
+                        handleAccountClick(e);
+                      }}
                       className="flex items-center justify-center gap-2 text-lg sm:text-xl font-bold tracking-wide uppercase transition-transform hover:scale-105 active:scale-95"
                       style={{ color: navbarText }}
                     >
                       <User className="w-5 h-5" />
-                      <span>My Account</span>
-                    </Link>
+                      <span>{customer ? "My Account" : "Sign In / Register"}</span>
+                    </button>
                   </motion.div>
                 )}
               </motion.nav>
@@ -453,6 +521,17 @@ export function StoreHeader({ store, showAccountIcon }: StoreHeaderProps) {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Customer Login & Account Creation Popup Modal */}
+      <CustomerAuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialMode={authModalMode}
+        storeSlug={store.slug}
+        storeName={store.name}
+        googleEnabled={Boolean(
+          store.authConfig?.googleEnabled && store.authConfig?.googleClientId
+        )}
+      />
     </header>
   );
 }

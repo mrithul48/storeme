@@ -6,15 +6,17 @@ import { useRouter } from "next/navigation";
 import { formatCurrency, calculateDiscountPercentage, buildWhatsAppUrl } from "@/lib/utils";
 import { useCart } from "@/context/cart-context";
 import { useWishlist } from "@/context/wishlist-context";
-import { ShoppingBag, MessageCircle, Check, Plus, Minus, ShieldCheck, Truck, RefreshCw, Ban, Heart } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ShoppingBag, MessageCircle, Check, Plus, Minus, Ban, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getColorHex } from "@/lib/constants/colors";
 
 interface StoreSettings {
   ordersEnabled?: boolean | null;
   codEnabled?: boolean | null;
   onlinePaymentEnabled?: boolean | null;
   whatsappOrderEnabled?: boolean | null;
+  stockManagementType?: string | null;
+  colorWiseStockType?: string | null;
 }
 
 export interface ProductVariant {
@@ -25,6 +27,7 @@ export interface ProductVariant {
   manageQuantity: boolean;
   stock: number;
   sortOrder: number;
+  images?: Array<{ id?: string; url: string; altText?: string | null }>;
 }
 
 interface ProductDetailClientProps {
@@ -54,6 +57,7 @@ interface ProductDetailClientProps {
     settings?: StoreSettings | null;
     theme?: {
       primaryColor?: string | null;
+      buttonShape?: string | null;
     } | null;
   };
 }
@@ -79,8 +83,32 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
   const isSale = salePriceNum !== null && salePriceNum < priceNum;
   const discount = isSale ? calculateDiscountPercentage(priceNum, salePriceNum) : 0;
 
-  // Determine availability based on rules
+  // Store-level stock management settings
+  const stockMode = store.settings?.stockManagementType; // "AVAILABILITY" | "QUANTITY" | "COLOR_WISE"
+  const colorStockMode = store.settings?.colorWiseStockType; // "AVAILABILITY" | "QUANTITY"
+
+  // Determine availability based on store settings or product defaults
   const isOutOfStock = React.useMemo(() => {
+    if (stockMode === "COLOR_WISE") {
+      if (hasVariants && selectedVariant) {
+        if (colorStockMode === "QUANTITY") {
+          return selectedVariant.stock <= 0;
+        } else {
+          return selectedVariant.inStock === false;
+        }
+      }
+      return false;
+    }
+
+    if (stockMode === "QUANTITY") {
+      return product.stock <= 0 || product.inStock === false;
+    }
+
+    if (stockMode === "AVAILABILITY") {
+      return product.inStock === false;
+    }
+
+    // Fallback if store stock management not yet configured
     if (hasVariants && selectedVariant) {
       if (selectedVariant.manageAvailability && !selectedVariant.inStock) {
         return true;
@@ -91,7 +119,6 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
       return false;
     }
 
-    // General product
     if (product.manageStockAvailability && product.inStock === false) {
       return true;
     }
@@ -99,34 +126,69 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
       return true;
     }
     return false;
-  }, [hasVariants, selectedVariant, product]);
+  }, [stockMode, colorStockMode, hasVariants, selectedVariant, product]);
+
+  const isQuantityTracked = React.useMemo(() => {
+    if (stockMode === "COLOR_WISE") {
+      return colorStockMode === "QUANTITY";
+    }
+    if (stockMode === "QUANTITY") {
+      return true;
+    }
+    if (stockMode === "AVAILABILITY") {
+      return false;
+    }
+    if (hasVariants && selectedVariant) {
+      return Boolean(selectedVariant.manageQuantity);
+    }
+    return Boolean(product.manageStockQuantity);
+  }, [stockMode, colorStockMode, hasVariants, selectedVariant, product]);
 
   const maxStockAllowed = React.useMemo(() => {
-    if (hasVariants && selectedVariant) {
-      return selectedVariant.manageQuantity ? selectedVariant.stock : 9999;
+    if (!isQuantityTracked) return 9999;
+    if (stockMode === "COLOR_WISE" && hasVariants && selectedVariant) {
+      return Math.max(0, selectedVariant.stock);
     }
-    return product.manageStockQuantity ? product.stock : 9999;
-  }, [hasVariants, selectedVariant, product]);
+    return Math.max(0, product.stock);
+  }, [isQuantityTracked, stockMode, hasVariants, selectedVariant, product]);
+
+  const currentStockCount = React.useMemo(() => {
+    if (stockMode === "COLOR_WISE" && hasVariants && selectedVariant) {
+      return selectedVariant.stock;
+    }
+    return product.stock;
+  }, [stockMode, hasVariants, selectedVariant, product]);
 
   const isLowStock = React.useMemo(() => {
-    if (isOutOfStock) return false;
-    if (hasVariants && selectedVariant) {
-      return selectedVariant.manageQuantity && selectedVariant.stock <= 5;
-    }
-    return Boolean(product.manageStockQuantity && product.stock <= 5);
-  }, [isOutOfStock, hasVariants, selectedVariant, product]);
-
-  const currentStockCount = hasVariants && selectedVariant ? selectedVariant.stock : product.stock;
-  const isQuantityTracked = hasVariants && selectedVariant
-    ? selectedVariant.manageQuantity
-    : Boolean(product.manageStockQuantity);
+    if (isOutOfStock || !isQuantityTracked) return false;
+    return currentStockCount <= 5;
+  }, [isOutOfStock, isQuantityTracked, currentStockCount]);
 
   const wishlisted = isInWishlist(product.id);
 
-  const currentImage = product.images?.[0]?.url
-    ? product.images[selectedImageIndex]?.url || product.images[0].url
+  // Active gallery images: If selected variant has separate images, display them; otherwise fallback to main product images
+  const activeImages = React.useMemo(() => {
+    if (selectedVariant?.images && selectedVariant.images.length > 0) {
+      return selectedVariant.images;
+    }
+    return product.images || [];
+  }, [selectedVariant, product.images]);
+
+  const currentImage = activeImages?.[0]?.url
+    ? activeImages[selectedImageIndex]?.url || activeImages[0].url
     : undefined;
   const whatsappNumber = store.company?.whatsapp || store.company?.phone;
+
+  // Image card border radius logic:
+  // - Sharp corner (SQUARE) -> sharp corner ("0px")
+  // - Fully rounded (FULLY_ROUNDED) -> rounded corner standard ("10px")
+  // - Rounded corners standard (MEDIUM_ROUNDED) -> rounded corner standard ("10px")
+  const imageRadius = React.useMemo(() => {
+    const shape = store.theme?.buttonShape;
+    if (shape === "SQUARE") return "0px";
+    if (shape === "FULLY_ROUNDED" || shape === "MEDIUM_ROUNDED") return "10px";
+    return "var(--store-image-radius, 10px)";
+  }, [store.theme?.buttonShape]);
 
   // ── Order method flags (default to true when settings are absent) ──────────
   const settings = store.settings;
@@ -199,7 +261,10 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
       {/* Product Image Gallery */}
       <div className="space-y-4">
-        <div className="relative aspect-square rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 shadow-2xl">
+        <div
+          className="relative aspect-square overflow-hidden bg-slate-900 shadow-2xl"
+          style={{ borderRadius: imageRadius }}
+        >
           {currentImage ? (
             <Image
               src={currentImage}
@@ -218,18 +283,39 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
           {/* Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
             {isSale && (
-              <Badge variant="danger" size="md">
+              <span
+                style={{
+                  backgroundColor: "var(--store-navbar-bg, #ffffff)",
+                  color: "var(--store-navbar-text, #0f172a)",
+                  borderColor: "var(--store-border, rgba(0, 0, 0, 0.1))",
+                }}
+                className="text-xs px-3 py-1 rounded-full font-semibold border shadow-sm"
+              >
                 Save {discount}%
-              </Badge>
+              </span>
             )}
             {isOutOfStock ? (
-              <Badge variant="neutral" size="md">
+              <span
+                style={{
+                  backgroundColor: "var(--store-navbar-bg, #ffffff)",
+                  color: "var(--store-navbar-text, #0f172a)",
+                  borderColor: "var(--store-border, rgba(0, 0, 0, 0.1))",
+                }}
+                className="text-xs px-3 py-1 rounded-full font-semibold border shadow-sm"
+              >
                 Out of Stock
-              </Badge>
+              </span>
             ) : isLowStock ? (
-              <Badge variant="warning" size="md">
-                Only {currentStockCount} units left
-              </Badge>
+              <span
+                style={{
+                  backgroundColor: "var(--store-navbar-bg, #ffffff)",
+                  color: "var(--store-navbar-text, #0f172a)",
+                  borderColor: "var(--store-border, rgba(0, 0, 0, 0.1))",
+                }}
+                className="text-xs px-3 py-1 rounded-full font-semibold border shadow-sm"
+              >
+                Low Stock
+              </span>
             ) : null}
           </div>
 
@@ -237,24 +323,25 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
           <button
             onClick={handleToggleWishlist}
             aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-            className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-700/60 text-slate-200 hover:text-white transition shadow-lg"
+            className="absolute top-4 right-4 z-10 p-2 transition hover:scale-110 focus:outline-none"
           >
             <Heart
-              className={`w-5 h-5 transition-colors ${
-                wishlisted ? "fill-rose-500 text-rose-500" : "text-slate-300"
+              className={`w-6 h-6 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] ${
+                wishlisted ? "fill-rose-500 text-rose-500" : "text-white hover:text-rose-400"
               }`}
             />
           </button>
         </div>
 
         {/* Thumbnail Selector */}
-        {product.images.length > 1 && (
+        {activeImages.length > 1 && (
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
-            {product.images.map((img, idx) => (
+            {activeImages.map((img, idx) => (
               <button
-                key={img.id}
+                key={img.id || idx}
                 onClick={() => setSelectedImageIndex(idx)}
-                className={`relative w-20 h-20 rounded-2xl overflow-hidden border-2 flex-shrink-0 transition-all ${
+                style={{ borderRadius: imageRadius }}
+                className={`relative w-20 h-20 overflow-hidden border-2 flex-shrink-0 transition-all ${
                   selectedImageIndex === idx
                     ? "border-blue-500 ring-2 ring-blue-500/30 scale-95"
                     : "border-slate-800 hover:border-slate-700 opacity-70 hover:opacity-100"
@@ -268,7 +355,7 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
       </div>
 
       {/* Product Details & Actions */}
-      <div className="flex flex-col justify-between space-y-6">
+      <div className="flex flex-col gap-5">
         <div className="space-y-4">
           {product.category && (
             <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">
@@ -298,6 +385,38 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
             )}
           </div>
 
+          {/* Stock Status for products without variants */}
+          {!hasVariants && (
+            <div className="pt-1">
+              <span
+                className={`text-xs font-semibold inline-flex items-center gap-1.5 ${
+                  isOutOfStock
+                    ? "text-rose-400"
+                    : isLowStock
+                    ? "text-amber-400"
+                    : "text-emerald-400"
+                }`}
+              >
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    isOutOfStock
+                      ? "bg-rose-400"
+                      : isLowStock
+                      ? "bg-amber-400 animate-pulse"
+                      : "bg-emerald-400"
+                  }`}
+                />
+                {isOutOfStock
+                  ? "Out of Stock"
+                  : isQuantityTracked
+                  ? isLowStock
+                    ? "Low Stock"
+                    : "In Stock"
+                  : "In Stock"}
+              </span>
+            </div>
+          )}
+
           {product.sku && (
             <p className="text-xs opacity-70">
               SKU: <span className="font-mono">{product.sku}</span>
@@ -318,57 +437,81 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
 
           {/* Color Variant Selector (if product has variants) */}
           {hasVariants && product.variants && product.variants.length > 0 && (
-            <div className="pt-4 border-t border-slate-800/80 space-y-2.5">
+            <div className="pt-4 border-t border-slate-800/80 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase tracking-wider opacity-70">
                   Select Color: <span className="font-bold text-white ml-1">{selectedVariant?.color}</span>
                 </span>
                 <span
-                  className={`text-xs font-semibold ${
-                    isOutOfStock ? "text-rose-400" : "text-emerald-400"
+                  className={`text-xs font-semibold inline-flex items-center gap-1.5 ${
+                    isOutOfStock
+                      ? "text-rose-400"
+                      : isLowStock
+                      ? "text-amber-400"
+                      : "text-emerald-400"
                   }`}
                 >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isOutOfStock
+                        ? "bg-rose-400"
+                        : isLowStock
+                        ? "bg-amber-400"
+                        : "bg-emerald-400"
+                    }`}
+                  />
                   {isOutOfStock
                     ? "Out of Stock"
                     : isQuantityTracked
                     ? isLowStock
-                      ? `Only ${currentStockCount} units left`
-                      : `${currentStockCount} units in stock`
+                      ? "Low Stock"
+                      : "In Stock"
                     : "In Stock"}
                 </span>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-3 pt-1">
                 {product.variants.map((v) => {
-                  const isVOutOfStock =
-                    v.manageAvailability && !v.inStock
-                      ? true
-                      : v.manageQuantity && v.stock <= 0;
+                  let isVOutOfStock = false;
+                  if (stockMode === "COLOR_WISE") {
+                    if (colorStockMode === "QUANTITY") {
+                      isVOutOfStock = v.stock <= 0;
+                    } else {
+                      isVOutOfStock = v.inStock === false;
+                    }
+                  } else {
+                    isVOutOfStock =
+                      v.manageAvailability && !v.inStock
+                        ? true
+                        : v.manageQuantity && v.stock <= 0;
+                  }
                   const isSelected = selectedVariant?.id === v.id || selectedVariant?.color === v.color;
+                  const hex = getColorHex(v.color);
 
                   return (
                     <button
                       key={v.id || v.color}
                       type="button"
+                      title={`${v.color}${isVOutOfStock ? " (Out of stock)" : ""}`}
+                      aria-label={`Select color ${v.color}`}
+                      disabled={isVOutOfStock}
                       onClick={() => {
                         setSelectedVariant(v);
+                        setSelectedImageIndex(0);
                         setQuantity(1);
                       }}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-2 ${
+                      className={`relative w-8 h-8 rounded-full transition-all flex items-center justify-center ${
                         isSelected
-                          ? "border-blue-500 bg-blue-500/15 text-white ring-2 ring-blue-500/30"
-                          : "border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-700 hover:text-white"
-                      } ${isVOutOfStock ? "opacity-50" : ""}`}
+                          ? "ring-2 ring-offset-2 ring-blue-500 ring-offset-[var(--store-page-bg,#0b1120)] scale-110"
+                          : "hover:scale-105 opacity-85 hover:opacity-100"
+                      } ${isVOutOfStock ? "opacity-35 cursor-not-allowed" : "cursor-pointer"}`}
+                      style={{
+                        backgroundColor: hex,
+                        boxShadow: "0 0 0 1px rgba(0,0,0,0.2) inset",
+                      }}
                     >
-                      <span
-                        className="w-3 h-3 rounded-full border border-slate-600 flex-shrink-0"
-                        style={{
-                          backgroundColor: v.color.startsWith("#") ? v.color : "transparent",
-                        }}
-                      />
-                      <span>{v.color}</span>
                       {isVOutOfStock && (
-                        <span className="text-[10px] text-rose-400 font-medium">(Sold out)</span>
+                        <span className="absolute inset-0 m-auto w-full h-[1.5px] bg-red-500 rotate-45 transform pointer-events-none" />
                       )}
                     </button>
                   );
@@ -384,7 +527,10 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
                 Quantity
               </label>
               <div className="flex items-center gap-3">
-                <div className="inline-flex items-center border border-slate-700/80 rounded-xl bg-slate-900 overflow-hidden">
+                <div
+                  className="inline-flex items-center border border-slate-700/80 bg-slate-900 overflow-hidden"
+                  style={{ borderRadius: "var(--store-button-radius, 10px)" }}
+                >
                   <button
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                     disabled={quantity <= 1}
@@ -403,15 +549,6 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                {isQuantityTracked ? (
-                  <span className="text-xs opacity-70">
-                    {currentStockCount} available in stock
-                  </span>
-                ) : (
-                  <span className="text-xs text-emerald-400 font-medium">
-                    In Stock
-                  </span>
-                )}
               </div>
             </div>
           )}
@@ -428,16 +565,25 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
                 size="lg"
                 disabled={isOutOfStock}
                 onClick={handleAddToCart}
-                className="flex-1"
+                className="flex-1 shadow-sm border hover:opacity-90 hover:bg-[var(--store-navbar-bg,#ffffff)] hover:text-[var(--store-navbar-text,#0f172a)] transition-all"
+                style={{
+                  backgroundColor: "var(--store-navbar-bg, #ffffff)",
+                  color: "var(--store-navbar-text, #0f172a)",
+                  borderColor: "var(--store-border, rgba(148, 163, 184, 0.3))",
+                  borderRadius: "var(--store-button-radius, 10px)",
+                }}
               >
                 {added ? (
                   <>
-                    <Check className="w-5 h-5 text-emerald-400" />
+                    <Check className="w-5 h-5 text-emerald-500" />
                     <span>Added to Cart!</span>
                   </>
                 ) : (
                   <>
-                    <ShoppingBag className="w-5 h-5" />
+                    <ShoppingBag
+                      className="w-5 h-5"
+                      style={{ color: "var(--store-navbar-text, #0f172a)" }}
+                    />
                     <span>Add to Cart</span>
                   </>
                 )}
@@ -452,22 +598,11 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
                 style={{
                   backgroundColor: "var(--store-button-bg, #2563eb)",
                   color: "var(--store-button-text, #ffffff)",
+                  borderRadius: "var(--store-button-radius, 10px)",
                 }}
               >
                 Buy Now
               </Button>
-
-              <button
-                onClick={handleToggleWishlist}
-                aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-                className={`p-3.5 rounded-xl border transition flex items-center justify-center ${
-                  wishlisted
-                    ? "bg-rose-500/10 border-rose-500/30 text-rose-500"
-                    : "border-slate-700 bg-slate-900/50 hover:bg-slate-800 text-slate-400 hover:text-white"
-                }`}
-              >
-                <Heart className={`w-5 h-5 ${wishlisted ? "fill-rose-500" : ""}`} />
-              </button>
             </div>
           )}
 
@@ -482,10 +617,13 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
               )}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/25 text-sm font-semibold transition-all shadow-sm"
+              className="w-full py-3.5 px-4 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-semibold transition-all shadow-sm"
+              style={{
+                borderRadius: "var(--store-button-radius, 10px)",
+              }}
             >
-              <MessageCircle className="w-4 h-4 text-emerald-400" />
-              Direct Order via WhatsApp
+              <MessageCircle className="w-4 h-4 text-white fill-white/10" />
+              <span>Direct Order via WhatsApp</span>
             </a>
           )}
 
@@ -498,22 +636,6 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
               </p>
             </div>
           )}
-
-          {/* Trust Guarantees */}
-          <div className="grid grid-cols-3 gap-2 pt-6 text-center text-[11px] text-slate-400">
-            <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-slate-900/40 border border-slate-800/50">
-              <ShieldCheck className="w-4 h-4 text-blue-400" />
-              <span>100% Authentic</span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-slate-900/40 border border-slate-800/50">
-              <Truck className="w-4 h-4 text-emerald-400" />
-              <span>Fast Dispatch</span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-slate-900/40 border border-slate-800/50">
-              <RefreshCw className="w-4 h-4 text-purple-400" />
-              <span>Verified Store</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>

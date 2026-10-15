@@ -15,7 +15,7 @@ export function LogoutButton({ storeSlug }: { storeSlug: string }) {
       await fetch(`/api/stores/${storeSlug}/auth/logout`, {
         method: "POST",
       });
-      router.push(getStoreLink(storeSlug, "/account/login"));
+      router.push(getStoreLink(storeSlug, "/?auth=login"));
       router.refresh();
     } catch (err) {
       console.error("Logout failed", err);

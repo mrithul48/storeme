@@ -259,7 +259,7 @@ export function RegisterForm({ storeSlug, googleEnabled }: RegisterFormProps) {
       <div className="text-center pt-2">
         <p
           className="text-xs"
-          style={{ color: "var(--store-page-muted, #94a3b8)" }}
+          style={{ color: "var(--store-page-paragraph, #94a3b8)" }}
         >
           Already have an account?{" "}
           <Link
