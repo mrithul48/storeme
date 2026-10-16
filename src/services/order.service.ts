@@ -6,6 +6,45 @@ import { generateOrderNumber } from "@/lib/utils";
 import type { CreateOrderInput } from "@/validations/order.schema";
 
 /**
+ * Safely resolves a variant for a product item, supporting variantId, variantColor,
+ * or automatic fallback to single/in-stock variant if item didn't explicitly specify one.
+ */
+function findProductVariant(
+  product: {
+    variants?: Array<{
+      id: string;
+      color: string;
+      manageAvailability?: boolean;
+      inStock?: boolean;
+      manageQuantity?: boolean;
+      stock: number;
+    }>;
+  },
+  item: { variantId?: string; variantColor?: string }
+) {
+  if (!product.variants || product.variants.length === 0) {
+    return null;
+  }
+  if (item.variantId) {
+    const byId = product.variants.find((v) => v.id === item.variantId);
+    if (byId) return byId;
+  }
+  if (item.variantColor) {
+    const byColor = product.variants.find(
+      (v) => v.color.toLowerCase() === item.variantColor!.toLowerCase()
+    );
+    if (byColor) return byColor;
+  }
+  if (product.variants.length === 1 || (!item.variantId && !item.variantColor)) {
+    return (
+      product.variants.find((v) => v.inStock && v.stock > 0) ||
+      product.variants[0]
+    );
+  }
+  return null;
+}
+
+/**
  * Create an order — backend recalculates all prices from DB
  * Never trust frontend price/total values
  */
@@ -74,11 +113,23 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
       }
     } else if (stockMode === "COLOR_WISE") {
       // Store-level: Color-wise Inventory
-      const variant = product.variants?.find(
-        (v) =>
-          (item.variantId && v.id === item.variantId) ||
-          (item.variantColor && v.color.toLowerCase() === item.variantColor.toLowerCase())
-      );
+      if (!product.variants || product.variants.length === 0) {
+        // Product has no variants: validate against main product stock
+        if (colorStockMode === "QUANTITY") {
+          if (product.stock <= 0) {
+            errors.push(`"${product.name}" is out of stock`);
+          } else if (product.stock < item.quantity) {
+            errors.push(`Insufficient stock for "${product.name}". Available: ${product.stock}`);
+          }
+        } else {
+          if (!product.inStock) {
+            errors.push(`"${product.name}" is currently out of stock`);
+          }
+        }
+        continue;
+      }
+
+      const variant = findProductVariant(product, item);
 
       if (!variant) {
         errors.push(`Please select a valid color variant for "${product.name}"`);
@@ -102,11 +153,7 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
     } else {
       // Fallback: per-product legacy settings
       if (product.variants && product.variants.length > 0) {
-        const variant = product.variants.find(
-          (v) =>
-            (item.variantId && v.id === item.variantId) ||
-            (item.variantColor && v.color.toLowerCase() === item.variantColor.toLowerCase())
-        );
+        const variant = findProductVariant(product, item);
 
         if (!variant) {
           errors.push(`Please select a valid color variant for "${product.name}"`);
@@ -151,11 +198,7 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
   // 3. Calculate correct totals from DB prices
   const orderItems = data.items.map((item) => {
     const product = productMap.get(item.productId)!;
-    const variant = product.variants?.find(
-      (v) =>
-        (item.variantId && v.id === item.variantId) ||
-        (item.variantColor && v.color.toLowerCase() === item.variantColor.toLowerCase())
-    );
+    const variant = findProductVariant(product, item);
     const unitPrice = product.salePrice
       ? Number(product.salePrice)
       : Number(product.price);
@@ -252,11 +295,7 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
           );
         }
       } else if (stockMode === "COLOR_WISE" && colorStockMode === "QUANTITY") {
-        const variant = product.variants?.find(
-          (v) =>
-            (item.variantId && v.id === item.variantId) ||
-            (item.variantColor && v.color.toLowerCase() === item.variantColor.toLowerCase())
-        );
+        const variant = findProductVariant(product, item);
         if (variant) {
           const res = await tx.productVariant.updateMany({
             where: {
@@ -270,17 +309,26 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
               `Insufficient stock for "${product.name} (${variant.color})". It may have just sold out.`
             );
           }
+        } else {
+          const res = await tx.product.updateMany({
+            where: {
+              id: product.id,
+              stock: { gte: item.quantity },
+            },
+            data: { stock: { decrement: item.quantity } },
+          });
+          if (res.count === 0 && product.manageStockQuantity) {
+            throw new Error(
+              `Insufficient stock for "${product.name}". It may have just sold out.`
+            );
+          }
         }
       } else if (stockMode === "AVAILABILITY" || (stockMode === "COLOR_WISE" && colorStockMode !== "QUANTITY")) {
         // Availability-based: no numeric stock counter to decrement
       } else {
         // Fallback: per-product legacy settings
         if (product.variants && product.variants.length > 0) {
-          const variant = product.variants.find(
-            (v) =>
-              (item.variantId && v.id === item.variantId) ||
-              (item.variantColor && v.color.toLowerCase() === item.variantColor.toLowerCase())
-          );
+          const variant = findProductVariant(product, item);
           if (variant && variant.manageQuantity) {
             const res = await tx.productVariant.updateMany({
               where: {

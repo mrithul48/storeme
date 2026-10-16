@@ -306,9 +306,9 @@ export function CustomerAuthModal({
             transition={{ duration: 0.22, ease: "easeOut" }}
             className="relative w-full max-w-md rounded-2xl border shadow-2xl p-6 sm:p-8 z-10 max-h-[92vh] overflow-y-auto"
             style={{
-              backgroundColor: "var(--store-surface, #0f172a)",
-              borderColor: "var(--store-border, rgba(255, 255, 255, 0.1))",
-              color: "var(--store-page-text, #f8fafc)",
+              backgroundColor: "var(--store-surface, #ffffff)",
+              borderColor: "var(--store-border, rgba(0, 0, 0, 0.1))",
+              color: "var(--store-page-text, inherit)",
             }}
           >
             {/* Close Button */}
@@ -372,10 +372,9 @@ export function CustomerAuthModal({
             {/* Segmented Switcher (Login vs Register) - Only show when NOT in forgot/reset mode */}
             {(mode === "login" || mode === "register") && (
               <div
-                className="flex p-1 rounded-xl mb-6 border"
+                className="flex p-1 rounded-xl mb-6 bg-transparent"
                 style={{
-                  backgroundColor: "rgba(0, 0, 0, 0.2)",
-                  borderColor: "var(--store-border, rgba(255, 255, 255, 0.08))",
+                  border: "1px solid #e2e8f0",
                   borderRadius: "var(--store-button-radius, 10px)",
                 }}
               >
@@ -392,8 +391,8 @@ export function CustomerAuthModal({
                   }`}
                   style={{
                     borderRadius: "var(--store-button-radius, 10px)",
-                    backgroundColor: mode === "login" ? "var(--store-surface, #1e293b)" : "transparent",
-                    color: mode === "login" ? "var(--store-page-heading, #ffffff)" : "var(--store-page-muted, inherit)",
+                    backgroundColor: mode === "login" ? "var(--store-button-bg, #7c3aed)" : "transparent",
+                    color: mode === "login" ? "var(--store-button-text, #ffffff)" : "var(--store-page-text, inherit)",
                   }}
                 >
                   Sign In
@@ -411,8 +410,8 @@ export function CustomerAuthModal({
                   }`}
                   style={{
                     borderRadius: "var(--store-button-radius, 10px)",
-                    backgroundColor: mode === "register" ? "var(--store-surface, #1e293b)" : "transparent",
-                    color: mode === "register" ? "var(--store-page-heading, #ffffff)" : "var(--store-page-muted, inherit)",
+                    backgroundColor: mode === "register" ? "var(--store-button-bg, #7c3aed)" : "transparent",
+                    color: mode === "register" ? "var(--store-button-text, #ffffff)" : "var(--store-page-text, inherit)",
                   }}
                 >
                   Create Account
@@ -440,12 +439,11 @@ export function CustomerAuthModal({
               <div className="mb-5 space-y-4">
                 <a
                   href={`/api/stores/${storeSlug}/auth/google`}
-                  className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border text-xs sm:text-sm font-semibold transition-all shadow-sm hover:opacity-90 active:scale-[0.99]"
+                  className="w-full flex items-center justify-center gap-3 px-4 py-2.5 text-xs sm:text-sm font-semibold transition-all shadow-sm hover:opacity-90 active:scale-[0.99] bg-transparent"
                   style={{
-                    backgroundColor: "rgba(0, 0, 0, 0.15)",
-                    borderColor: "var(--store-border, rgba(255, 255, 255, 0.15))",
+                    border: "1px solid #cbd5e1",
                     borderRadius: "var(--store-button-radius, 10px)",
-                    color: "var(--store-page-text, #ffffff)",
+                    color: "var(--store-page-text, inherit)",
                   }}
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -475,14 +473,13 @@ export function CustomerAuthModal({
                     aria-hidden="true"
                   >
                     <div
-                      className="w-full border-t"
-                      style={{ borderColor: "var(--store-border, rgba(255, 255, 255, 0.1))" }}
+                      className="w-full border-t border-slate-200 dark:border-slate-800"
                     />
                   </div>
                   <div
                     className="relative px-3 text-[11px] uppercase tracking-wider"
                     style={{
-                      backgroundColor: "var(--store-surface, #0f172a)",
+                      backgroundColor: "var(--store-surface, #ffffff)",
                       color: "var(--store-page-muted, #94a3b8)",
                     }}
                   >
@@ -510,15 +507,15 @@ export function CustomerAuthModal({
                       type="text"
                       autoComplete="username"
                       required
-                      placeholder="you@example.com"
+                      placeholder="Enter email or username"
                       value={loginIdentifier}
                       onChange={(e) => setLoginIdentifier(e.target.value)}
-                      className="w-full h-11 pl-10 pr-3.5 text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                      className="w-full h-11 pl-10 pr-3.5 text-xs sm:text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:!border-blue-500 transition-all placeholder:text-slate-400"
                       style={{
-                        borderColor: "var(--store-border, rgba(255, 255, 255, 0.15))",
-                        backgroundColor: "rgba(0, 0, 0, 0.1)",
-                        color: "var(--store-page-text, #ffffff)",
-                        borderRadius: "var(--store-button-radius, 10px)",
+                        border: "1px solid #cbd5e1",
+                        backgroundColor: "transparent",
+                        color: "var(--store-page-text, inherit)",
+                        borderRadius: "var(--store-input-radius, 10px)",
                       }}
                     />
                   </div>
@@ -549,15 +546,15 @@ export function CustomerAuthModal({
                       type={showLoginPassword ? "text" : "password"}
                       autoComplete="current-password"
                       required
-                      placeholder="••••••••"
+                      placeholder="Enter password"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
-                      className="w-full h-11 pl-10 pr-10 text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                      className="w-full h-11 pl-10 pr-10 text-xs sm:text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:!border-blue-500 transition-all placeholder:text-slate-400"
                       style={{
-                        borderColor: "var(--store-border, rgba(255, 255, 255, 0.15))",
-                        backgroundColor: "rgba(0, 0, 0, 0.1)",
-                        color: "var(--store-page-text, #ffffff)",
-                        borderRadius: "var(--store-button-radius, 10px)",
+                        border: "1px solid #cbd5e1",
+                        backgroundColor: "transparent",
+                        color: "var(--store-page-text, inherit)",
+                        borderRadius: "var(--store-input-radius, 10px)",
                       }}
                     />
                     <button
@@ -609,15 +606,15 @@ export function CustomerAuthModal({
                       id="modal-reg-name"
                       type="text"
                       required
-                      placeholder="Jane Doe"
+                      placeholder="Enter your name"
                       value={regName}
                       onChange={(e) => setRegName(e.target.value)}
-                      className="w-full h-10 pl-10 pr-3.5 text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                      className="w-full h-10 pl-10 pr-3.5 text-xs sm:text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:!border-blue-500 transition-all placeholder:text-slate-400"
                       style={{
-                        borderColor: "var(--store-border, rgba(255, 255, 255, 0.15))",
-                        backgroundColor: "rgba(0, 0, 0, 0.1)",
-                        color: "var(--store-page-text, #ffffff)",
-                        borderRadius: "var(--store-button-radius, 10px)",
+                        border: "1px solid #cbd5e1",
+                        backgroundColor: "transparent",
+                        color: "var(--store-page-text, inherit)",
+                        borderRadius: "var(--store-input-radius, 10px)",
                       }}
                     />
                   </div>
@@ -637,15 +634,15 @@ export function CustomerAuthModal({
                       id="modal-reg-email"
                       type="email"
                       required
-                      placeholder="you@example.com"
+                      placeholder="Enter your email"
                       value={regEmail}
                       onChange={(e) => setRegEmail(e.target.value)}
-                      className="w-full h-10 pl-10 pr-3.5 text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                      className="w-full h-10 pl-10 pr-3.5 text-xs sm:text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:!border-blue-500 transition-all placeholder:text-slate-400"
                       style={{
-                        borderColor: "var(--store-border, rgba(255, 255, 255, 0.15))",
-                        backgroundColor: "rgba(0, 0, 0, 0.1)",
-                        color: "var(--store-page-text, #ffffff)",
-                        borderRadius: "var(--store-button-radius, 10px)",
+                        border: "1px solid #cbd5e1",
+                        backgroundColor: "transparent",
+                        color: "var(--store-page-text, inherit)",
+                        borderRadius: "var(--store-input-radius, 10px)",
                       }}
                     />
                   </div>
@@ -663,15 +660,15 @@ export function CustomerAuthModal({
                     <input
                       id="modal-reg-user"
                       type="text"
-                      placeholder="janedoe"
+                      placeholder="Enter username"
                       value={regUsername}
                       onChange={(e) => setRegUsername(e.target.value)}
-                      className="w-full h-10 px-3 text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                      className="w-full h-10 px-3 text-xs sm:text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:!border-blue-500 transition-all placeholder:text-slate-400"
                       style={{
-                        borderColor: "var(--store-border, rgba(255, 255, 255, 0.15))",
-                        backgroundColor: "rgba(0, 0, 0, 0.1)",
-                        color: "var(--store-page-text, #ffffff)",
-                        borderRadius: "var(--store-button-radius, 10px)",
+                        border: "1px solid #cbd5e1",
+                        backgroundColor: "transparent",
+                        color: "var(--store-page-text, inherit)",
+                        borderRadius: "var(--store-input-radius, 10px)",
                       }}
                     />
                   </div>
@@ -689,15 +686,15 @@ export function CustomerAuthModal({
                       <input
                         id="modal-reg-phone"
                         type="tel"
-                        placeholder="9876543210"
+                        placeholder="Enter phone number"
                         value={regPhone}
                         onChange={(e) => setRegPhone(e.target.value)}
-                        className="w-full h-10 pl-8 pr-2.5 text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                        className="w-full h-10 pl-8 pr-2.5 text-xs sm:text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:!border-blue-500 transition-all placeholder:text-slate-400"
                         style={{
-                          borderColor: "var(--store-border, rgba(255, 255, 255, 0.15))",
-                          backgroundColor: "rgba(0, 0, 0, 0.1)",
-                          color: "var(--store-page-text, #ffffff)",
-                          borderRadius: "var(--store-button-radius, 10px)",
+                          border: "1px solid #cbd5e1",
+                          backgroundColor: "transparent",
+                          color: "var(--store-page-text, inherit)",
+                          borderRadius: "var(--store-input-radius, 10px)",
                         }}
                       />
                     </div>
@@ -719,15 +716,15 @@ export function CustomerAuthModal({
                       type={showRegPassword ? "text" : "password"}
                       autoComplete="new-password"
                       required
-                      placeholder="Min 6 characters"
+                      placeholder="Enter password (min 6 characters)"
                       value={regPassword}
                       onChange={(e) => setRegPassword(e.target.value)}
-                      className="w-full h-10 pl-10 pr-10 text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                      className="w-full h-10 pl-10 pr-10 text-xs sm:text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:!border-blue-500 transition-all placeholder:text-slate-400"
                       style={{
-                        borderColor: "var(--store-border, rgba(255, 255, 255, 0.15))",
-                        backgroundColor: "rgba(0, 0, 0, 0.1)",
-                        color: "var(--store-page-text, #ffffff)",
-                        borderRadius: "var(--store-button-radius, 10px)",
+                        border: "1px solid #cbd5e1",
+                        backgroundColor: "transparent",
+                        color: "var(--store-page-text, inherit)",
+                        borderRadius: "var(--store-input-radius, 10px)",
                       }}
                     />
                     <button
@@ -781,15 +778,15 @@ export function CustomerAuthModal({
                           id="modal-forgot-email"
                           type="email"
                           required
-                          placeholder="you@example.com"
+                          placeholder="Enter your email"
                           value={forgotEmail}
                           onChange={(e) => setForgotEmail(e.target.value)}
-                          className="w-full h-11 pl-10 pr-3.5 text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                          className="w-full h-11 pl-10 pr-3.5 text-xs sm:text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:!border-blue-500 transition-all placeholder:text-slate-400"
                           style={{
-                            borderColor: "var(--store-border, rgba(255, 255, 255, 0.15))",
-                            backgroundColor: "rgba(0, 0, 0, 0.1)",
-                            color: "var(--store-page-text, #ffffff)",
-                            borderRadius: "var(--store-button-radius, 10px)",
+                            border: "1px solid #cbd5e1",
+                            backgroundColor: "transparent",
+                            color: "var(--store-page-text, inherit)",
+                            borderRadius: "var(--store-input-radius, 10px)",
                           }}
                         />
                       </div>
@@ -887,12 +884,12 @@ export function CustomerAuthModal({
                         placeholder="Paste verification token from email"
                         value={resetToken}
                         onChange={(e) => setResetToken(e.target.value)}
-                        className="w-full h-11 pl-10 pr-3.5 text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all font-mono"
+                        className="w-full h-11 pl-10 pr-3.5 text-xs sm:text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:!border-blue-500 transition-all font-mono placeholder:text-slate-400"
                         style={{
-                          borderColor: "var(--store-border, rgba(255, 255, 255, 0.15))",
-                          backgroundColor: "rgba(0, 0, 0, 0.1)",
-                          color: "var(--store-page-text, #ffffff)",
-                          borderRadius: "var(--store-button-radius, 10px)",
+                          border: "1px solid #cbd5e1",
+                          backgroundColor: "transparent",
+                          color: "var(--store-page-text, inherit)",
+                          borderRadius: "var(--store-input-radius, 10px)",
                         }}
                       />
                     </div>
@@ -914,15 +911,15 @@ export function CustomerAuthModal({
                       type={showResetPassword ? "text" : "password"}
                       autoComplete="new-password"
                       required
-                      placeholder="Min 6 characters"
+                      placeholder="Enter new password (min 6 characters)"
                       value={resetPassword}
                       onChange={(e) => setResetPassword(e.target.value)}
-                      className="w-full h-11 pl-10 pr-10 text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                      className="w-full h-11 pl-10 pr-10 text-xs sm:text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:!border-blue-500 transition-all placeholder:text-slate-400"
                       style={{
-                        borderColor: "var(--store-border, rgba(255, 255, 255, 0.15))",
-                        backgroundColor: "rgba(0, 0, 0, 0.1)",
-                        color: "var(--store-page-text, #ffffff)",
-                        borderRadius: "var(--store-button-radius, 10px)",
+                        border: "1px solid #cbd5e1",
+                        backgroundColor: "transparent",
+                        color: "var(--store-page-text, inherit)",
+                        borderRadius: "var(--store-input-radius, 10px)",
                       }}
                     />
                     <button
@@ -953,12 +950,12 @@ export function CustomerAuthModal({
                       placeholder="Confirm your new password"
                       value={resetConfirmPassword}
                       onChange={(e) => setResetConfirmPassword(e.target.value)}
-                      className="w-full h-11 pl-10 pr-10 text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+                      className="w-full h-11 pl-10 pr-10 text-xs sm:text-sm bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:!border-blue-500 transition-all placeholder:text-slate-400"
                       style={{
-                        borderColor: "var(--store-border, rgba(255, 255, 255, 0.15))",
-                        backgroundColor: "rgba(0, 0, 0, 0.1)",
-                        color: "var(--store-page-text, #ffffff)",
-                        borderRadius: "var(--store-button-radius, 10px)",
+                        border: "1px solid #cbd5e1",
+                        backgroundColor: "transparent",
+                        color: "var(--store-page-text, inherit)",
+                        borderRadius: "var(--store-input-radius, 10px)",
                       }}
                     />
                     <button

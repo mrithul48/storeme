@@ -110,12 +110,12 @@ export function WishlistDrawer({ storeSlug }: { storeSlug: string }) {
                     style={{
                       borderColor: "var(--store-border, rgba(0,0,0,0.08))",
                       backgroundColor: "rgba(0,0,0,0.02)",
-                      borderRadius: "var(--store-button-radius, 10px)",
+                      borderRadius: "var(--store-image-radius, 10px)",
                     }}
                   >
                     <div
                       className="relative w-18 h-18 overflow-hidden bg-black/5 dark:bg-white/5 flex-shrink-0"
-                      style={{ borderRadius: "var(--store-button-radius, 10px)" }}
+                      style={{ borderRadius: "var(--store-image-radius, 10px)" }}
                     >
                       {item.imageUrl ? (
                         <Image
