@@ -332,7 +332,7 @@ export function StoreHeader({ store, showAccountIcon }: StoreHeaderProps) {
                   style={{
                     color: navbarText,
                     borderColor: "var(--store-border, rgba(0,0,0,0.15))",
-                    borderRadius: "var(--store-button-radius, 10px)",
+                    borderRadius: "var(--store-input-radius, 10px)",
                   }}
                 />
               </div>

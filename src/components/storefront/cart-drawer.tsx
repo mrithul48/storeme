@@ -107,12 +107,12 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
                     style={{
                       borderColor: "var(--store-border, rgba(0, 0, 0, 0.08))",
                       backgroundColor: "rgba(0, 0, 0, 0.02)",
-                      borderRadius: "var(--store-button-radius, 10px)",
+                      borderRadius: "var(--store-image-radius, 10px)",
                     }}
                   >
                     <div
                       className="relative w-16 h-16 bg-black/5 dark:bg-white/5 overflow-hidden flex-shrink-0"
-                      style={{ borderRadius: "var(--store-button-radius, 10px)" }}
+                      style={{ borderRadius: "var(--store-image-radius, 10px)" }}
                     >
                       {item.imageUrl ? (
                         <Image
@@ -155,7 +155,7 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
                           style={{
                             borderColor: "var(--store-border, rgba(0, 0, 0, 0.15))",
                             backgroundColor: "rgba(0, 0, 0, 0.02)",
-                            borderRadius: "var(--store-button-radius, 10px)",
+                            borderRadius: "var(--store-input-radius, 10px)",
                           }}
                         >
                           <button

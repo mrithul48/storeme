@@ -19,8 +19,6 @@ interface ThemeTabProps {
   setButtonBg: (val: string) => void;
   buttonText: string;
   setButtonText: (val: string) => void;
-  backgroundColor: string;
-  setBackgroundColor: (val: string) => void;
   textColor: string;
   setTextColor: (val: string) => void;
   h1Color: string;
@@ -48,8 +46,6 @@ export function ThemeTab({
   setButtonBg,
   buttonText,
   setButtonText,
-  backgroundColor,
-  setBackgroundColor,
   textColor,
   setTextColor,
   h1Color,
@@ -146,7 +142,7 @@ export function ThemeTab({
             {/* Contrast Accessibility Warning */}
             {(() => {
               const navContrast = getContrastRatio(navbarBg, navbarText);
-              const pageContrast = getContrastRatio(backgroundColor, textColor);
+              const pageContrast = getContrastRatio("#ffffff", textColor);
               const btnContrast = getContrastRatio(buttonBg, buttonText);
               const hasLow = navContrast < 2.5 || pageContrast < 2.5 || btnContrast < 2.5;
               if (!hasLow) return null;
@@ -156,7 +152,7 @@ export function ThemeTab({
                   <div>
                     <strong className="text-white block mb-0.5">Accessibility Warning: Low Contrast Detected</strong>
                     <span>
-                      {pageContrast < 2.5 && "Page background and page text have low contrast. Text may be hard to read or invisible. "}
+                      {pageContrast < 2.5 && "Page text and white background have low contrast. Text may be hard to read or invisible. "}
                       {navContrast < 2.5 && "Navbar background and text have low contrast. "}
                       {btnContrast < 2.5 && "Button background and text have low contrast. "}
                       Ensure text elements contrast with their backgrounds.
@@ -219,18 +215,6 @@ export function ThemeTab({
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Page Background</label>
-                <div className="flex gap-2">
-                  <input
-                    type="color"
-                    value={backgroundColor}
-                    onChange={(e) => setBackgroundColor(e.target.value)}
-                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
-                  />
-                  <Input value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} />
-                </div>
-              </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300">Heading 1 (H1) Color</label>
@@ -284,7 +268,7 @@ export function ThemeTab({
           <div
             className="rounded-2xl border border-slate-700 shadow-2xl overflow-hidden transition-all sticky top-24"
             style={{
-              backgroundColor,
+              backgroundColor: "#ffffff",
               fontFamily: primaryFont,
             }}
           >

@@ -123,11 +123,12 @@ export function LoginForm({ storeSlug, googleEnabled }: LoginFormProps) {
             autoComplete="username"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
-            placeholder="e.g. john@example.com or johnsmith"
-            className="w-full h-11 px-3.5 rounded-xl border bg-slate-950/40 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+            placeholder="Enter email or username"
+            className="w-full h-11 px-3.5 border border-slate-300 dark:border-slate-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all placeholder:text-slate-400"
             style={{
-              borderColor: "var(--store-border, rgba(255,255,255,0.15))",
+              border: "1px solid #cbd5e1",
               color: "var(--store-page-text, #ffffff)",
+              borderRadius: "var(--store-input-radius, 10px)",
             }}
           />
         </div>
@@ -155,11 +156,12 @@ export function LoginForm({ storeSlug, googleEnabled }: LoginFormProps) {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full h-11 px-3.5 pr-10 rounded-xl border bg-slate-950/40 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
+              placeholder="Enter password"
+              className="w-full h-11 px-3.5 pr-10 border border-slate-300 dark:border-slate-700 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all placeholder:text-slate-400"
               style={{
-                borderColor: "var(--store-border, rgba(255,255,255,0.15))",
+                border: "1px solid #cbd5e1",
                 color: "var(--store-page-text, #ffffff)",
+                borderRadius: "var(--store-input-radius, 10px)",
               }}
             />
             <button
