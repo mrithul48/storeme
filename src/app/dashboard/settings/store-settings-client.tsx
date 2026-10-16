@@ -300,7 +300,7 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
   const [navbarText, setNavbarText] = useState(store.theme?.navbarText || "#111827");
   const [buttonBg, setButtonBg] = useState(store.theme?.buttonBg || "#3b82f6");
   const [buttonText, setButtonText] = useState(store.theme?.buttonText || "#ffffff");
-  const [backgroundColor, setBackgroundColor] = useState(store.theme?.backgroundColor || "#ffffff");
+  const [backgroundColor] = useState("#ffffff");
   const [textColor, setTextColor] = useState(store.theme?.textColor || "#111827");
   const [h1Color, setH1Color] = useState(store.theme?.h1Color || "#111827");
   const [h2Color, setH2Color] = useState(store.theme?.h2Color || "#1f2937");
@@ -514,7 +514,7 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
           navbarText,
           buttonBg,
           buttonText,
-          backgroundColor,
+          backgroundColor: "#ffffff",
           textColor,
           h1Color,
           h2Color,
@@ -737,8 +737,6 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
             setButtonBg={setButtonBg}
             buttonText={buttonText}
             setButtonText={setButtonText}
-            backgroundColor={backgroundColor}
-            setBackgroundColor={setBackgroundColor}
             textColor={textColor}
             setTextColor={setTextColor}
             h1Color={h1Color}

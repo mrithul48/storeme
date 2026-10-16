@@ -84,8 +84,9 @@ export function getStoreThemeVariables(theme?: ThemeConfig | null): React.CSSPro
   const isNavLight = isLightColor(navbarBg);
   const navbarText = theme?.navbarText || (isNavLight ? "#0f172a" : "#f8fafc");
 
-  const pageBg = theme?.backgroundColor || "#ffffff";
-  const isPageLight = isLightColor(pageBg);
+  // Storefront page background is permanently pure white
+  const pageBg = "#ffffff";
+  const isPageLight = true;
   const pageText = theme?.textColor || (isPageLight ? "#0f172a" : "#f8fafc");
   const pageMuted = theme?.mutedTextColor || (isPageLight ? "#64748b" : "#94a3b8");
   const pageHeading = theme?.h1Color || (isPageLight ? "#020617" : "#ffffff");

@@ -6,9 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/cart-context";
 import { formatCurrency } from "@/lib/utils";
-import { Card, Input, Textarea } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, ArrowLeft, CreditCard, Banknote, ShieldCheck, AlertCircle, MessageCircle } from "lucide-react";
+import { ShoppingBag, ArrowLeft, ArrowRight, CreditCard, Banknote, ShieldCheck, AlertCircle, MessageCircle } from "lucide-react";
 
 declare global {
   interface Window {
@@ -93,7 +92,12 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+          items: items.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            variantId: i.variantId,
+            variantColor: i.variantColor,
+          })),
           customer: {
             name: formData.name,
             email: formData.email,
@@ -199,48 +203,75 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
 
   if (items.length === 0) {
     return (
-      <div className="py-20 flex flex-col items-center justify-center text-center space-y-4">
-        <div className="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500">
+      <div className="py-16 flex flex-col items-center justify-center text-center space-y-4">
+        <div className="w-16 h-16 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500">
           <ShoppingBag className="w-8 h-8" />
         </div>
-        <h2 className="text-xl font-bold text-white">Your cart is empty</h2>
-        <p className="text-sm text-slate-400">
+        <h2 className="text-xl font-bold text-slate-900">Your cart is empty</h2>
+        <p className="text-sm text-slate-500">
           Add some products before proceeding to checkout.
         </p>
         <Link href={`/store/${store.slug}`}>
-          <Button variant="primary">Browse Store</Button>
+          <Button
+            variant="primary"
+            style={{
+              backgroundColor: "var(--store-button-bg, #22c55e)",
+              color: "var(--store-button-text, #ffffff)",
+              borderRadius: "var(--store-button-radius, 10px)",
+            }}
+          >
+            Browse Store
+          </Button>
         </Link>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <Link
-        href={`/store/${store.slug}`}
-        className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Store
-      </Link>
+  const inputClasses =
+    "w-full h-11 px-3.5 text-xs sm:text-sm bg-transparent text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all";
+  const inputStyle: React.CSSProperties = {
+    border: "1px solid #000000",
+    backgroundColor: "transparent",
+    borderRadius: "var(--store-input-radius, 10px)",
+  };
 
-      <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+  return (
+    <div className="space-y-4">
+      {/* Top Bar with Back Link */}
+      <div className="flex items-center justify-between">
+        <Link
+          href={`/store/${store.slug}`}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Store</span>
+        </Link>
+      </div>
+
+      <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
         Checkout
       </h1>
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-600" />
           <span>{error}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
         {/* Customer Information & Address */}
         <div className="lg:col-span-7 space-y-6">
-          <Card className="space-y-4">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold flex items-center justify-center">
+          {/* Card 1: Contact Information */}
+          <div
+            className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-4"
+            style={{ borderRadius: "var(--store-image-radius, 16px)" }}
+          >
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+              <span
+                className="w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center text-white flex-shrink-0"
+                style={{ backgroundColor: "var(--store-primary, #3b82f6)" }}
+              >
                 1
               </span>
               Contact Information
@@ -248,118 +279,148 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Full Name *</label>
-                <Input
+                <label className="block text-xs font-semibold text-slate-800">Full Name *</label>
+                <input
                   required
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="e.g. Alex Mercer"
+                  placeholder="Enter your name"
+                  className={inputClasses}
+                  style={inputStyle}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Email Address *</label>
-                <Input
+                <label className="block text-xs font-semibold text-slate-800">Email Address *</label>
+                <input
                   required
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="alex@example.com"
+                  placeholder="Enter your email"
+                  className={inputClasses}
+                  style={inputStyle}
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Phone Number *</label>
-              <Input
+              <label className="block text-xs font-semibold text-slate-800">Phone Number *</label>
+              <input
                 required
                 type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="+91 9876543210"
+                placeholder="Enter phone number"
+                className={inputClasses}
+                style={inputStyle}
               />
             </div>
-          </Card>
+          </div>
 
-          <Card className="space-y-4">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold flex items-center justify-center">
+          {/* Card 2: Delivery Address */}
+          <div
+            className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-4"
+            style={{ borderRadius: "var(--store-image-radius, 16px)" }}
+          >
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+              <span
+                className="w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center text-white flex-shrink-0"
+                style={{ backgroundColor: "var(--store-primary, #3b82f6)" }}
+              >
                 2
               </span>
               Delivery Address
             </h2>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Street Address *</label>
-              <Input
+              <label className="block text-xs font-semibold text-slate-800">Street Address *</label>
+              <input
                 required
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
-                placeholder="House / Flat / Street / Landmark"
+                placeholder="Enter street address"
+                className={inputClasses}
+                style={inputStyle}
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">City *</label>
-                <Input
+                <label className="block text-xs font-semibold text-slate-800">City *</label>
+                <input
                   required
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
-                  placeholder="City"
+                  placeholder="Enter city"
+                  className={inputClasses}
+                  style={inputStyle}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">State *</label>
-                <Input
+                <label className="block text-xs font-semibold text-slate-800">State *</label>
+                <input
                   required
                   name="state"
                   value={formData.state}
                   onChange={handleChange}
-                  placeholder="State"
+                  placeholder="Enter state"
+                  className={inputClasses}
+                  style={inputStyle}
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Postal Code *</label>
-                <Input
+                <label className="block text-xs font-semibold text-slate-800">Postal Code *</label>
+                <input
                   required
                   name="pincode"
                   value={formData.pincode}
                   onChange={handleChange}
-                  placeholder="PIN / Zip Code"
+                  placeholder="Enter postal code"
+                  className={inputClasses}
+                  style={inputStyle}
                 />
               </div>
             </div>
 
             <div className="space-y-1.5 pt-2">
-              <label className="text-xs font-semibold text-slate-300">Order Notes (Optional)</label>
-              <Textarea
+              <label className="block text-xs font-semibold text-slate-800">Order Notes (Optional)</label>
+              <textarea
                 name="notes"
                 value={formData.notes}
                 onChange={handleChange}
-                placeholder="Special delivery instructions or notes for the seller..."
+                rows={3}
+                placeholder="Enter order notes (optional)"
+                className="w-full p-3.5 text-xs sm:text-sm bg-transparent text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all resize-y"
+                style={inputStyle}
               />
             </div>
-          </Card>
+          </div>
 
-          {/* Payment Method Selection */}
-          <Card className="space-y-4">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold flex items-center justify-center">
+          {/* Card 3: Payment Method Selection */}
+          <div
+            className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-4"
+            style={{ borderRadius: "var(--store-image-radius, 16px)" }}
+          >
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+              <span
+                className="w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center text-white flex-shrink-0"
+                style={{ backgroundColor: "var(--store-primary, #3b82f6)" }}
+              >
                 3
               </span>
               Choose Order & Payment Method
             </h2>
 
             {!codEnabled && !onlineEnabled && !whatsappEnabled ? (
-              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs">
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 text-xs font-medium">
                 No payment or order methods are currently enabled for this store. Please contact the seller.
               </div>
             ) : (
@@ -367,11 +428,14 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
                 {codEnabled && (
                   <label
                     onClick={() => setPaymentMethod("COD")}
-                    className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                    className={`flex items-center gap-3 p-3.5 border cursor-pointer transition-all ${
                       paymentMethod === "COD"
-                        ? "border-blue-500 bg-blue-500/10 text-white"
-                        : "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700"
+                        ? "border-blue-600 bg-blue-50/70 text-slate-900 shadow-sm"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
                     }`}
+                    style={{
+                      borderRadius: "var(--store-input-radius, 10px)",
+                    }}
                   >
                     <input
                       type="radio"
@@ -380,12 +444,12 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
                       onChange={() => setPaymentMethod("COD")}
                       className="hidden"
                     />
-                    <div className="p-2 rounded-lg bg-slate-800 text-emerald-400">
+                    <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
                       <Banknote className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold">Cash on Delivery</h4>
-                      <p className="text-xs text-slate-400">Pay when your order arrives</p>
+                      <h4 className="text-xs sm:text-sm font-semibold text-slate-900">Cash on Delivery</h4>
+                      <p className="text-[11px] text-slate-500">Pay when your order arrives</p>
                     </div>
                   </label>
                 )}
@@ -393,11 +457,14 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
                 {onlineEnabled && (
                   <label
                     onClick={() => setPaymentMethod("RAZORPAY")}
-                    className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                    className={`flex items-center gap-3 p-3.5 border cursor-pointer transition-all ${
                       paymentMethod === "RAZORPAY"
-                        ? "border-blue-500 bg-blue-500/10 text-white"
-                        : "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700"
+                        ? "border-blue-600 bg-blue-50/70 text-slate-900 shadow-sm"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
                     }`}
+                    style={{
+                      borderRadius: "var(--store-input-radius, 10px)",
+                    }}
                   >
                     <input
                       type="radio"
@@ -406,12 +473,12 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
                       onChange={() => setPaymentMethod("RAZORPAY")}
                       className="hidden"
                     />
-                    <div className="p-2 rounded-lg bg-slate-800 text-blue-400">
+                    <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
                       <CreditCard className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold">Pay Online</h4>
-                      <p className="text-xs text-slate-400">UPI, Cards, NetBanking (Razorpay)</p>
+                      <h4 className="text-xs sm:text-sm font-semibold text-slate-900">Pay Online</h4>
+                      <p className="text-[11px] text-slate-500">UPI, Cards, NetBanking (Razorpay)</p>
                     </div>
                   </label>
                 )}
@@ -419,11 +486,14 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
                 {whatsappEnabled && (
                   <label
                     onClick={() => setPaymentMethod("WHATSAPP")}
-                    className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                    className={`flex items-center gap-3 p-3.5 border cursor-pointer transition-all ${
                       paymentMethod === "WHATSAPP"
-                        ? "border-emerald-500 bg-emerald-500/10 text-white"
-                        : "border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700"
+                        ? "border-emerald-600 bg-emerald-50/70 text-slate-900 shadow-sm"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
                     }`}
+                    style={{
+                      borderRadius: "var(--store-input-radius, 10px)",
+                    }}
                   >
                     <input
                       type="radio"
@@ -432,49 +502,55 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
                       onChange={() => setPaymentMethod("WHATSAPP")}
                       className="hidden"
                     />
-                    <div className="p-2 rounded-lg bg-slate-800 text-emerald-400">
+                    <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
                       <MessageCircle className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold">WhatsApp Order</h4>
-                      <p className="text-xs text-slate-400">Creates order and sends details via WhatsApp</p>
+                      <h4 className="text-xs sm:text-sm font-semibold text-slate-900">WhatsApp Order</h4>
+                      <p className="text-[11px] text-slate-500">Creates order and sends details via WhatsApp</p>
                     </div>
                   </label>
                 )}
               </div>
             )}
-          </Card>
+          </div>
         </div>
 
         {/* Order Summary Sidebar */}
         <div className="lg:col-span-5 space-y-6">
-          <Card className="space-y-4 sticky top-24">
-            <h3 className="text-base font-bold text-white border-b border-slate-800/80 pb-3">
+          <div
+            className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-4 sticky top-24"
+            style={{ borderRadius: "var(--store-image-radius, 16px)" }}
+          >
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 border-b border-slate-100 pb-3">
               Order Summary ({items.length} items)
             </h3>
 
-            <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-72 overflow-y-auto pr-1 divide-y divide-slate-100">
               {items.map((item) => {
                 const activePrice =
                   item.salePrice !== null && item.salePrice !== undefined && item.salePrice > 0
                     ? item.salePrice
                     : item.price;
                 return (
-                  <div key={item.productId} className="flex gap-3 text-xs items-center">
-                    <div className="relative w-12 h-12 rounded-lg bg-slate-800 overflow-hidden flex-shrink-0">
+                  <div key={item.productId} className="flex gap-3 text-xs items-center pt-2.5 first:pt-0">
+                    <div className="relative w-12 h-12 rounded-lg bg-slate-100 border border-slate-200/80 overflow-hidden flex-shrink-0">
                       {item.imageUrl ? (
                         <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-600">
+                        <div className="w-full h-full flex items-center justify-center text-slate-400">
                           -
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-slate-200 truncate">{item.name}</p>
-                      <p className="text-slate-400">Qty: {item.quantity}</p>
+                      <p className="font-semibold text-slate-900 truncate">{item.name}</p>
+                      {item.variantColor && (
+                        <p className="text-[11px] text-slate-500 font-medium">Color: {item.variantColor}</p>
+                      )}
+                      <p className="text-slate-500">Qty: {item.quantity}</p>
                     </div>
-                    <span className="font-bold text-white">
+                    <span className="font-bold text-slate-900">
                       {formatCurrency(activePrice * item.quantity)}
                     </span>
                   </div>
@@ -482,18 +558,20 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
               })}
             </div>
 
-            <div className="pt-4 border-t border-slate-800/80 space-y-2 text-sm">
-              <div className="flex justify-between text-slate-400">
+            <div className="pt-3 border-t border-slate-100 space-y-2 text-sm">
+              <div className="flex justify-between text-slate-600">
                 <span>Subtotal</span>
-                <span className="text-slate-200">{formatCurrency(subtotal)}</span>
+                <span className="text-slate-900 font-semibold">{formatCurrency(subtotal)}</span>
               </div>
-              <div className="flex justify-between text-slate-400">
+              <div className="flex justify-between text-slate-600">
                 <span>Delivery</span>
-                <span className="text-emerald-400 font-medium">FREE</span>
+                <span className="text-emerald-600 font-bold">FREE</span>
               </div>
-              <div className="pt-2 border-t border-slate-800 flex justify-between text-base font-bold text-white">
+              <div className="pt-2 border-t border-slate-100 flex justify-between text-base font-bold text-slate-900">
                 <span>Total Amount</span>
-                <span className="text-blue-400 text-lg">{formatCurrency(subtotal)}</span>
+                <span className="text-lg font-extrabold" style={{ color: "var(--store-primary, #3b82f6)" }}>
+                  {formatCurrency(subtotal)}
+                </span>
               </div>
             </div>
 
@@ -503,8 +581,10 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
               size="lg"
               isLoading={loading}
               disabled={!codEnabled && !onlineEnabled && !whatsappEnabled}
-              className="w-full mt-4"
+              className="w-full mt-3 shadow-sm font-bold text-sm h-12"
               style={{
+                backgroundColor: "var(--store-button-bg, #22c55e)",
+                color: "var(--store-button-text, #ffffff)",
                 borderRadius: "var(--store-button-radius, 10px)",
               }}
             >
@@ -515,11 +595,61 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
                 : `Place COD Order (${formatCurrency(subtotal)})`}
             </Button>
 
-            <div className="flex items-center justify-center gap-1.5 text-center text-xs text-slate-500 pt-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            <div className="flex items-center justify-center gap-1.5 text-center text-xs text-slate-500 pt-1">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
               <span>256-bit SSL encrypted secure checkout</span>
             </div>
-          </Card>
+          </div>
+        </div>
+
+        {/* Mobile Sticky Bottom Navbar: Left side Price, Right side Proceed Button */}
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 shadow-[0_-4px_25px_rgba(0,0,0,0.1)] lg:hidden"
+          style={{
+            paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))",
+          }}
+        >
+          <div className="max-w-md mx-auto flex items-center justify-between gap-3">
+            {/* Left side: Price & items summary */}
+            <div className="flex flex-col min-w-0">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
+                Total Amount
+              </span>
+              <span
+                className="text-base sm:text-lg font-black leading-tight"
+                style={{ color: "var(--store-primary, #0f172a)" }}
+              >
+                {formatCurrency(subtotal)}
+              </span>
+              <span className="text-[10px] text-emerald-600 font-semibold">
+                FREE Delivery • {items.length} {items.length === 1 ? "item" : "items"}
+              </span>
+            </div>
+
+            {/* Right side: Proceed / Place Order Button */}
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              isLoading={loading}
+              disabled={!codEnabled && !onlineEnabled && !whatsappEnabled}
+              className="px-5 py-2.5 h-11 shadow-md font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 flex-1 max-w-[200px]"
+              style={{
+                backgroundColor: "var(--store-button-bg, #22c55e)",
+                color: "var(--store-button-text, #ffffff)",
+                borderRadius: "var(--store-button-radius, 10px)",
+              }}
+            >
+              <span>
+                {paymentMethod === "RAZORPAY"
+                  ? "Pay Online"
+                  : paymentMethod === "WHATSAPP"
+                  ? "Order WhatsApp"
+                  : "Place Order"}
+              </span>
+              <ArrowRight className="w-4 h-4 ml-0.5" />
+            </Button>
+          </div>
         </div>
       </form>
     </div>
