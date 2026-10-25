@@ -22,4 +22,5 @@ const nextConfig: NextConfig = {
   },
 };
 
+// Trigger server reload for policy points schema update
 export default nextConfig;

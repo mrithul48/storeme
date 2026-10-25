@@ -22,13 +22,13 @@ export default async function DashboardAnalyticsPage({ searchParams }: Analytics
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <div>
-        <h1 className="text-2xl font-extrabold text-white tracking-tight">Merchant Analytics</h1>
-        <p className="text-xs sm:text-sm text-slate-400">
+        <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight">Merchant Analytics</h1>
+        <p className="text-xs sm:text-sm text-[#64748B]">
           Real database revenue metrics, order channel distribution, and top product insights.
         </p>
       </div>
 
-      <AnalyticsClient initialData={analyticsData} />
+      <AnalyticsClient key={validTimeframe} initialData={analyticsData} />
     </div>
   );
 }

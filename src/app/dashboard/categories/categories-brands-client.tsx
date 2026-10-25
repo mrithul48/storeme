@@ -23,7 +23,6 @@ export function CategoriesBrandsClient({
 
   // Category create state
   const [catName, setCatName] = useState("");
-  const [catDesc, setCatDesc] = useState("");
   const [catImageUrl, setCatImageUrl] = useState("");
   const [catImagePublicId, setCatImagePublicId] = useState("");
   const [catLoading, setCatLoading] = useState(false);
@@ -32,7 +31,6 @@ export function CategoriesBrandsClient({
   // Category edit state
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
   const [editCatName, setEditCatName] = useState("");
-  const [editCatDesc, setEditCatDesc] = useState("");
   const [editCatImageUrl, setEditCatImageUrl] = useState("");
   const [editCatImagePublicId, setEditCatImagePublicId] = useState("");
   const [editCatLoading, setEditCatLoading] = useState(false);
@@ -66,7 +64,6 @@ export function CategoriesBrandsClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: catName.trim(),
-          description: catDesc.trim() || undefined,
           imageUrl: catImageUrl || undefined,
           imagePublicId: catImagePublicId || undefined,
         }),
@@ -79,7 +76,6 @@ export function CategoriesBrandsClient({
 
       setCategories((prev) => [...prev, { ...data.data, _count: { products: 0 } }]);
       setCatName("");
-      setCatDesc("");
       setCatImageUrl("");
       setCatImagePublicId("");
       router.refresh();
@@ -93,7 +89,6 @@ export function CategoriesBrandsClient({
   const handleStartEditCategory = (cat: any) => {
     setEditingCategory(cat);
     setEditCatName(cat.name || "");
-    setEditCatDesc(cat.description || "");
     setEditCatImageUrl(cat.imageUrl || "");
     setEditCatImagePublicId(cat.imagePublicId || "");
     setEditCatError(null);
@@ -112,7 +107,6 @@ export function CategoriesBrandsClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: editCatName.trim(),
-          description: editCatDesc.trim() || undefined,
           imageUrl: editCatImageUrl || "",
           imagePublicId: editCatImagePublicId || "",
         }),
@@ -253,14 +247,14 @@ export function CategoriesBrandsClient({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       {/* Categories Section */}
       <div className="space-y-6">
-        <Card className="space-y-4">
-          <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-            <Layers className="w-5 h-5 text-blue-400" />
-            <h2 className="text-base font-bold text-white">Add New Category</h2>
+        <Card className="space-y-4 border border-slate-200/90 shadow-sm">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <Layers className="w-5 h-5 text-[#2563EB]" />
+            <h2 className="text-base font-bold text-[#0F172A]">Add New Category</h2>
           </div>
 
           {catError && (
-            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{catError}</span>
             </div>
@@ -268,26 +262,17 @@ export function CategoriesBrandsClient({
 
           <form onSubmit={handleCreateCategory} className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Category Name *</label>
+              <label className="text-xs font-semibold text-[#0F172A]">Category Name *</label>
               <Input
                 required
                 value={catName}
                 onChange={(e) => setCatName(e.target.value)}
-                placeholder="e.g. Footwear, Electronics, Accessories"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Description (Optional)</label>
-              <Input
-                value={catDesc}
-                onChange={(e) => setCatDesc(e.target.value)}
-                placeholder="Brief category summary"
+                placeholder="Enter category name"
               />
             </div>
 
             <ImageUploader
-              label="Category Image (Optional)"
+              label="Category Image"
               url={catImageUrl}
               folder="categories"
               aspectHint="Recommended: Square or 4:3 (e.g. 400×400px)"
@@ -309,32 +294,31 @@ export function CategoriesBrandsClient({
         </Card>
 
         {/* Existing Categories List */}
-        <Card className="space-y-3">
-          <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
+        <Card className="space-y-3 border border-slate-200/90 shadow-sm">
+          <h3 className="text-sm font-bold text-[#64748B] uppercase tracking-wider">
             All Categories ({categories.length})
           </h3>
 
           {categories.length === 0 ? (
-            <p className="text-xs text-slate-500 py-4 text-center">No categories created yet.</p>
+            <p className="text-xs text-[#64748B] py-4 text-center">No categories created yet.</p>
           ) : (
-            <div className="divide-y divide-slate-800/60">
+            <div className="divide-y divide-slate-100">
               {categories.map((c) => (
                 <div key={c.id} className="py-3 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     {c.imageUrl ? (
-                      <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-slate-700 bg-slate-800 flex-shrink-0">
+                      <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex-shrink-0">
                         <Image src={c.imageUrl} alt={c.name} fill className="object-cover" />
                       </div>
                     ) : (
-                      <div className="w-11 h-11 rounded-lg border border-slate-800 bg-slate-800/60 flex items-center justify-center flex-shrink-0 text-slate-400 text-xs font-bold">
+                      <div className="w-11 h-11 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-500 text-xs font-bold">
                         {c.name.charAt(0)}
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{c.name}</p>
+                      <p className="text-sm font-semibold text-[#0F172A] truncate">{c.name}</p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-slate-400 font-mono">/{c.slug}</span>
-                        <span className="text-[11px] text-blue-400 font-medium">
+                        <span className="text-[11px] text-[#2563EB] font-semibold">
                           {c._count?.products || 0} products
                         </span>
                       </div>
@@ -345,7 +329,7 @@ export function CategoriesBrandsClient({
                     <button
                       type="button"
                       onClick={() => handleStartEditCategory(c)}
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-[#2563EB] hover:bg-blue-50 transition-colors"
                       title="Edit Category"
                     >
                       <Pencil className="w-4 h-4" />
@@ -353,7 +337,7 @@ export function CategoriesBrandsClient({
                     <button
                       type="button"
                       onClick={() => handleDeleteCategory(c.id, c.name)}
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                       title="Delete Category"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -368,14 +352,14 @@ export function CategoriesBrandsClient({
 
       {/* Brands Section */}
       <div className="space-y-6">
-        <Card className="space-y-4">
-          <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-            <Tag className="w-5 h-5 text-emerald-400" />
-            <h2 className="text-base font-bold text-white">Add New Brand</h2>
+        <Card className="space-y-4 border border-slate-200/90 shadow-sm">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <Tag className="w-5 h-5 text-emerald-600" />
+            <h2 className="text-base font-bold text-[#0F172A]">Add New Brand</h2>
           </div>
 
           {brandError && (
-            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{brandError}</span>
             </div>
@@ -383,17 +367,17 @@ export function CategoriesBrandsClient({
 
           <form onSubmit={handleCreateBrand} className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-300">Brand Name *</label>
+              <label className="text-xs font-semibold text-[#0F172A]">Brand Name *</label>
               <Input
                 required
                 value={brandName}
                 onChange={(e) => setBrandName(e.target.value)}
-                placeholder="e.g. Nike, Apple, Sony"
+                placeholder="Enter brand name"
               />
             </div>
 
             <ImageUploader
-              label="Brand Logo (Optional)"
+              label="Brand Logo"
               url={brandLogoUrl}
               folder="brands"
               aspectHint="Recommended: Square or transparent PNG logo"
@@ -415,30 +399,29 @@ export function CategoriesBrandsClient({
         </Card>
 
         {/* Existing Brands List */}
-        <Card className="space-y-3">
-          <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider">
+        <Card className="space-y-3 border border-slate-200/90 shadow-sm">
+          <h3 className="text-sm font-bold text-[#64748B] uppercase tracking-wider">
             All Brands ({brands.length})
           </h3>
 
           {brands.length === 0 ? (
-            <p className="text-xs text-slate-500 py-4 text-center">No brands created yet.</p>
+            <p className="text-xs text-[#64748B] py-4 text-center">No brands created yet.</p>
           ) : (
-            <div className="divide-y divide-slate-800/60">
+            <div className="divide-y divide-slate-100">
               {brands.map((b) => (
                 <div key={b.id} className="py-3 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     {b.logoUrl ? (
-                      <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-slate-700 bg-slate-800 flex-shrink-0 p-1">
+                      <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex-shrink-0 p-1">
                         <Image src={b.logoUrl} alt={b.name} fill className="object-contain" />
                       </div>
                     ) : (
-                      <div className="w-11 h-11 rounded-lg border border-slate-800 bg-slate-800/60 flex items-center justify-center flex-shrink-0 text-slate-400 text-xs font-bold">
+                      <div className="w-11 h-11 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-500 text-xs font-bold">
                         {b.name.charAt(0)}
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{b.name}</p>
-                      <span className="text-xs text-slate-400 font-mono">/{b.slug}</span>
+                      <p className="text-sm font-semibold text-[#0F172A] truncate">{b.name}</p>
                     </div>
                   </div>
 
@@ -446,7 +429,7 @@ export function CategoriesBrandsClient({
                     <button
                       type="button"
                       onClick={() => handleStartEditBrand(b)}
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
                       title="Edit Brand"
                     >
                       <Pencil className="w-4 h-4" />
@@ -454,7 +437,7 @@ export function CategoriesBrandsClient({
                     <button
                       type="button"
                       onClick={() => handleDeleteBrand(b.id, b.name)}
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                       title="Delete Brand"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -469,24 +452,24 @@ export function CategoriesBrandsClient({
 
       {/* Edit Category Modal */}
       {editingCategory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div className="flex items-center gap-2">
-                <Layers className="w-5 h-5 text-blue-400" />
-                <h3 className="text-base font-bold text-white">Edit Category</h3>
+                <Layers className="w-5 h-5 text-[#2563EB]" />
+                <h3 className="text-base font-bold text-[#0F172A]">Edit Category</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingCategory(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {editCatError && (
-              <div className="p-3 mb-4 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
+              <div className="p-3 mb-4 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>{editCatError}</span>
               </div>
@@ -494,26 +477,17 @@ export function CategoriesBrandsClient({
 
             <form onSubmit={handleUpdateCategory} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-300">Category Name *</label>
+                <label className="text-xs font-semibold text-[#0F172A]">Category Name *</label>
                 <Input
                   required
                   value={editCatName}
                   onChange={(e) => setEditCatName(e.target.value)}
-                  placeholder="e.g. Footwear, Electronics, Accessories"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-300">Description (Optional)</label>
-                <Input
-                  value={editCatDesc}
-                  onChange={(e) => setEditCatDesc(e.target.value)}
-                  placeholder="Brief category summary"
+                  placeholder="Enter category name"
                 />
               </div>
 
               <ImageUploader
-                label="Category Image (Optional)"
+                label="Category Image"
                 url={editCatImageUrl}
                 folder="categories"
                 aspectHint="Recommended: Square or 4:3 (e.g. 400×400px)"
@@ -527,7 +501,7 @@ export function CategoriesBrandsClient({
                 }}
               />
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <Button
                   type="button"
                   variant="ghost"
@@ -553,24 +527,24 @@ export function CategoriesBrandsClient({
 
       {/* Edit Brand Modal */}
       {editingBrand && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div className="flex items-center gap-2">
-                <Tag className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-base font-bold text-white">Edit Brand</h3>
+                <Tag className="w-5 h-5 text-emerald-600" />
+                <h3 className="text-base font-bold text-[#0F172A]">Edit Brand</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingBrand(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {editBrandError && (
-              <div className="p-3 mb-4 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
+              <div className="p-3 mb-4 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <span>{editBrandError}</span>
               </div>
@@ -578,17 +552,17 @@ export function CategoriesBrandsClient({
 
             <form onSubmit={handleUpdateBrand} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-300">Brand Name *</label>
+                <label className="text-xs font-semibold text-[#0F172A]">Brand Name *</label>
                 <Input
                   required
                   value={editBrandName}
                   onChange={(e) => setEditBrandName(e.target.value)}
-                  placeholder="e.g. Nike, Apple, Sony"
+                  placeholder="Enter brand name"
                 />
               </div>
 
               <ImageUploader
-                label="Brand Logo (Optional)"
+                label="Brand Logo"
                 url={editBrandLogoUrl}
                 folder="brands"
                 aspectHint="Recommended: Square or transparent PNG logo"
@@ -602,7 +576,7 @@ export function CategoriesBrandsClient({
                 }}
               />
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <Button
                   type="button"
                   variant="ghost"
@@ -625,6 +599,7 @@ export function CategoriesBrandsClient({
           </div>
         </div>
       )}
+
     </div>
   );
 }

@@ -134,7 +134,28 @@ export function getStoreThemeVariables(theme?: ThemeConfig | null): React.CSSPro
     "--store-button-radius": buttonRadius,
     "--store-image-radius": imageRadius,
     "--store-input-radius": inputRadius,
+    "--store-font-family": getFontFamilyCSS(theme?.primaryFont),
   } as React.CSSProperties;
+}
+
+/**
+ * Maps store font names to reliable CSS font-family declarations with fallbacks.
+ */
+export function getFontFamilyCSS(fontName?: string | null): string {
+  switch (fontName) {
+    case "Playfair Display":
+      return "'Playfair Display', Georgia, serif";
+    case "Poppins":
+      return "'Poppins', sans-serif";
+    case "Montserrat":
+      return "'Montserrat', sans-serif";
+    case "Roboto":
+      return "'Roboto', sans-serif";
+    case "Inter":
+      return "'Inter', sans-serif";
+    default:
+      return fontName ? `'${fontName}', sans-serif` : "'Inter', sans-serif";
+  }
 }
 
 /**
@@ -149,7 +170,7 @@ export function getStoreThemeStyles(theme?: ThemeConfig | null) {
       ...vars,
       backgroundColor: "var(--store-page-bg)",
       color: "var(--store-page-text)",
-      fontFamily: theme?.primaryFont || "Inter, sans-serif",
+      fontFamily: getFontFamilyCSS(theme?.primaryFont),
     },
     isLight: isPageLight,
   };

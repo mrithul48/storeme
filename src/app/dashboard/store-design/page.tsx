@@ -42,8 +42,8 @@ export default async function StoreDesignPage() {
   return (
     <div className="space-y-6 max-w-7xl">
       <div>
-        <h1 className="text-2xl font-extrabold text-white">Live Store Design</h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
+        <h1 className="text-2xl font-bold text-[#0F172A]">Live Store Design</h1>
+        <p className="text-xs sm:text-sm text-[#64748B] mt-1">
           Customize your storefront homepage, sections, hero banners, testimonials, and more.
           Changes are saved to the database and appear on your live store immediately.
         </p>

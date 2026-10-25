@@ -53,6 +53,7 @@ export const baseProductSchema = z.object({
     .optional()
     .nullable(),
   sku: z.string().max(100).optional().nullable().transform((val) => (val && val.trim() !== "" ? val : null)),
+  weight: z.number().min(0, "Weight cannot be negative").max(99999.99).optional().nullable(),
   stock: z
     .number()
     .int("Stock must be a whole number")

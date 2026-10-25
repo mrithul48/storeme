@@ -36,6 +36,13 @@ export interface Badge {
   sortOrder: number;
 }
 
+export interface PolicyPoint {
+  id: string;
+  heading: string;
+  description: string;
+  sortOrder: number;
+}
+
 export interface StoreDesignClientProps {
   storeSlug: string;
   homePage: Record<string, unknown> | null;

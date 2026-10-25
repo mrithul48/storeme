@@ -21,8 +21,8 @@ export default async function DashboardCustomersPage({ searchParams }: Customers
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <div>
-        <h1 className="text-2xl font-extrabold text-white">Customers Directory</h1>
-        <p className="text-xs sm:text-sm text-slate-400">
+        <h1 className="text-2xl font-bold text-[#0F172A]">Customers Directory</h1>
+        <p className="text-xs sm:text-sm text-[#64748B]">
           View all buyers who have placed orders in your store, their order frequency, and lifetime spend.
         </p>
       </div>

@@ -229,6 +229,12 @@ export const getStorefrontConfig = cache(async (slugOrDomain: string) => {
         whatsappOrderEnabled: true,
         stockManagementType: true,
         colorWiseStockType: true,
+        shippingType: true,
+        shippingFixedCharge: true,
+        shippingMinOrderAmount: true,
+        shippingFallbackCharge: true,
+        shippingDefaultWeight: true,
+        shippingWeightRates: true,
       },
     },
     theme: {
@@ -292,7 +298,7 @@ export const getStorefrontConfig = cache(async (slugOrDomain: string) => {
     });
   }
 
-  return store;
+  return store ? (JSON.parse(JSON.stringify(store)) as typeof store) : null;
 });
 
 /**

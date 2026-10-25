@@ -83,7 +83,7 @@ export function WishlistDrawer({ storeSlug }: { storeSlug: string }) {
                   <h3 className="font-bold text-base" style={{ color: "var(--store-navbar-text, inherit)" }}>
                     Your wishlist is empty
                   </h3>
-                  <p className="text-sm opacity-70">
+                  <p className="text-sm" style={{ color: "var(--store-navbar-text, inherit)" }}>
                     Save items you like to view or purchase them later.
                   </p>
                 </div>

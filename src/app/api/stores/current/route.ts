@@ -96,6 +96,12 @@ export async function PUT(request: Request) {
             whatsappOrderEnabled: settings.whatsappOrderEnabled ?? false,
             stockManagementType: settings.stockManagementType ?? null,
             colorWiseStockType: settings.colorWiseStockType ?? null,
+            shippingType: settings.shippingType ?? null,
+            shippingFixedCharge: settings.shippingFixedCharge ?? null,
+            shippingMinOrderAmount: settings.shippingMinOrderAmount ?? null,
+            shippingFallbackCharge: settings.shippingFallbackCharge ?? null,
+            shippingDefaultWeight: settings.shippingDefaultWeight ?? null,
+            shippingWeightRates: settings.shippingWeightRates ?? null,
           },
           update: {
             ...(settings.brandsEnabled !== undefined ? { brandsEnabled: settings.brandsEnabled } : {}),
@@ -105,6 +111,12 @@ export async function PUT(request: Request) {
             ...(settings.whatsappOrderEnabled !== undefined ? { whatsappOrderEnabled: settings.whatsappOrderEnabled } : {}),
             ...(settings.stockManagementType !== undefined ? { stockManagementType: settings.stockManagementType } : {}),
             ...(settings.colorWiseStockType !== undefined ? { colorWiseStockType: settings.colorWiseStockType } : {}),
+            ...(settings.shippingType !== undefined ? { shippingType: settings.shippingType } : {}),
+            ...(settings.shippingFixedCharge !== undefined ? { shippingFixedCharge: settings.shippingFixedCharge } : {}),
+            ...(settings.shippingMinOrderAmount !== undefined ? { shippingMinOrderAmount: settings.shippingMinOrderAmount } : {}),
+            ...(settings.shippingFallbackCharge !== undefined ? { shippingFallbackCharge: settings.shippingFallbackCharge } : {}),
+            ...(settings.shippingDefaultWeight !== undefined ? { shippingDefaultWeight: settings.shippingDefaultWeight } : {}),
+            ...(settings.shippingWeightRates !== undefined ? { shippingWeightRates: settings.shippingWeightRates } : {}),
           },
         });
 

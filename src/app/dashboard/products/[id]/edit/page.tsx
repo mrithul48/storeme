@@ -35,13 +35,14 @@ export default async function EditProductPage({ params }: EditProductProps) {
     ...product,
     price: Number(product.price),
     salePrice: product.salePrice ? Number(product.salePrice) : null,
+    weight: product.weight ? Number(product.weight) : null,
   };
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-white">Edit Product</h1>
-        <p className="text-xs sm:text-sm text-slate-400">
+        <h1 className="text-2xl font-bold text-[#0F172A]">Edit Product</h1>
+        <p className="text-xs sm:text-sm text-[#64748B]">
           Update product details, media, inventory or pricing.
         </p>
       </div>
@@ -51,7 +52,7 @@ export default async function EditProductPage({ params }: EditProductProps) {
         initialData={serializedProduct}
         categories={categories}
         brands={brands}
-        storeSettings={store?.settings}
+        storeSettings={store?.settings ? JSON.parse(JSON.stringify(store.settings)) : null}
         initialCustomColors={customColors}
       />
     </div>

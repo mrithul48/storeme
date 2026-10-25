@@ -22,12 +22,15 @@ import {
   OfferBanner,
   Testimonial,
   Badge,
+  PolicyPoint,
   genId,
 } from "./_ui/types";
 import { HomepageTab } from "./tabs/homepage-tab";
 import { HeaderTab } from "./tabs/header-tab";
 import { AboutTab } from "./tabs/about-tab";
 import { ContactTab } from "./tabs/contact-tab";
+import { PoliciesTab } from "./tabs/policies-tab";
+import { ShieldCheck } from "lucide-react";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -41,7 +44,7 @@ export function StoreDesignClient({
   const hp = homePage as Record<string, unknown> | null;
 
   // ── Tab ──
-  const [activeTab, setActiveTab] = useState<"homepage" | "header" | "about" | "contact">("header");
+  const [activeTab, setActiveTab] = useState<"homepage" | "header" | "about" | "contact" | "policies">("header");
 
   // ── Notifications ──
   const [saving, setSaving] = useState(false);
@@ -141,6 +144,31 @@ export function StoreDesignClient({
     (hp?.contactEnabled as boolean) ?? false
   );
 
+  // ── Store Policies ──
+  const [deliveryPolicyHeading, setDeliveryPolicyHeading] = useState<string>(
+    (hp?.deliveryPolicyHeading as string) ?? ""
+  );
+  const [deliveryPoints, setDeliveryPoints] = useState<PolicyPoint[]>(() => {
+    const p = hp?.deliveryPoints;
+    return Array.isArray(p) ? (p as PolicyPoint[]) : [];
+  });
+
+  const [refundPolicyHeading, setRefundPolicyHeading] = useState<string>(
+    (hp?.refundPolicyHeading as string) ?? ""
+  );
+  const [refundPoints, setRefundPoints] = useState<PolicyPoint[]>(() => {
+    const p = hp?.refundPoints;
+    return Array.isArray(p) ? (p as PolicyPoint[]) : [];
+  });
+
+  const [privacyPolicyHeading, setPrivacyPolicyHeading] = useState<string>(
+    (hp?.privacyPolicyHeading as string) ?? ""
+  );
+  const [privacyPoints, setPrivacyPoints] = useState<PolicyPoint[]>(() => {
+    const p = hp?.privacyPoints;
+    return Array.isArray(p) ? (p as PolicyPoint[]) : [];
+  });
+
   // ─── Save ──────────────────────────────────────────────────────────────────
 
   const handleSave = async () => {
@@ -194,6 +222,15 @@ export function StoreDesignClient({
       mission: mission || null,
       badges,
       contactEnabled,
+      deliveryPolicyHeading: deliveryPolicyHeading || null,
+      deliveryPolicyDescription: null,
+      deliveryPoints: deliveryPoints.filter((p) => p.heading.trim() || p.description.trim()),
+      refundPolicyHeading: refundPolicyHeading || null,
+      refundPolicyDescription: null,
+      refundPoints: refundPoints.filter((p) => p.heading.trim() || p.description.trim()),
+      privacyPolicyHeading: privacyPolicyHeading || null,
+      privacyPolicyDescription: null,
+      privacyPoints: privacyPoints.filter((p) => p.heading.trim() || p.description.trim()),
     };
 
     try {
@@ -302,6 +339,7 @@ export function StoreDesignClient({
     { id: "homepage", label: "Home page", icon: Layout },
     { id: "about", label: "About page", icon: Info },
     { id: "contact", label: "Contact Page", icon: MessageCircle },
+    { id: "policies", label: "Store Policies", icon: ShieldCheck },
   ];
 
   // ─── Render ────────────────────────────────────────────────────────────────
@@ -310,43 +348,43 @@ export function StoreDesignClient({
     <div className="space-y-6">
       {/* Notifications */}
       {success && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm flex items-center gap-2">
-          <Check className="w-5 h-5 flex-shrink-0" />
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center gap-2 shadow-sm">
+          <Check className="w-5 h-5 flex-shrink-0 text-emerald-600" />
           <span>{success}</span>
           <a
             href={`/store/${storeSlug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto flex items-center gap-1 text-emerald-300 hover:text-emerald-100 text-xs underline"
+            className="ml-auto flex items-center gap-1 text-[#2563EB] hover:text-blue-800 text-xs font-semibold underline"
           >
             <Eye className="w-3.5 h-3.5" /> View Live Store
           </a>
         </div>
       )}
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-center gap-2">
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-center gap-2 shadow-sm">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-600" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Preview Store Banner */}
-      <Card className="flex items-center justify-between py-3 px-5 bg-gradient-to-r from-blue-950/40 to-slate-900 border-blue-500/20">
+      <Card className="flex items-center justify-between py-3 px-5 bg-gradient-to-r from-blue-50/80 via-white to-indigo-50/40 border border-blue-100 shadow-sm">
         <div>
-          <p className="text-xs font-semibold text-blue-400">Live Storefront</p>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs font-bold text-[#2563EB]">Live Storefront</p>
+          <p className="text-xs text-[#64748B] mt-0.5">
             Changes save to DB and appear live immediately after saving.
           </p>
         </div>
         <a href={`/store/${storeSlug}`} target="_blank" rel="noopener noreferrer">
           <Button type="button" variant="outline" size="sm">
-            <ExternalLink className="w-3.5 h-3.5 mr-1" /> Preview Store
+            <ExternalLink className="w-3.5 h-3.5 mr-1 text-[#2563EB]" /> Preview Store
           </Button>
         </a>
       </Card>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800 gap-1 overflow-x-auto">
+      <div className="flex border-b border-slate-200 gap-1 overflow-x-auto scrollbar-none">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -355,11 +393,11 @@ export function StoreDesignClient({
             className={cn(
               "flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all whitespace-nowrap",
               activeTab === id
-                ? "border-blue-500 text-white"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "border-[#2563EB] text-[#2563EB]"
+                : "border-transparent text-[#64748B] hover:text-[#0F172A] hover:border-slate-300"
             )}
           >
-            <Icon className="w-4 h-4" />
+            <Icon className={`w-4 h-4 ${activeTab === id ? "text-[#2563EB]" : "text-slate-400"}`} />
             {label}
           </button>
         ))}
@@ -448,8 +486,26 @@ export function StoreDesignClient({
         />
       )}
 
+      {activeTab === "policies" && (
+        <PoliciesTab
+          storeSlug={storeSlug}
+          deliveryPolicyHeading={deliveryPolicyHeading}
+          setDeliveryPolicyHeading={setDeliveryPolicyHeading}
+          deliveryPoints={deliveryPoints}
+          setDeliveryPoints={setDeliveryPoints}
+          refundPolicyHeading={refundPolicyHeading}
+          setRefundPolicyHeading={setRefundPolicyHeading}
+          refundPoints={refundPoints}
+          setRefundPoints={setRefundPoints}
+          privacyPolicyHeading={privacyPolicyHeading}
+          setPrivacyPolicyHeading={setPrivacyPolicyHeading}
+          privacyPoints={privacyPoints}
+          setPrivacyPoints={setPrivacyPoints}
+        />
+      )}
+
       {/* ── Global Save Button ─────────────────────────────────────────────── */}
-      <div className="sticky bottom-0 z-10 flex items-center justify-end pt-4 pb-2">
+      <div className="sticky bottom-4 z-20 flex items-center justify-end pointer-events-none pt-4 pb-2">
         <Button
           type="button"
           variant="primary"
@@ -457,6 +513,7 @@ export function StoreDesignClient({
           onClick={handleSave}
           isLoading={saving}
           disabled={saving}
+          className="pointer-events-auto shadow-lg shadow-blue-600/25"
         >
           {saving ? "Saving…" : "Save Live Store Design"}
         </Button>

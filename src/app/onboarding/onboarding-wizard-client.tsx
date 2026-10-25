@@ -136,38 +136,38 @@ export function OnboardingWizardClient({ userEmail }: { userEmail: string }) {
       {step === 1 && (
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300">Store / Brand Name *</label>
+            <label className="text-xs font-semibold text-[#0F172A]">Store / Brand Name *</label>
             <Input
               required
               name="businessName"
               value={formData.businessName}
               onChange={handleChange}
-              placeholder="e.g. Apex Apparel, Organic Fresh, NeoTech"
+              placeholder="Enter store name"
             />
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-[#64748B]">
               Your store URL will be:{" "}
-              <span className="text-blue-400 font-mono">/store/{previewSlug}</span>
+              <span className="text-[#2563EB] font-mono">/store/{previewSlug}</span>
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300">Business Category</label>
+            <label className="text-xs font-semibold text-[#0F172A]">Business Category</label>
             <Input
               name="businessType"
               value={formData.businessType}
               onChange={handleChange}
-              placeholder="e.g. Fashion, Electronics, Health, Food"
+              placeholder="Enter business category"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300">Store Description</label>
+            <label className="text-xs font-semibold text-[#0F172A]">Store Description</label>
             <Textarea
               rows={3}
               name="description"
               value={formData.description}
               onChange={handleChange}
-              placeholder="A brief tagline or overview of what your store sells..."
+              placeholder="Enter store description"
             />
           </div>
 
@@ -195,32 +195,32 @@ export function OnboardingWizardClient({ userEmail }: { userEmail: string }) {
       {step === 2 && (
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300">WhatsApp Number</label>
+            <label className="text-xs font-semibold text-[#0F172A]">WhatsApp Number</label>
             <Input
               name="whatsapp"
               value={formData.whatsapp}
               onChange={handleChange}
-              placeholder="+91 9876543210 (For receiving direct customer orders)"
+              placeholder="Enter WhatsApp number"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300">Support Phone</label>
+            <label className="text-xs font-semibold text-[#0F172A]">Support Phone</label>
             <Input
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              placeholder="+91 9876543210"
+              placeholder="Enter phone number"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300">Business Address</label>
+            <label className="text-xs font-semibold text-[#0F172A]">Business Address</label>
             <Input
               name="businessAddress"
               value={formData.businessAddress}
               onChange={handleChange}
-              placeholder="City, State, Country"
+              placeholder="Enter business address"
             />
           </div>
 
