@@ -72,6 +72,13 @@ export const updateCompanySchema = z.object({
   socialLinks: socialLinksSchema.optional(),
 });
 
+export const shippingWeightRateSchema = z.object({
+  id: z.string().optional(),
+  minWeight: z.number().min(0, "Min weight must be >= 0"),
+  maxWeight: z.number().min(0, "Max weight must be >= 0"),
+  charge: z.number().min(0, "Shipping charge must be >= 0"),
+});
+
 export const updateStoreSettingsSchema = z.object({
   brandsEnabled: z.boolean().optional(),
   ordersEnabled: z.boolean().optional(),
@@ -80,6 +87,12 @@ export const updateStoreSettingsSchema = z.object({
   whatsappOrderEnabled: z.boolean().optional(),
   stockManagementType: z.enum(["AVAILABILITY", "QUANTITY", "COLOR_WISE"]).optional().nullable(),
   colorWiseStockType: z.enum(["AVAILABILITY", "QUANTITY"]).optional().nullable(),
+  shippingType: z.enum(["FIXED", "FREE_ABOVE_MIN", "WEIGHT_BASED"]).optional().nullable(),
+  shippingFixedCharge: z.number().min(0).optional().nullable(),
+  shippingMinOrderAmount: z.number().min(0).optional().nullable(),
+  shippingFallbackCharge: z.number().min(0).optional().nullable(),
+  shippingDefaultWeight: z.number().min(0).optional().nullable(),
+  shippingWeightRates: z.array(shippingWeightRateSchema).optional().nullable(),
   razorpayKeyId: z.string().optional(),
   razorpaySecret: z.string().optional(),
   brevoApiKey: z.string().optional(),

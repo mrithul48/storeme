@@ -1,9 +1,8 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { getStorefrontConfig } from "@/services/store.service";
-import { getProductBySlug } from "@/services/product.service";
+import { getProductBySlug, getRelatedProducts } from "@/services/product.service";
 import { CartProvider } from "@/context/cart-context";
 import { WishlistProvider } from "@/context/wishlist-context";
 import { WishlistDrawer } from "@/components/storefront/wishlist-drawer";
@@ -12,6 +11,7 @@ import { StoreHeader } from "@/components/storefront/store-header";
 import { StoreFooter } from "@/components/storefront/store-footer";
 import { CartDrawer } from "@/components/storefront/cart-drawer";
 import { ProductDetailClient } from "./product-detail-client";
+import { RelatedProductsSection } from "@/components/storefront/related-products-section";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 
 type ProductPageProps = {
@@ -51,6 +51,13 @@ export async function generateMetadata({ params }: ProductPageProps) {
   };
 }
 
+const CARD_RADIUS_MAP: Record<string, string> = {
+  NONE: "rounded-none",
+  SM: "rounded-lg",
+  MD: "rounded-xl",
+  LG: "rounded-2xl",
+};
+
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { storeSlug, productSlug } = await params;
 
@@ -60,7 +67,26 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const product = await getProductBySlug(store.id, productSlug);
   if (!product) notFound();
 
-  const showAccountIcon = (store as any).homePage?.showAccountIcon ?? true;
+  // Fetch related products (same category first, backfilled with active store products)
+  const relatedProducts = await getRelatedProducts(
+    store.id,
+    product.id,
+    product.categoryId,
+    4
+  );
+
+  const normalizedRelatedProducts = relatedProducts.map((p) => ({
+    ...p,
+    price: Number(p.price),
+    salePrice: p.salePrice ? Number(p.salePrice) : null,
+  }));
+
+  const hp = store.homePage as Record<string, unknown> | null;
+  const showAccountIcon = (hp?.showAccountIcon as boolean) ?? true;
+  const productCardRadius = (hp?.productCardRadius as string) ?? "LG";
+  const showSalePrice = (hp?.showSalePrice as boolean) ?? true;
+  const showOriginalPrice = (hp?.showOriginalPrice as boolean) ?? true;
+  const cardRadiusClass = CARD_RADIUS_MAP[productCardRadius] ?? "rounded-2xl";
 
   return (
     <CartProvider storeSlug={store.slug}>
@@ -98,6 +124,22 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 salePrice: product.salePrice ? Number(product.salePrice) : null,
               }}
               store={store}
+            />
+
+            {/* Related Products Section */}
+            <RelatedProductsSection
+              products={normalizedRelatedProducts}
+              storeSlug={store.slug}
+              storeName={store.name}
+              categoryName={product.category?.name}
+              categoryId={product.category?.id}
+              whatsappNumber={store.company?.whatsapp || store.company?.phone}
+              themeColor={store.theme?.primaryColor}
+              cardRadiusClass={cardRadiusClass}
+              showSalePrice={showSalePrice}
+              showOriginalPrice={showOriginalPrice}
+              stockManagementType={store.settings?.stockManagementType}
+              colorWiseStockType={store.settings?.colorWiseStockType}
             />
           </main>
 

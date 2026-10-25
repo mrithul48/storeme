@@ -27,98 +27,37 @@ export function SettingsTabsNav({
   onPaymentsTabClick,
   onCustomerAuthTabClick,
 }: SettingsTabsNavProps) {
+  const tabs = [
+    { id: "general" as SettingsTab, label: "General & Brand", icon: Store, onClick: () => onTabChange("general") },
+    { id: "products" as SettingsTab, label: "Product Management", icon: Package, onClick: () => onTabChange("products") },
+    { id: "orders" as SettingsTab, label: "Orders & Shipping", icon: Sliders, onClick: () => onTabChange("orders") },
+    { id: "theme" as SettingsTab, label: "Theme & Styling", icon: Palette, onClick: () => onTabChange("theme") },
+    { id: "domain" as SettingsTab, label: "Custom Domain", icon: Globe, onClick: onDomainTabClick },
+    { id: "payments" as SettingsTab, label: "Payments", icon: CreditCard, onClick: onPaymentsTabClick },
+    { id: "customerAuth" as SettingsTab, label: "Customer Auth", icon: ShieldCheck, onClick: onCustomerAuthTabClick },
+  ];
+
   return (
-    <div className="flex border-b border-slate-800 space-x-2 overflow-x-auto">
-      <button
-        type="button"
-        onClick={() => onTabChange("general")}
-        className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all shrink-0 ${
-          activeTab === "general"
-            ? "border-blue-500 text-white"
-            : "border-transparent text-slate-400 hover:text-slate-200"
-        }`}
-      >
-        <Store className="w-4 h-4" />
-        General &amp; Brand
-      </button>
-
-      <button
-        type="button"
-        onClick={() => onTabChange("products")}
-        className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all shrink-0 ${
-          activeTab === "products"
-            ? "border-blue-500 text-white"
-            : "border-transparent text-slate-400 hover:text-slate-200"
-        }`}
-      >
-        <Package className="w-4 h-4" />
-        Product Management
-      </button>
-
-      <button
-        type="button"
-        onClick={() => onTabChange("orders")}
-        className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all shrink-0 ${
-          activeTab === "orders"
-            ? "border-blue-500 text-white"
-            : "border-transparent text-slate-400 hover:text-slate-200"
-        }`}
-      >
-        <Sliders className="w-4 h-4" />
-        Order Methods
-      </button>
-
-      <button
-        type="button"
-        onClick={() => onTabChange("theme")}
-        className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all shrink-0 ${
-          activeTab === "theme"
-            ? "border-blue-500 text-white"
-            : "border-transparent text-slate-400 hover:text-slate-200"
-        }`}
-      >
-        <Palette className="w-4 h-4" />
-        Theme &amp; Styling
-      </button>
-
-      <button
-        type="button"
-        onClick={onDomainTabClick}
-        className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all shrink-0 ${
-          activeTab === "domain"
-            ? "border-blue-500 text-white"
-            : "border-transparent text-slate-400 hover:text-slate-200"
-        }`}
-      >
-        <Globe className="w-4 h-4" />
-        Custom Domain
-      </button>
-
-      <button
-        type="button"
-        onClick={onPaymentsTabClick}
-        className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all shrink-0 ${
-          activeTab === "payments"
-            ? "border-blue-500 text-white"
-            : "border-transparent text-slate-400 hover:text-slate-200"
-        }`}
-      >
-        <CreditCard className="w-4 h-4" />
-        Payments
-      </button>
-
-      <button
-        type="button"
-        onClick={onCustomerAuthTabClick}
-        className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all shrink-0 ${
-          activeTab === "customerAuth"
-            ? "border-blue-500 text-white"
-            : "border-transparent text-slate-400 hover:text-slate-200"
-        }`}
-      >
-        <ShieldCheck className="w-4 h-4" />
-        Customer Auth
-      </button>
+    <div className="flex border-b border-slate-200 space-x-2 overflow-x-auto scrollbar-none">
+      {tabs.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={tab.onClick}
+            className={`flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all shrink-0 ${
+              isActive
+                ? "border-[#2563EB] text-[#2563EB]"
+                : "border-transparent text-[#64748B] hover:text-[#0F172A] hover:border-slate-300"
+            }`}
+          >
+            <Icon className={`w-4 h-4 ${isActive ? "text-[#2563EB]" : "text-slate-400"}`} />
+            {tab.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

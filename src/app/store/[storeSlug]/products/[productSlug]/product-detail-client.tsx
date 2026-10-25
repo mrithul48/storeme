@@ -494,17 +494,16 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
                       type="button"
                       title={`${v.color}${isVOutOfStock ? " (Out of stock)" : ""}`}
                       aria-label={`Select color ${v.color}`}
-                      disabled={isVOutOfStock}
                       onClick={() => {
                         setSelectedVariant(v);
                         setSelectedImageIndex(0);
                         setQuantity(1);
                       }}
-                      className={`relative w-8 h-8 rounded-full transition-all flex items-center justify-center ${
+                      className={`relative w-8 h-8 rounded-full transition-all flex items-center justify-center cursor-pointer ${
                         isSelected
                           ? "ring-2 ring-offset-2 ring-blue-500 ring-offset-[var(--store-page-bg,#0b1120)] scale-110"
                           : "hover:scale-105 opacity-85 hover:opacity-100"
-                      } ${isVOutOfStock ? "opacity-35 cursor-not-allowed" : "cursor-pointer"}`}
+                      } ${isVOutOfStock ? "opacity-60" : ""}`}
                       style={{
                         backgroundColor: hex,
                         boxShadow: "0 0 0 1px rgba(0,0,0,0.2) inset",
@@ -609,21 +608,33 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
           {/* WhatsApp Direct Order — only shown when explicitly enabled */}
           {whatsappOrderAvailable && (
             <a
-              href={buildWhatsAppUrl(
-                whatsappNumber!,
-                `Hello ${store.name}! I would like to order: ${product.name} (Qty: ${quantity}) for ${formatCurrency(
-                  (isSale ? salePriceNum! : priceNum) * quantity
-                )}.`
-              )}
-              target="_blank"
+              href={
+                isOutOfStock
+                  ? undefined
+                  : buildWhatsAppUrl(
+                      whatsappNumber!,
+                      `Hello ${store.name}! I would like to order: ${product.name} (Qty: ${quantity}) for ${formatCurrency(
+                        (isSale ? salePriceNum! : priceNum) * quantity
+                      )}.`
+                    )
+              }
+              target={isOutOfStock ? undefined : "_blank"}
               rel="noopener noreferrer"
-              className="w-full py-3.5 px-4 flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white text-sm font-semibold transition-all shadow-sm"
+              aria-disabled={isOutOfStock}
+              onClick={(e) => {
+                if (isOutOfStock) e.preventDefault();
+              }}
+              className={`w-full py-3.5 px-4 flex items-center justify-center gap-2 text-white text-sm font-semibold transition-all shadow-sm ${
+                isOutOfStock
+                  ? "bg-slate-700/60 text-slate-400 opacity-60 cursor-not-allowed pointer-events-none"
+                  : "bg-[#25D366] hover:bg-[#20bd5a]"
+              }`}
               style={{
                 borderRadius: "var(--store-button-radius, 10px)",
               }}
             >
               <MessageCircle className="w-4 h-4 text-white fill-white/10" />
-              <span>Direct Order via WhatsApp</span>
+              <span>{isOutOfStock ? "Out of Stock" : "Direct Order via WhatsApp"}</span>
             </a>
           )}
 

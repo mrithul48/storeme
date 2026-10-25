@@ -53,7 +53,7 @@ export function NewArrivalsSection({
             View All <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {products.map((product) => (
             <ProductCard
               key={product.id}

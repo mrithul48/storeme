@@ -14,6 +14,7 @@ const productSelectFields = {
   price: true,
   salePrice: true,
   sku: true,
+  weight: true,
   stock: true,
   manageStockQuantity: true,
   manageStockAvailability: true,
@@ -496,3 +497,49 @@ export async function getPublicProducts(
 ) {
   return listProducts(storeId, { ...params, status: "ACTIVE" });
 }
+
+/**
+ * Storefront: Get related products for a product
+ * Priority: Same category first, then other active products from the store.
+ * Excludes current product.
+ */
+export async function getRelatedProducts(
+  storeId: string,
+  currentProductId: string,
+  categoryId?: string | null,
+  limit: number = 4
+) {
+  // 1. Fetch products from the same category first (excluding current product)
+  let products = categoryId
+    ? await prisma.product.findMany({
+        where: {
+          storeId,
+          status: "ACTIVE",
+          id: { not: currentProductId },
+          categoryId,
+        },
+        select: productSelectFields,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+      })
+    : [];
+
+  // 2. If fewer than limit, backfill with other active products from the store
+  if (products.length < limit) {
+    const existingIds = [currentProductId, ...products.map((p) => p.id)];
+    const additional = await prisma.product.findMany({
+      where: {
+        storeId,
+        status: "ACTIVE",
+        id: { notIn: existingIds },
+      },
+      select: productSelectFields,
+      take: limit - products.length,
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+    });
+    products = [...products, ...additional];
+  }
+
+  return products;
+}
+

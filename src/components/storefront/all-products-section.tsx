@@ -52,7 +52,7 @@ export function AllProductsSection({
             <p className="text-sm text-slate-400">Products will appear here once added to the store.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
             {products.map((product) => (
               <ProductCard
                 key={product.id}

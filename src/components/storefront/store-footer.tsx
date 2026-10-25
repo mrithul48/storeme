@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Mail, Phone, MapPin, Clock, ExternalLink } from "lucide-react";
+import { getStoreLink } from "@/lib/store-url";
 
 interface StoreFooterProps {
   store: {
@@ -43,23 +44,27 @@ export function StoreFooter({ store }: StoreFooterProps) {
     }
   } catch { /* ignore */ }
 
-  const storePath = `/store/${store.slug}`;
-
   const navLinks = [
-    { label: "Shop", href: `${storePath}/shop` },
-    ...(aboutEnabled ? [{ label: "About Us", href: `${storePath}/about` }] : []),
-    ...(contactEnabled ? [{ label: "Contact", href: `${storePath}/contact` }] : []),
+    { label: "Shop", href: getStoreLink(store.slug, "/shop") },
+    ...(aboutEnabled ? [{ label: "About Us", href: getStoreLink(store.slug, "/about") }] : []),
+    ...(contactEnabled ? [{ label: "Contact", href: getStoreLink(store.slug, "/contact") }] : []),
+  ];
+
+  const policyLinks = [
+    { label: "Delivery Policy", href: getStoreLink(store.slug, "/delivery-policy") },
+    { label: "Refund Policy", href: getStoreLink(store.slug, "/refund-policy") },
+    { label: "Privacy & Security Policy", href: getStoreLink(store.slug, "/privacy-security-policy") },
   ];
 
   return (
     <footer className="w-full bg-slate-950 border-t border-slate-900 text-slate-400 text-sm mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Store Info */}
-          <div className="md:col-span-2 space-y-3">
+          <div className="sm:col-span-2 lg:col-span-2 space-y-3">
             <h3 className="text-lg font-bold text-white">{store.name}</h3>
             {company?.description && (
-              <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+              <p className="text-xs !text-white leading-relaxed max-w-sm">
                 {company.description}
               </p>
             )}
@@ -113,6 +118,22 @@ export function StoreFooter({ store }: StoreFooterProps) {
             <h4 className="text-sm font-semibold text-white uppercase tracking-wider">Quick Links</h4>
             <div className="space-y-2">
               {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="block text-xs text-slate-400 hover:text-white transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Policies Section */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-white uppercase tracking-wider">Policies</h4>
+            <div className="space-y-2">
+              {policyLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}

@@ -36,15 +36,15 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
             style={{ borderColor: "var(--store-border, rgba(0,0,0,0.08))" }}
           >
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5" style={{ color: "var(--store-primary, #3b82f6)" }} />
+              <ShoppingBag className="w-5 h-5" style={{ color: "var(--store-navbar-text, inherit)" }} />
               <h2 className="text-lg font-bold" style={{ color: "var(--store-navbar-text, inherit)" }}>
                 Your Cart
               </h2>
               <span
                 className="text-xs px-2 py-0.5 rounded-full font-medium"
                 style={{
-                  backgroundColor: "rgba(59, 130, 246, 0.15)",
-                  color: "var(--store-primary, #3b82f6)",
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  color: "var(--store-navbar-text, inherit)",
                 }}
               >
                 {totalItems} items
@@ -77,7 +77,7 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
                   <p className="text-lg font-medium" style={{ color: "var(--store-navbar-text, inherit)" }}>
                     Your cart is empty
                   </p>
-                  <p className="text-sm opacity-60">
+                  <p className="text-sm" style={{ color: "var(--store-navbar-text, inherit)" }}>
                     Add products from the store to see them here.
                   </p>
                 </div>
@@ -103,15 +103,16 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
                 return (
                   <div
                     key={item.productId}
-                    className="flex gap-4 p-3 border items-center transition-all"
+                    className="flex gap-4 p-3 border items-center transition-all shadow-sm"
                     style={{
-                      borderColor: "var(--store-border, rgba(0, 0, 0, 0.08))",
-                      backgroundColor: "rgba(0, 0, 0, 0.02)",
+                      borderColor: "rgba(255, 255, 255, 0.15)",
+                      backgroundColor: "var(--store-button-bg, #22c55e)",
+                      color: "var(--store-button-text, #ffffff)",
                       borderRadius: "var(--store-image-radius, 10px)",
                     }}
                   >
                     <div
-                      className="relative w-16 h-16 bg-black/5 dark:bg-white/5 overflow-hidden flex-shrink-0"
+                      className="relative w-16 h-16 bg-white/10 overflow-hidden flex-shrink-0 border border-white/10"
                       style={{ borderRadius: "var(--store-image-radius, 10px)" }}
                     >
                       {item.imageUrl ? (
@@ -132,19 +133,22 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
                       <div className="flex items-center gap-2">
                         <h4
                           className="text-sm font-semibold truncate"
-                          style={{ color: "var(--store-navbar-text, inherit)" }}
+                          style={{ color: "var(--store-button-text, #ffffff)" }}
                         >
                           {item.name}
                         </h4>
                         {item.variantColor && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/10 uppercase tracking-wider">
+                          <span
+                            className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/20 uppercase tracking-wider"
+                            style={{ color: "var(--store-button-text, #ffffff)" }}
+                          >
                             {item.variantColor}
                           </span>
                         )}
                       </div>
                       <p
                         className="text-sm font-bold mt-0.5"
-                        style={{ color: "var(--store-primary, #3b82f6)" }}
+                        style={{ color: "var(--store-button-text, #ffffff)", opacity: 0.95 }}
                       >
                         {formatCurrency(activePrice)}
                       </p>
@@ -153,29 +157,29 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
                         <div
                           className="flex items-center border overflow-hidden"
                           style={{
-                            borderColor: "var(--store-border, rgba(0, 0, 0, 0.15))",
-                            backgroundColor: "rgba(0, 0, 0, 0.02)",
+                            borderColor: "rgba(255, 255, 255, 0.25)",
+                            backgroundColor: "rgba(255, 255, 255, 0.15)",
                             borderRadius: "var(--store-input-radius, 10px)",
                           }}
                         >
                           <button
                             onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variantId)}
-                            className="p-1 hover:bg-black/5 dark:hover:bg-white/5 opacity-70 hover:opacity-100"
-                            style={{ color: "var(--store-navbar-text, inherit)" }}
+                            className="p-1 hover:bg-white/15 opacity-80 hover:opacity-100 transition-colors"
+                            style={{ color: "var(--store-button-text, inherit)" }}
                           >
                             <Minus className="w-3.5 h-3.5" />
                           </button>
                           <span
                             className="px-2 text-xs font-semibold"
-                            style={{ color: "var(--store-navbar-text, inherit)" }}
+                            style={{ color: "var(--store-button-text, inherit)" }}
                           >
                             {item.quantity}
                           </span>
                           <button
                             onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variantId)}
                             disabled={item.stock > 0 && item.quantity >= item.stock}
-                            className="p-1 hover:bg-black/5 dark:hover:bg-white/5 opacity-70 hover:opacity-100 disabled:opacity-30"
-                            style={{ color: "var(--store-navbar-text, inherit)" }}
+                            className="p-1 hover:bg-white/15 opacity-80 hover:opacity-100 disabled:opacity-30 transition-colors"
+                            style={{ color: "var(--store-button-text, inherit)" }}
                           >
                             <Plus className="w-3.5 h-3.5" />
                           </button>
@@ -183,8 +187,11 @@ export function CartDrawer({ storeSlug }: { storeSlug: string }) {
 
                         <button
                           onClick={() => removeItem(item.productId, item.variantId)}
-                          className="opacity-50 hover:opacity-100 hover:text-rose-500 p-1.5 transition-colors"
-                          style={{ borderRadius: "var(--store-button-radius, 10px)" }}
+                          className="opacity-70 hover:opacity-100 hover:text-rose-300 p-1.5 transition-colors"
+                          style={{
+                            borderRadius: "var(--store-button-radius, 10px)",
+                            color: "var(--store-button-text, inherit)",
+                          }}
                           title="Remove item"
                         >
                           <Trash2 className="w-4 h-4" />

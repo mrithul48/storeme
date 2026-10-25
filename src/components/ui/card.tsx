@@ -8,7 +8,7 @@ export const Card = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "rounded-2xl border border-slate-800/80 bg-slate-900/50 backdrop-blur-xl p-6 shadow-xl shadow-black/20",
+      "rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm shadow-slate-200/40 text-slate-900 transition-all",
       className
     )}
     {...props}
@@ -24,7 +24,7 @@ export const Input = React.forwardRef<
   <input
     type={type}
     className={cn(
-      "flex h-11 w-full rounded-xl border border-slate-700/80 bg-slate-950/60 px-4 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50",
+      "flex h-11 w-full rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-[#2563EB] transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 shadow-sm",
       className
     )}
     ref={ref}
@@ -39,7 +39,7 @@ export const Textarea = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <textarea
     className={cn(
-      "flex min-h-[100px] w-full rounded-xl border border-slate-700/80 bg-slate-950/60 p-4 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50",
+      "flex min-h-[100px] w-full rounded-xl border border-slate-300 bg-white p-4 text-sm text-[#0F172A] placeholder:text-[#64748B] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-[#2563EB] transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 shadow-sm",
       className
     )}
     ref={ref}

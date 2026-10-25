@@ -205,6 +205,14 @@ model StoreSettings {
   stockManagementType  String? // "AVAILABILITY" | "QUANTITY" | "COLOR_WISE"
   colorWiseStockType   String? // "AVAILABILITY" | "QUANTITY"
 
+  // Shipping Charge configuration
+  shippingType           String?   // "FIXED" | "FREE_ABOVE_MIN" | "WEIGHT_BASED"
+  shippingFixedCharge    Decimal?  @db.Decimal(10, 2)
+  shippingMinOrderAmount Decimal?  @db.Decimal(10, 2)
+  shippingFallbackCharge Decimal?  @db.Decimal(10, 2)
+  shippingDefaultWeight  Decimal?  @db.Decimal(10, 2) // in kg
+  shippingWeightRates    Json?     // Array of { id: string, minWeight: number, maxWeight: number, charge: number }
+
   // Razorpay keys â€” never exposed to client
   razorpayKeyId  String?
   razorpaySecret String?
@@ -278,6 +286,7 @@ model Product {
   price       Decimal       @db.Decimal(10, 2)
   salePrice   Decimal?      @db.Decimal(10, 2)
   sku                     String?
+  weight                  Decimal?      @db.Decimal(10, 2) // Weight in kg
   stock                   Int           @default(0)
   manageStock             Boolean       @default(false)
   manageStockQuantity     Boolean       @default(false)
@@ -453,6 +462,7 @@ model Order {
   customer        Customer      @relation(fields: [customerId], references: [id])
   items           OrderItem[]
   subtotal        Decimal       @db.Decimal(10, 2)
+  shippingCharge  Decimal?      @default(0) @db.Decimal(10, 2)
   total           Decimal       @db.Decimal(10, 2)
   status          OrderStatus   @default(PENDING)
   paymentStatus   PaymentStatus @default(PENDING)
@@ -645,6 +655,17 @@ model HomePage {
   footerPhone       String?
   footerEmail       String?
   footerSocialLinks Json?
+
+  // Store Policies
+  deliveryPolicyHeading     String?
+  deliveryPolicyDescription String? @db.Text
+  deliveryPoints            Json?   // [{ id, heading, description, sortOrder }]
+  refundPolicyHeading       String?
+  refundPolicyDescription   String? @db.Text
+  refundPoints              Json?   // [{ id, heading, description, sortOrder }]
+  privacyPolicyHeading      String?
+  privacyPolicyDescription  String? @db.Text
+  privacyPoints             Json?   // [{ id, heading, description, sortOrder }]
 
   // â”€â”€ Legacy / compat fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   featuredSections Json? // [{ id, title, productIds, enabled, sortOrder }]

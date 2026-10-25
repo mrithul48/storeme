@@ -46,6 +46,13 @@ const badgeSchema = z.object({
   sortOrder: z.number().int().min(0),
 });
 
+const policyPointSchema = z.object({
+  id: z.string(),
+  heading: z.string().max(200).optional().default(""),
+  description: z.string().max(10000).optional().default(""),
+  sortOrder: z.number().int().min(0).optional().default(0),
+});
+
 const homepageDesignSchema = z.object({
   // Hero
   heroEnabled: z.boolean().optional(),
@@ -105,6 +112,17 @@ const homepageDesignSchema = z.object({
 
   // Contact
   contactEnabled: z.boolean().optional(),
+
+  // Policies
+  deliveryPolicyHeading: z.string().max(200).optional().nullable(),
+  deliveryPolicyDescription: z.string().max(50000).optional().nullable(),
+  deliveryPoints: z.array(policyPointSchema).max(50).optional().nullable(),
+  refundPolicyHeading: z.string().max(200).optional().nullable(),
+  refundPolicyDescription: z.string().max(50000).optional().nullable(),
+  refundPoints: z.array(policyPointSchema).max(50).optional().nullable(),
+  privacyPolicyHeading: z.string().max(200).optional().nullable(),
+  privacyPolicyDescription: z.string().max(50000).optional().nullable(),
+  privacyPoints: z.array(policyPointSchema).max(50).optional().nullable(),
 });
 
 // ─── GET ───────────────────────────────────────────────────────────────────
@@ -231,6 +249,9 @@ export async function PUT(request: Request) {
       "aboutImageUrl", "aboutImagePublicId",
       "vision", "mission", "badges",
       "contactEnabled",
+      "deliveryPolicyHeading", "deliveryPolicyDescription", "deliveryPoints",
+      "refundPolicyHeading", "refundPolicyDescription", "refundPoints",
+      "privacyPolicyHeading", "privacyPolicyDescription", "privacyPoints",
     ] as const;
 
     for (const field of fields) {

@@ -274,7 +274,13 @@ export function OrderConfirmationClient({ order, store }: OrderConfirmationClien
 
             <div className="flex justify-between">
               <span>Delivery Charges</span>
-              <span className="font-bold text-emerald-600">FREE</span>
+              {Number((order as any).shippingCharge || 0) > 0 ? (
+                <span className="font-semibold text-slate-900">
+                  {formatCurrency(Number((order as any).shippingCharge))}
+                </span>
+              ) : (
+                <span className="font-bold text-emerald-600">FREE</span>
+              )}
             </div>
 
             <div className="flex justify-between items-center">
