@@ -3,7 +3,7 @@
 import React from "react";
 import { Card, Input } from "@/components/ui/card";
 import { Type, Eye, AlertCircle } from "lucide-react";
-import { getContrastRatio } from "@/lib/store-theme";
+import { getContrastRatio, getFontFamilyCSS } from "@/lib/store-theme";
 import { colorPresets, supportedFonts } from "../constants";
 
 interface ThemeTabProps {
@@ -64,10 +64,10 @@ export function ThemeTab({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Controls Column */}
         <div className="lg:col-span-7 space-y-6">
-          <Card className="space-y-6">
-            <div className="border-b border-slate-800 pb-3">
-              <h2 className="text-base font-bold text-white">Color Presets</h2>
-              <p className="text-xs text-slate-400">
+          <Card className="space-y-6 bg-white border border-slate-200/90 shadow-sm">
+            <div className="border-b border-slate-200/90 pb-3">
+              <h2 className="text-base font-bold text-[#0F172A]">Color Presets</h2>
+              <p className="text-xs text-[#64748B]">
                 Choose a harmonious designer palette or customize every element individually.
               </p>
             </div>
@@ -83,13 +83,13 @@ export function ThemeTab({
                     setNavbarBg(preset.navbarBg);
                     setNavbarText("#ffffff");
                   }}
-                  className="p-3 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-slate-700 flex items-center gap-2.5 transition-all text-left"
+                  className="p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 flex items-center gap-2.5 transition-all text-left shadow-sm"
                 >
                   <div
                     className="w-5 h-5 rounded-full shadow-sm flex-shrink-0"
                     style={{ backgroundColor: preset.primary }}
                   />
-                  <span className="text-xs font-semibold text-slate-200 truncate">
+                  <span className="text-xs font-semibold text-[#0F172A] truncate">
                     {preset.name}
                   </span>
                 </button>
@@ -98,17 +98,22 @@ export function ThemeTab({
 
             {/* Typography Selector */}
             <div className="space-y-1.5 pt-2">
-              <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                <Type className="w-4 h-4 text-blue-400" />
+              <label className="text-xs font-semibold text-[#0F172A] flex items-center gap-1.5">
+                <Type className="w-4 h-4 text-[#2563EB]" />
                 Storefront Font Style
               </label>
               <select
                 value={primaryFont}
                 onChange={(e) => setPrimaryFont(e.target.value)}
-                className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3.5 text-xs font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-11 rounded-xl border border-slate-200 shadow-sm bg-white px-3.5 text-xs font-medium text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                style={{ fontFamily: getFontFamilyCSS(primaryFont) }}
               >
                 {supportedFonts.map((f) => (
-                  <option key={f.id} value={f.id}>
+                  <option
+                    key={f.id}
+                    value={f.id}
+                    style={{ fontFamily: getFontFamilyCSS(f.id) }}
+                  >
                     {f.name}
                   </option>
                 ))}
@@ -117,11 +122,11 @@ export function ThemeTab({
 
             {/* Button Shape */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Button Shape</label>
+              <label className="text-xs font-semibold text-[#0F172A]">Button Shape</label>
               <select
                 value={buttonShape}
                 onChange={(e) => setButtonShape(e.target.value)}
-                className="w-full h-11 rounded-xl border border-slate-700 bg-slate-950 px-3.5 text-xs font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-11 rounded-xl border border-slate-200 shadow-sm bg-white px-3.5 text-xs font-medium text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               >
                 <option value="SQUARE">Sharp Corners (Square)</option>
                 <option value="MEDIUM_ROUNDED">Rounded Corners (Standard)</option>
@@ -131,10 +136,10 @@ export function ThemeTab({
           </Card>
 
           {/* Detailed Color Pickers */}
-          <Card className="space-y-4">
-            <div className="border-b border-slate-800 pb-3">
-              <h2 className="text-base font-bold text-white">Element Colors</h2>
-              <p className="text-xs text-slate-400">
+          <Card className="space-y-4 bg-white border border-slate-200/90 shadow-sm">
+            <div className="border-b border-slate-200/90 pb-3">
+              <h2 className="text-base font-bold text-[#0F172A]">Element Colors</h2>
+              <p className="text-xs text-[#64748B]">
                 Exact HEX colors for specific storefront sections.
               </p>
             </div>
@@ -147,10 +152,10 @@ export function ThemeTab({
               const hasLow = navContrast < 2.5 || pageContrast < 2.5 || btnContrast < 2.5;
               if (!hasLow) return null;
               return (
-                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2.5 text-xs text-amber-300">
-                  <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-900">
+                  <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-white block mb-0.5">Accessibility Warning: Low Contrast Detected</strong>
+                    <strong className="text-amber-900 block mb-0.5">Accessibility Warning: Low Contrast Detected</strong>
                     <span>
                       {pageContrast < 2.5 && "Page text and white background have low contrast. Text may be hard to read or invisible. "}
                       {navContrast < 2.5 && "Navbar background and text have low contrast. "}
@@ -164,92 +169,91 @@ export function ThemeTab({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Navbar Background</label>
+                <label className="text-xs font-semibold text-[#0F172A]">Navbar Background</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
                     value={navbarBg}
                     onChange={(e) => setNavbarBg(e.target.value)}
-                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
+                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-200 cursor-pointer"
                   />
                   <Input value={navbarBg} onChange={(e) => setNavbarBg(e.target.value)} />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Navbar Text Color</label>
+                <label className="text-xs font-semibold text-[#0F172A]">Navbar Text Color</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
                     value={navbarText}
                     onChange={(e) => setNavbarText(e.target.value)}
-                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
+                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-200 cursor-pointer"
                   />
                   <Input value={navbarText} onChange={(e) => setNavbarText(e.target.value)} />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Button Background</label>
+                <label className="text-xs font-semibold text-[#0F172A]">Button Background</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
                     value={buttonBg}
                     onChange={(e) => setButtonBg(e.target.value)}
-                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
+                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-200 cursor-pointer"
                   />
                   <Input value={buttonBg} onChange={(e) => setButtonBg(e.target.value)} />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Button Text Color</label>
+                <label className="text-xs font-semibold text-[#0F172A]">Button Text Color</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
                     value={buttonText}
                     onChange={(e) => setButtonText(e.target.value)}
-                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
+                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-200 cursor-pointer"
                   />
                   <Input value={buttonText} onChange={(e) => setButtonText(e.target.value)} />
                 </div>
               </div>
 
-
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Heading 1 (H1) Color</label>
+                <label className="text-xs font-semibold text-[#0F172A]">Heading 1 (H1) Color</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
                     value={h1Color}
                     onChange={(e) => setH1Color(e.target.value)}
-                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
+                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-200 cursor-pointer"
                   />
                   <Input value={h1Color} onChange={(e) => setH1Color(e.target.value)} />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Heading 2 (H2) Color</label>
+                <label className="text-xs font-semibold text-[#0F172A]">Heading 2 (H2) Color</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
                     value={h2Color}
                     onChange={(e) => setH2Color(e.target.value)}
-                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
+                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-200 cursor-pointer"
                   />
                   <Input value={h2Color} onChange={(e) => setH2Color(e.target.value)} />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Paragraph Text Color</label>
+                <label className="text-xs font-semibold text-[#0F172A]">Paragraph Text Color</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
                     value={paragraphColor}
                     onChange={(e) => setParagraphColor(e.target.value)}
-                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-700 cursor-pointer"
+                    className="w-10 h-10 rounded-lg bg-transparent border border-slate-200 cursor-pointer"
                   />
                   <Input value={paragraphColor} onChange={(e) => setParagraphColor(e.target.value)} />
                 </div>
@@ -260,16 +264,13 @@ export function ThemeTab({
 
         {/* Live Preview Column */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-400">
-            <Eye className="w-4 h-4" />
-            Live Theme Preview
-          </div>
+        
 
           <div
-            className="rounded-2xl border border-slate-700 shadow-2xl overflow-hidden transition-all sticky top-24"
+            className="rounded-2xl border border-slate-200 shadow-xl overflow-hidden transition-all sticky top-24"
             style={{
               backgroundColor: "#ffffff",
-              fontFamily: primaryFont,
+              fontFamily: getFontFamilyCSS(primaryFont),
             }}
           >
             {/* Mock Navbar */}
@@ -303,12 +304,14 @@ export function ThemeTab({
             </div>
 
             {/* Mock Hero Section */}
+            
             <div className="p-6 space-y-4">
+              
               <h1
                 className="text-xl font-extrabold tracking-tight transition-colors"
                 style={{ color: h1Color }}
               >
-                New Summer Collection
+                Live preview
               </h1>
               <h2
                 className="text-sm font-semibold transition-colors"

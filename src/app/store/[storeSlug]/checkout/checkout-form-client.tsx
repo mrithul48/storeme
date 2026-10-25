@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/cart-context";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, ArrowLeft, ArrowRight, CreditCard, Banknote, ShieldCheck, AlertCircle, MessageCircle } from "lucide-react";
+import { ShoppingBag, ArrowLeft, ArrowRight, CreditCard, Banknote, ShieldCheck, AlertCircle, MessageCircle, Gift, Truck } from "lucide-react";
 
 declare global {
   interface Window {
@@ -40,6 +40,58 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Shipping calculation state
+  const [shippingCharge, setShippingCharge] = useState<number>(0);
+  const [shippingCalculating, setShippingCalculating] = useState<boolean>(true);
+  const [shippingError, setShippingError] = useState<string | null>(null);
+  const [shippingMeta, setShippingMeta] = useState<any>(null);
+
+  // Fetch verified shipping calculation from backend using DB product weights & settings
+  useEffect(() => {
+    let isCancelled = false;
+    async function fetchShipping() {
+      if (items.length === 0) {
+        setShippingCharge(0);
+        setShippingError(null);
+        setShippingCalculating(false);
+        return;
+      }
+      setShippingCalculating(true);
+      setShippingError(null);
+      try {
+        const res = await fetch(`/api/stores/${store.slug}/shipping/calculate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+          }),
+        });
+        const json = await res.json();
+        if (isCancelled) return;
+        if (!res.ok || !json.success) {
+          setShippingError(json.error || "Unable to calculate shipping for this order.");
+          setShippingCharge(0);
+        } else {
+          setShippingCharge(json.data.shippingCharge || 0);
+          setShippingMeta(json.data);
+          setShippingError(null);
+        }
+      } catch (err: any) {
+        if (!isCancelled) {
+          setShippingError(err.message || "Failed to calculate shipping.");
+        }
+      } finally {
+        if (!isCancelled) setShippingCalculating(false);
+      }
+    }
+    fetchShipping();
+    return () => {
+      isCancelled = true;
+    };
+  }, [items, store.slug]);
+
+  const finalTotal = subtotal + shippingCharge;
 
   const codEnabled = store.settings?.codEnabled !== false;
   // Online payment is only functional if the merchant has a connected Razorpay account
@@ -558,19 +610,46 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
               })}
             </div>
 
+            {/* Free shipping threshold progress helper */}
+            {shippingMeta?.amountNeededForFree > 0 && !shippingCalculating && (
+              <div className="p-2.5 rounded-xl border border-blue-200 bg-blue-50/70 text-blue-800 text-xs flex items-center gap-2">
+                <Gift className="w-4 h-4 text-[#2563EB] shrink-0" />
+                <span>
+                  Add <strong>{formatCurrency(shippingMeta.amountNeededForFree)}</strong> more to get{" "}
+                  <strong className="text-emerald-700">FREE Delivery</strong>!
+                </span>
+              </div>
+            )}
+
+            {/* Missing product weights or configuration error warning */}
+            {shippingError && (
+              <div className="p-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                <span>{shippingError}</span>
+              </div>
+            )}
+
             <div className="pt-3 border-t border-slate-100 space-y-2 text-sm">
               <div className="flex justify-between text-slate-600">
                 <span>Subtotal</span>
                 <span className="text-slate-900 font-semibold">{formatCurrency(subtotal)}</span>
               </div>
               <div className="flex justify-between text-slate-600">
-                <span>Delivery</span>
-                <span className="text-emerald-600 font-bold">FREE</span>
+                <span>Delivery Charges</span>
+                {shippingCalculating ? (
+                  <span className="text-slate-400 text-xs">Calculating...</span>
+                ) : shippingError ? (
+                  <span className="text-rose-600 font-semibold text-xs">Unavailable</span>
+                ) : shippingCharge === 0 ? (
+                  <span className="text-emerald-600 font-bold">FREE</span>
+                ) : (
+                  <span className="text-slate-900 font-semibold">{formatCurrency(shippingCharge)}</span>
+                )}
               </div>
               <div className="pt-2 border-t border-slate-100 flex justify-between text-base font-bold text-slate-900">
                 <span>Total Amount</span>
                 <span className="text-lg font-extrabold" style={{ color: "var(--store-primary, #3b82f6)" }}>
-                  {formatCurrency(subtotal)}
+                  {formatCurrency(finalTotal)}
                 </span>
               </div>
             </div>
@@ -580,7 +659,7 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
               variant="primary"
               size="lg"
               isLoading={loading}
-              disabled={!codEnabled && !onlineEnabled && !whatsappEnabled}
+              disabled={(!codEnabled && !onlineEnabled && !whatsappEnabled) || Boolean(shippingError) || shippingCalculating}
               className="w-full mt-3 shadow-sm font-bold text-sm h-12"
               style={{
                 backgroundColor: "var(--store-button-bg, #22c55e)",
@@ -589,10 +668,10 @@ export function CheckoutFormClient({ store }: CheckoutFormClientProps) {
               }}
             >
               {paymentMethod === "RAZORPAY"
-                ? `Pay ${formatCurrency(subtotal)} Online`
+                ? `Pay ${formatCurrency(finalTotal)} Online`
                 : paymentMethod === "WHATSAPP"
-                ? `Order via WhatsApp (${formatCurrency(subtotal)})`
-                : `Place COD Order (${formatCurrency(subtotal)})`}
+                ? `Order via WhatsApp (${formatCurrency(finalTotal)})`
+                : `Place COD Order (${formatCurrency(finalTotal)})`}
             </Button>
 
             <div className="flex items-center justify-center gap-1.5 text-center text-xs text-slate-500 pt-1">

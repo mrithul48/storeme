@@ -30,14 +30,15 @@ export default async function DashboardProductsPage({ searchParams }: ProductsPa
     ...product,
     price: Number(product.price),
     salePrice: product.salePrice ? Number(product.salePrice) : null,
+    weight: product.weight ? Number(product.weight) : null,
   }));
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-white">Products</h1>
-          <p className="text-xs sm:text-sm text-slate-400">
+          <h1 className="text-2xl font-bold text-[#0F172A]">Products</h1>
+          <p className="text-xs sm:text-sm text-[#64748B]">
             Manage your store catalog, pricing, inventory levels, and visibility.
           </p>
         </div>
@@ -53,7 +54,7 @@ export default async function DashboardProductsPage({ searchParams }: ProductsPa
       <ProductsTableClient
         initialProducts={initialProducts}
         categories={categories}
-        storeSettings={store?.settings}
+        storeSettings={store?.settings ? JSON.parse(JSON.stringify(store.settings)) : null}
       />
     </div>
   );

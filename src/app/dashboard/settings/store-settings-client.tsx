@@ -294,6 +294,39 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
   const [onlinePaymentEnabled, setOnlinePaymentEnabled] = useState(store.settings?.onlinePaymentEnabled !== false);
   const [whatsappOrderEnabled, setWhatsappOrderEnabled] = useState(Boolean(store.settings?.whatsappOrderEnabled));
 
+  // Shipping settings
+  const [shippingType, setShippingType] = useState<string | null>(
+    (store.settings as any)?.shippingType ?? null
+  );
+  const [shippingFixedCharge, setShippingFixedCharge] = useState<string>(
+    (store.settings as any)?.shippingFixedCharge !== undefined && (store.settings as any)?.shippingFixedCharge !== null
+      ? String((store.settings as any).shippingFixedCharge)
+      : ""
+  );
+  const [shippingMinOrderAmount, setShippingMinOrderAmount] = useState<string>(
+    (store.settings as any)?.shippingMinOrderAmount !== undefined && (store.settings as any)?.shippingMinOrderAmount !== null
+      ? String((store.settings as any).shippingMinOrderAmount)
+      : ""
+  );
+  const [shippingFallbackCharge, setShippingFallbackCharge] = useState<string>(
+    (store.settings as any)?.shippingFallbackCharge !== undefined && (store.settings as any)?.shippingFallbackCharge !== null
+      ? String((store.settings as any).shippingFallbackCharge)
+      : ""
+  );
+  const [shippingDefaultWeight, setShippingDefaultWeight] = useState<string>(
+    (store.settings as any)?.shippingDefaultWeight !== undefined && (store.settings as any)?.shippingDefaultWeight !== null
+      ? String((store.settings as any).shippingDefaultWeight)
+      : ""
+  );
+  const [shippingWeightRates, setShippingWeightRates] = useState<
+    Array<{ id?: string; minWeight: number; maxWeight: number; charge: number }>
+  >(() => {
+    if (Array.isArray((store.settings as any)?.shippingWeightRates)) {
+      return (store.settings as any).shippingWeightRates;
+    }
+    return [];
+  });
+
   // Theme settings
   const [primaryColor, setPrimaryColor] = useState(store.theme?.primaryColor || "#3b82f6");
   const [navbarBg, setNavbarBg] = useState(store.theme?.navbarBg || "#ffffff");
@@ -500,6 +533,12 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
             whatsappOrderEnabled,
             stockManagementType,
             colorWiseStockType: stockManagementType === "COLOR_WISE" ? colorWiseStockType : null,
+            shippingType,
+            shippingFixedCharge: shippingFixedCharge ? parseFloat(shippingFixedCharge) : null,
+            shippingMinOrderAmount: shippingMinOrderAmount ? parseFloat(shippingMinOrderAmount) : null,
+            shippingFallbackCharge: shippingFallbackCharge ? parseFloat(shippingFallbackCharge) : null,
+            shippingDefaultWeight: shippingDefaultWeight ? parseFloat(shippingDefaultWeight) : null,
+            shippingWeightRates,
           },
         }),
       });
@@ -708,7 +747,7 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
           />
         )}
 
-        {/* TAB 3: ORDER METHODS */}
+        {/* TAB 3: ORDER METHODS & SHIPPING */}
         {activeTab === "orders" && (
           <OrdersTab
             ordersEnabled={ordersEnabled}
@@ -719,6 +758,18 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
             setOnlinePaymentEnabled={setOnlinePaymentEnabled}
             whatsappOrderEnabled={whatsappOrderEnabled}
             setWhatsappOrderEnabled={setWhatsappOrderEnabled}
+            shippingType={shippingType}
+            setShippingType={setShippingType}
+            shippingFixedCharge={shippingFixedCharge}
+            setShippingFixedCharge={setShippingFixedCharge}
+            shippingMinOrderAmount={shippingMinOrderAmount}
+            setShippingMinOrderAmount={setShippingMinOrderAmount}
+            shippingFallbackCharge={shippingFallbackCharge}
+            setShippingFallbackCharge={setShippingFallbackCharge}
+            shippingDefaultWeight={shippingDefaultWeight}
+            setShippingDefaultWeight={setShippingDefaultWeight}
+            shippingWeightRates={shippingWeightRates}
+            setShippingWeightRates={setShippingWeightRates}
           />
         )}
 
@@ -829,8 +880,14 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
 
         {/* Global Save Button (for General, Order Methods and Theme only) */}
         {activeTab !== "domain" && activeTab !== "payments" && activeTab !== "customerAuth" && (
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-            <Button type="submit" variant="primary" size="lg" isLoading={loading}>
+          <div className="sticky bottom-4 sm:bottom-6 z-30 flex items-center justify-end pointer-events-none pt-4 pb-2">
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              isLoading={loading}
+              className="pointer-events-auto shadow-xl shadow-blue-600/30 font-semibold"
+            >
               Save All Changes
             </Button>
           </div>

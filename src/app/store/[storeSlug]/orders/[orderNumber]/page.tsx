@@ -59,6 +59,7 @@ export default async function OrderConfirmationPage({ params }: OrderPageProps) 
   const serializedOrder = {
     ...order,
     subtotal: Number(order.subtotal),
+    shippingCharge: order.shippingCharge ? Number(order.shippingCharge) : 0,
     total: Number(order.total),
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),

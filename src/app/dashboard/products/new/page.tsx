@@ -22,8 +22,8 @@ export default async function NewProductPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-white">Create New Product</h1>
-        <p className="text-xs sm:text-sm text-slate-400">
+        <h1 className="text-2xl font-bold text-[#0F172A]">Create New Product</h1>
+        <p className="text-xs sm:text-sm text-[#64748B]">
           Add an item to your online store catalog with pricing, images, and inventory.
         </p>
       </div>
@@ -31,7 +31,7 @@ export default async function NewProductPage() {
       <ProductForm
         categories={categories}
         brands={brands}
-        storeSettings={store?.settings}
+        storeSettings={store?.settings ? JSON.parse(JSON.stringify(store.settings)) : null}
         initialCustomColors={customColors}
       />
     </div>

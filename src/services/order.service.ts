@@ -3,6 +3,7 @@
 
 import { prisma } from "@/lib/db";
 import { generateOrderNumber } from "@/lib/utils";
+import { calculateShippingCharge } from "@/lib/shipping-calculator";
 import type { CreateOrderInput } from "@/validations/order.schema";
 
 /**
@@ -64,6 +65,7 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
         sku: true,
         price: true,
         salePrice: true,
+        weight: true,
         stock: true,
         manageStockQuantity: true,
         manageStockAvailability: true,
@@ -82,7 +84,16 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
     }),
     prisma.storeSettings.findUnique({
       where: { storeId },
-      select: { stockManagementType: true, colorWiseStockType: true },
+      select: {
+        stockManagementType: true,
+        colorWiseStockType: true,
+        shippingType: true,
+        shippingFixedCharge: true,
+        shippingMinOrderAmount: true,
+        shippingFallbackCharge: true,
+        shippingDefaultWeight: true,
+        shippingWeightRates: true,
+      },
     }),
   ]);
 
@@ -217,7 +228,23 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
   });
 
   const subtotal = orderItems.reduce((sum, i) => sum + i.subtotal, 0);
-  const total = subtotal; // No additional fees for now
+
+  // 4. Calculate accurate shipping charge based on merchant store settings and actual DB weights
+  const shippingItems = data.items.map((item) => {
+    const prod = productMap.get(item.productId)!;
+    return {
+      quantity: item.quantity,
+      product: {
+        id: prod.id,
+        name: prod.name,
+        weight: prod.weight !== null && prod.weight !== undefined ? Number(prod.weight) : null,
+      },
+    };
+  });
+
+  const shippingResult = calculateShippingCharge(storeSettings, subtotal, shippingItems);
+  const shippingCharge = shippingResult.shippingCharge;
+  const total = subtotal + shippingCharge;
 
   // 4. Create or find customer (upsert per store+email)
   const customer = await prisma.customer.upsert({
@@ -249,6 +276,7 @@ export async function createOrder(storeId: string, data: CreateOrderInput) {
         orderNumber,
         customerId: customer.id,
         subtotal,
+        shippingCharge,
         total,
         status: "PENDING",
         paymentStatus: "PENDING",
