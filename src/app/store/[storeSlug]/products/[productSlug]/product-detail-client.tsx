@@ -558,13 +558,13 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
 
           {/* Cart-based checkout — shown when COD or online payment is enabled */}
           {cartCheckoutAvailable && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <Button
                 variant="outline"
                 size="lg"
                 disabled={isOutOfStock}
                 onClick={handleAddToCart}
-                className="flex-1 shadow-sm border hover:opacity-90 hover:bg-[var(--store-navbar-bg,#ffffff)] hover:text-[var(--store-navbar-text,#0f172a)] transition-all"
+                className="flex-1 shadow-sm border hover:opacity-90 hover:bg-[var(--store-navbar-bg,#ffffff)] hover:text-[var(--store-navbar-text,#0f172a)] transition-all text-xs sm:text-base px-2.5 sm:px-6 whitespace-nowrap"
                 style={{
                   backgroundColor: "var(--store-navbar-bg, #ffffff)",
                   color: "var(--store-navbar-text, #0f172a)",
@@ -574,16 +574,16 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
               >
                 {added ? (
                   <>
-                    <Check className="w-5 h-5 text-emerald-500" />
-                    <span>Added to Cart!</span>
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 shrink-0" />
+                    <span className="whitespace-nowrap">Added to Cart!</span>
                   </>
                 ) : (
                   <>
                     <ShoppingBag
-                      className="w-5 h-5"
+                      className="w-4 h-4 sm:w-5 sm:h-5 shrink-0"
                       style={{ color: "var(--store-navbar-text, #0f172a)" }}
                     />
-                    <span>Add to Cart</span>
+                    <span className="whitespace-nowrap">Add to Cart</span>
                   </>
                 )}
               </Button>
@@ -593,14 +593,14 @@ export function ProductDetailClient({ product, store }: ProductDetailClientProps
                 size="lg"
                 disabled={isOutOfStock}
                 onClick={handleBuyNow}
-                className="flex-1"
+                className="flex-1 text-xs sm:text-base px-2.5 sm:px-6 whitespace-nowrap"
                 style={{
                   backgroundColor: "var(--store-button-bg, #2563eb)",
                   color: "var(--store-button-text, #ffffff)",
                   borderRadius: "var(--store-button-radius, 10px)",
                 }}
               >
-                Buy Now
+                <span className="whitespace-nowrap">Buy Now</span>
               </Button>
             </div>
           )}

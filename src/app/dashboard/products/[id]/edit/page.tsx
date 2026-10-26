@@ -39,8 +39,8 @@ export default async function EditProductPage({ params }: EditProductProps) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div>
+    <div className="w-full min-w-0 max-w-6xl mx-auto">
+      <div className="hidden sm:block mb-6">
         <h1 className="text-2xl font-bold text-[#0F172A]">Edit Product</h1>
         <p className="text-xs sm:text-sm text-[#64748B]">
           Update product details, media, inventory or pricing.

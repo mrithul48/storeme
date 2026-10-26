@@ -56,9 +56,9 @@ export default async function DashboardOverviewPage() {
   };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-8 max-w-7xl mx-auto pt-3.5 sm:pt-0">
       {/* Welcome Banner & Quick Share */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 sm:p-7 rounded-3xl bg-gradient-to-r from-blue-600/50 to-indigo-500/90 border border-blue-100 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-7 rounded-3xl bg-gradient-to-r from-blue-600/50 to-indigo-500/90 border border-blue-100 shadow-sm">
         <div className="space-y-1">
           <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A]">
             Welcome back, {session?.user?.name || "Store Owner"}
@@ -69,16 +69,24 @@ export default async function DashboardOverviewPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <Link href="/dashboard/products/new" className="flex-1 sm:flex-initial">
-            <Button variant="primary" size="md" className="w-full sm:w-36 justify-center">
-              <Plus className="w-4 h-4 mr-1.5 shrink-0" />
+            <Button
+              variant="primary"
+              size="md"
+              className="w-full sm:w-36 justify-center text-xs sm:text-sm px-2.5 sm:px-4 py-2 sm:py-2.5 whitespace-nowrap"
+            >
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 shrink-0" />
               <span>Add Product</span>
             </Button>
           </Link>
           <Link href={`/store/${store.slug}`} target="_blank" className="flex-1 sm:flex-initial">
-            <Button variant="outline" size="md" className="w-full sm:w-36 justify-center">
-              <StoreIcon className="w-4 h-4 mr-1.5 text-[#2563EB] shrink-0" />
+            <Button
+              variant="outline"
+              size="md"
+              className="w-full sm:w-36 justify-center text-xs sm:text-sm px-2.5 sm:px-4 py-2 sm:py-2.5 whitespace-nowrap"
+            >
+              <StoreIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 text-[#2563EB] shrink-0" />
               <span>Live Store</span>
             </Button>
           </Link>
