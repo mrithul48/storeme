@@ -22,6 +22,7 @@ import {
   Info,
 } from "lucide-react";
 import { PRODUCT_COLORS, getColorHex, type ColorOption } from "@/lib/constants/colors";
+import { cn } from "@/lib/utils";
 
 export { PRODUCT_COLORS };
 
@@ -135,11 +136,31 @@ export function ProductForm({
   const [isSavingCustomColor, setIsSavingCustomColor] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Custom Dropdowns for Category, Brand & Status
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const categoryRef = useRef<HTMLDivElement>(null);
+
+  const [isBrandOpen, setIsBrandOpen] = useState(false);
+  const brandRef = useRef<HTMLDivElement>(null);
+
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const statusRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (dropdownRef.current && !dropdownRef.current.contains(target)) {
         setIsColorDropdownOpen(false);
         setIsCreatingCustomColor(false);
+      }
+      if (categoryRef.current && !categoryRef.current.contains(target)) {
+        setIsCategoryOpen(false);
+      }
+      if (brandRef.current && !brandRef.current.contains(target)) {
+        setIsBrandOpen(false);
+      }
+      if (statusRef.current && !statusRef.current.contains(target)) {
+        setIsStatusOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -613,25 +634,31 @@ export function ProductForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex items-center justify-between">
+    <form onSubmit={handleSubmit} className="w-full space-y-6">
+      {/* Header Actions Bar — Sticky on top touching header on mobile, static on desktop */}
+      <div className="sticky top-0 sm:static z-40 bg-white sm:bg-transparent -mx-3.5 sm:mx-0 px-3.5 sm:px-0 py-2.5 sm:py-0 border-b border-slate-200/90 sm:border-0 shadow-xs sm:shadow-none flex items-center justify-between w-[calc(100%+1.75rem)] sm:w-full">
         <Link
           href="/dashboard/products"
-          className="inline-flex items-center gap-1.5 text-xs text-[#64748B] hover:text-[#0F172A] transition-colors font-medium"
+          className="hidden sm:inline-flex items-center gap-1.5 text-xs text-[#64748B] hover:text-[#0F172A] transition-colors font-medium"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Products
         </Link>
 
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard/products">
-            <Button type="button" variant="outline">
+        <div className="grid grid-cols-2 gap-2.5 w-full sm:flex sm:items-center sm:gap-3 sm:w-auto">
+          <Link href="/dashboard/products" className="w-full sm:w-auto">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full justify-center text-xs sm:text-sm h-10 font-semibold"
+            >
               Cancel
             </Button>
           </Link>
           <Button
             type="submit"
             variant="primary"
+            className="w-full sm:w-auto justify-center text-xs sm:text-sm h-10 font-semibold whitespace-nowrap"
             isLoading={loading}
             disabled={!stockMode && !isEditing}
           >
@@ -641,7 +668,7 @@ export function ProductForm({
       </div>
 
       {!stockMode && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 space-y-3 shadow-sm">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-5 space-y-3 shadow-sm">
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="space-y-1">
@@ -670,11 +697,11 @@ export function ProductForm({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 w-full">
         {/* Left Column: Core Info */}
-        <div className="lg:col-span-8 space-y-6">
-          <Card className="space-y-4 border border-slate-200/90 shadow-sm">
-            <h2 className="text-base font-bold text-[#0F172A]">General Information</h2>
+        <div className="lg:col-span-8 space-y-6 w-full">
+          <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-4 sm:shadow-sm w-full">
+            <h2 className="text-base font-bold text-[#0F172A] border-b border-slate-100 pb-2.5 sm:border-0 sm:pb-0">General Information</h2>
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-[#0F172A]">Product Title *</label>
@@ -697,12 +724,12 @@ export function ProductForm({
                 placeholder="Enter product description"
               />
             </div>
-          </Card>
+          </div>
 
           {/* Media Images (Hidden in Color-wise Inventory mode since images are uploaded per color variant) */}
           {stockMode !== "COLOR_WISE" && (
-            <Card className="space-y-4 border border-slate-200/90 shadow-sm">
-              <h2 className="text-base font-bold text-[#0F172A]">Product Images</h2>
+            <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-4 sm:shadow-sm w-full">
+              <h2 className="text-base font-bold text-[#0F172A] border-b border-slate-100 pb-2.5 sm:border-0 sm:pb-0">Product Images</h2>
 
               {/* Images grid preview */}
               {images.length > 0 && (
@@ -761,12 +788,12 @@ export function ProductForm({
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
           )}
 
           {/* Pricing & SKU */}
-          <Card className="space-y-4 border border-slate-200/90 shadow-sm">
-            <h2 className="text-base font-bold text-[#0F172A]">Pricing & Identification</h2>
+          <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-4 sm:shadow-sm w-full">
+            <h2 className="text-base font-bold text-[#0F172A] border-b border-slate-100 pb-2.5 sm:border-0 sm:pb-0">Pricing & Identification</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
@@ -820,7 +847,7 @@ export function ProductForm({
                   name="weight"
                   value={formData.weight}
                   onChange={handleChange}
-                  placeholder="e.g. 0.50 (in kg)"
+                  placeholder="Enter product weight (in kg)"
                 />
               </div>
             </div>
@@ -849,31 +876,31 @@ export function ProductForm({
 
             {/* Option 1: Manage Stock Availability */}
             {stockMode === "AVAILABILITY" && (
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-4 shadow-sm">
-                <div className="border-b border-slate-200 pb-2 flex items-center justify-between">
-                  <div>
+              <div className="sm:rounded-xl sm:border sm:border-slate-200 sm:bg-slate-50 p-0 sm:p-4 space-y-3 sm:space-y-4 sm:shadow-sm w-full min-w-0">
+                <div className="border-b border-slate-100 sm:border-slate-200 pb-2 flex items-center justify-between">
+                  <div className="min-w-0">
                     <h3 className="text-sm font-bold text-[#0F172A]">Stock Availability</h3>
                     <p className="text-[11px] text-[#64748B] mt-0.5">
                       Configured store-wide via Store Settings → Product Management
                     </p>
                   </div>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-[#2563EB] border border-blue-200">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-[#2563EB] border border-blue-200 shrink-0">
                     Availability Mode
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-slate-50 sm:bg-white border border-slate-200 w-full min-w-0">
+                  <div className="min-w-0">
                     <p className="text-xs font-semibold text-[#0F172A]">Product Availability</p>
                     <p className="text-[11px] text-[#64748B]">
                       Mark whether this product is currently in stock and purchasable by customers.
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
                       onClick={() => setFormData((prev) => ({ ...prev, inStock: true }))}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                         formData.inStock
                           ? "bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-500/30"
                           : "bg-slate-100 text-[#64748B] hover:text-[#0F172A]"
@@ -884,7 +911,7 @@ export function ProductForm({
                     <button
                       type="button"
                       onClick={() => setFormData((prev) => ({ ...prev, inStock: false }))}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                         !formData.inStock
                           ? "bg-rose-600 text-white shadow-sm ring-2 ring-rose-500/30"
                           : "bg-slate-100 text-[#64748B] hover:text-[#0F172A]"
@@ -899,20 +926,20 @@ export function ProductForm({
 
             {/* Option 2: Manage Stock Quantity */}
             {stockMode === "QUANTITY" && (
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-4 shadow-sm">
-                <div className="border-b border-slate-200 pb-2 flex items-center justify-between">
-                  <div>
+              <div className="sm:rounded-xl sm:border sm:border-slate-200 sm:bg-slate-50 p-0 sm:p-4 space-y-3 sm:space-y-4 sm:shadow-sm w-full min-w-0">
+                <div className="border-b border-slate-100 sm:border-slate-200 pb-2 flex items-center justify-between">
+                  <div className="min-w-0">
                     <h3 className="text-sm font-bold text-[#0F172A]">Stock Quantity</h3>
                     <p className="text-[11px] text-[#64748B] mt-0.5">
                       Configured store-wide via Store Settings → Product Management
                     </p>
                   </div>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-[#2563EB] border border-blue-200">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-[#2563EB] border border-blue-200 shrink-0">
                     Quantity Mode
                   </span>
                 </div>
 
-                <div className="space-y-2 p-3 rounded-lg bg-white border border-slate-200">
+                <div className="space-y-2 w-full min-w-0">
                   <label className="text-xs font-semibold text-[#0F172A]">Available Stock Units *</label>
                   <Input
                     required
@@ -930,6 +957,7 @@ export function ProductForm({
                       }));
                     }}
                     placeholder="Enter stock quantity"
+                    className="w-full"
                   />
                   <p className="text-[11px] text-[#64748B]">
                     Availability is calculated from quantity. When quantity is 0, the product is automatically marked unavailable and cannot be purchased.
@@ -937,15 +965,14 @@ export function ProductForm({
                 </div>
               </div>
             )}
-          </Card>
+          </div>
 
           {/* Option 3: Color-wise Inventory & Image Upload Card */}
           {stockMode === "COLOR_WISE" && (
-            <Card className="space-y-4 border border-slate-200/90 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2">
-                  <Palette className="w-5 h-5 text-[#2563EB]" />
-                  <div>
+            <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-4 sm:shadow-sm w-full min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3 bg-green-200 p-4 rounded-xl">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="min-w-0">
                     <h2 className="text-base font-bold text-[#0F172A]">Color-wise Inventory & Image Upload</h2>
                     <p className="text-[11px] text-[#64748B]">
                       {colorStockMode === "QUANTITY"
@@ -954,53 +981,52 @@ export function ProductForm({
                     </p>
                   </div>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-[#2563EB] border border-blue-200 self-start sm:self-auto">
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-[#2563EB] border border-blue-200 self-start sm:self-auto shrink-0">
                   {colorStockMode === "QUANTITY" ? "Color Quantity Mode" : "Color Availability Mode"}
                 </span>
               </div>
 
               {/* Informative Note / Tip for Image Upload per color */}
-              <div className="flex items-start gap-2.5 p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 shadow-sm">
-                <Sparkles className="w-4 h-4 text-[#2563EB] shrink-0 mt-0.5" />
-                <div className="leading-relaxed">
-                  <strong className="text-[#0F172A]">Color-specific Media:</strong> When you add or select a color variant below, you can upload that color&apos;s product images directly. Customers will see these images when selecting that color in your store.
+              <div className="flex items-start gap-2.5 p-4 rounded-xl bg-green-200 text-xs text-[#0F172A]">
+                <div className="leading-relaxed text-[#0F172A]">
+                  <strong>Color-specific Media:</strong> When you add or select a color variant below, you can upload that color&apos;s product images directly. Customers will see these images when selecting that color in your store.
                 </div>
               </div>
 
               {/* Add New Color Variant Dropdown */}
-              <div className="space-y-2 relative" ref={dropdownRef}>
-                <div className="flex items-center gap-2">
+              <div className="space-y-2 relative w-full min-w-0" ref={dropdownRef}>
+                <div className="flex items-center gap-2 w-full min-w-0">
                   {/* Dropdown Trigger Button */}
-                  <div className="relative flex-1">
+                  <div className="relative flex-1 min-w-0">
                     <button
                       type="button"
                       onClick={() => {
                         setIsColorDropdownOpen((prev) => !prev);
                         setIsCreatingCustomColor(false);
                       }}
-                      className="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between text-left hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20 transition-all text-xs text-[#0F172A] shadow-sm"
+                      className="w-full h-11 px-3.5 rounded-xl border border-slate-300 bg-white flex items-center justify-between text-left hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 transition-all text-xs text-[#0F172A] shadow-sm min-w-0 cursor-pointer"
                     >
-                      <div className="flex items-center gap-2.5 truncate">
+                      <div className="flex items-center gap-2 min-w-0 flex-1 truncate">
                         {newVariantColor ? (
                           <>
                             <span
-                              className="w-3.5 h-3.5 rounded-full border border-slate-300 shrink-0 shadow-sm"
+                              className="w-3.5 h-3.5 rounded-full border border-slate-300 shrink-0 shadow-xs"
                               style={{ backgroundColor: getColorHex(newVariantColor, customColors) }}
                             />
                             <span className="font-semibold text-[#0F172A] truncate">{newVariantColor}</span>
-                            <span className="text-[11px] font-mono text-[#64748B]">
+                            <span className="text-[11px] font-mono text-[#64748B] shrink-0">
                               ({getColorHex(newVariantColor, customColors)})
                             </span>
                           </>
                         ) : (
                           <>
                             <Palette className="w-4 h-4 text-slate-400 shrink-0" />
-                            <span className="text-[#64748B]">Choose a color from dropdown or create custom...</span>
+                            <span className="text-[#64748B] truncate">Choose a color...</span>
                           </>
                         )}
                       </div>
                       <ChevronDown
-                        className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
+                        className={`w-4 h-4 text-slate-400 shrink-0 ml-1.5 transition-transform duration-200 ${
                           isColorDropdownOpen ? "rotate-180" : ""
                         }`}
                       />
@@ -1010,6 +1036,7 @@ export function ProductForm({
                   <Button
                     type="button"
                     variant="secondary"
+                    className="shrink-0 whitespace-nowrap text-xs px-3 sm:px-4 h-11"
                     onClick={() => {
                       if (newVariantColor) {
                         handleAddVariant();
@@ -1019,8 +1046,8 @@ export function ProductForm({
                     }}
                     disabled={!newVariantColor && isColorDropdownOpen}
                   >
-                    <Plus className="w-4 h-4" />
-                    Add Color
+                    <Plus className="w-4 h-4 mr-1 shrink-0" />
+                    <span>Add Color</span>
                   </Button>
                 </div>
 
@@ -1205,33 +1232,33 @@ export function ProductForm({
               </div>
 
               {variants.length === 0 ? (
-                <div className="p-5 rounded-xl border border-dashed border-slate-200 text-center space-y-1 bg-slate-50/50">
+                <div className="sm:p-5 sm:rounded-xl sm:border sm:border-dashed sm:border-slate-200 text-center space-y-1 sm:bg-slate-50/50 py-3 sm:py-5 border-0 bg-transparent">
                   <p className="text-xs text-[#0F172A] font-semibold">No color variants added yet</p>
-                  <p className="text-[11px] text-[#64748B]">
+                  <p className="text-[11px] text-[#64748B] max-w-md mx-auto">
                     Select a color from the dropdown above or create a custom one to configure inventory and upload product images for each color.
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-4 w-full min-w-0">
                   {variants.map((variant, idx) => (
                     <div
                       key={idx}
-                      className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 space-y-3 shadow-sm"
+                      className="sm:rounded-xl sm:border sm:border-slate-200 sm:bg-slate-50/70 p-0 sm:p-3.5 space-y-3 sm:shadow-sm border-b border-slate-200 pb-4 sm:pb-3.5 w-full min-w-0"
                     >
                       <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                           <span
-                            className="w-3.5 h-3.5 rounded-full border border-slate-300 flex-shrink-0"
+                            className="w-3.5 h-3.5 rounded-full border border-slate-300 shrink-0"
                             style={{
                               backgroundColor: getColorHex(variant.color, customColors),
                             }}
                           />
-                          <span className="text-sm font-bold text-[#0F172A]">{variant.color}</span>
+                          <span className="text-sm font-bold text-[#0F172A] truncate">{variant.color}</span>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleRemoveVariant(idx)}
-                          className="p-1 rounded text-slate-400 hover:text-rose-600 transition-colors"
+                          className="p-1 rounded text-slate-400 hover:text-rose-600 transition-colors shrink-0"
                           aria-label={`Remove ${variant.color} variant`}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -1240,8 +1267,8 @@ export function ProductForm({
 
                       {/* Sub-option 1: Manage Stock Availability */}
                       {colorStockMode === "AVAILABILITY" && (
-                        <div className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-slate-200">
-                          <div>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-2.5 rounded-xl bg-slate-50 sm:bg-white border border-slate-200 w-full min-w-0">
+                          <div className="min-w-0">
                             <span className="text-xs font-semibold text-[#0F172A] block">
                               Variant Availability:
                             </span>
@@ -1249,11 +1276,11 @@ export function ProductForm({
                               {variant.inStock ? "Available for purchase" : "Marked unavailable"}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 shrink-0">
                             <button
                               type="button"
                               onClick={() => handleVariantChange(idx, "inStock", true)}
-                              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                                 variant.inStock
                                   ? "bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-500/30"
                                   : "bg-slate-100 text-[#64748B] hover:text-[#0F172A]"
@@ -1264,7 +1291,7 @@ export function ProductForm({
                             <button
                               type="button"
                               onClick={() => handleVariantChange(idx, "inStock", false)}
-                              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                                 !variant.inStock
                                   ? "bg-rose-600 text-white shadow-sm ring-2 ring-rose-500/30"
                                   : "bg-slate-100 text-[#64748B] hover:text-[#0F172A]"
@@ -1278,7 +1305,7 @@ export function ProductForm({
 
                       {/* Sub-option 2: Manage Stock Quantity */}
                       {colorStockMode === "QUANTITY" && (
-                        <div className="space-y-1.5 p-2.5 rounded-lg bg-white border border-slate-200">
+                        <div className="space-y-1.5 w-full min-w-0">
                           <label className="text-xs font-semibold text-[#0F172A]">
                             Stock Units ({variant.color}) *
                           </label>
@@ -1297,6 +1324,7 @@ export function ProductForm({
                               );
                             }}
                             placeholder="Enter variant stock quantity"
+                            className="w-full"
                           />
                           <p className="text-[11px] text-[#64748B]">
                             {variant.stock <= 0
@@ -1307,8 +1335,8 @@ export function ProductForm({
                       )}
 
                       {/* Sub-option 3: Color Variant Product Images */}
-                      <div className="pt-3 border-t border-slate-200 space-y-2.5">
-                        <div className="flex items-center justify-between">
+                      <div className="pt-2 border-t border-slate-200 space-y-2.5 w-full min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-semibold text-[#0F172A]">
                               Product Images ({variant.color})
@@ -1376,7 +1404,7 @@ export function ProductForm({
                             />
                           </label>
 
-                          <div className="flex-1 flex gap-2">
+                          <div className="flex-1 flex gap-2 min-w-0">
                             <Input
                               placeholder="Enter image URL"
                               value={variantUrlInputs[idx] || ""}
@@ -1402,65 +1430,226 @@ export function ProductForm({
                   ))}
                 </div>
               )}
-            </Card>
+            </div>
           )}
         </div>
 
         {/* Right Column: Taxonomy & Visibility */}
-        <div className="lg:col-span-4 space-y-6">
-          <Card className="space-y-4 border border-slate-200/90 shadow-sm">
-            <h2 className="text-base font-bold text-[#0F172A]">Organization</h2>
+        <div className="lg:col-span-4 space-y-6 w-full">
+          <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-4 sm:shadow-sm w-full">
+            <h2 className="text-base font-bold text-[#0F172A] border-b border-slate-100 pb-2.5 sm:border-0 sm:pb-0">Organization</h2>
 
-            <div className="space-y-1.5">
+            {/* Category Custom Dropdown */}
+            <div className="space-y-1.5 relative" ref={categoryRef}>
               <label className="text-xs font-semibold text-[#0F172A]">Category</label>
-              <select
-                name="categoryId"
-                value={formData.categoryId}
-                onChange={handleChange}
-                className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-[#2563EB] shadow-sm"
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCategoryOpen((prev) => !prev);
+                  setIsBrandOpen(false);
+                  setIsStatusOpen(false);
+                }}
+                className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between text-left hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20 transition-all text-xs text-[#0F172A] shadow-sm cursor-pointer"
               >
-                <option value="">No Category</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+                <span className="truncate">
+                  {categories.find((c) => c.id === formData.categoryId)?.name || "No Category"}
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "w-4 h-4 text-[#64748B] shrink-0 ml-2 transition-transform duration-200",
+                    isCategoryOpen && "rotate-180 text-[#2563EB]"
+                  )}
+                />
+              </button>
+
+              {isCategoryOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1.5 z-40 rounded-2xl border border-slate-200/90 bg-white shadow-xl shadow-slate-900/10 p-1.5 max-h-56 overflow-y-auto animate-in fade-in-0 zoom-in-95">
+                  <div className="text-[10px] font-bold text-[#94A3B8] px-2.5 py-1 uppercase tracking-wider">
+                    Select Category
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, categoryId: "" }));
+                      setIsCategoryOpen(false);
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors text-left cursor-pointer",
+                      !formData.categoryId
+                        ? "bg-blue-50 text-[#2563EB] font-bold"
+                        : "text-[#0F172A] hover:bg-slate-50 hover:text-[#2563EB]"
+                    )}
+                  >
+                    <span>No Category</span>
+                    {!formData.categoryId && (
+                      <Check className="w-3.5 h-3.5 text-[#2563EB] shrink-0 ml-2" />
+                    )}
+                  </button>
+                  {categories.map((c) => {
+                    const isSelected = formData.categoryId === c.id;
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          setFormData((prev) => ({ ...prev, categoryId: c.id }));
+                          setIsCategoryOpen(false);
+                        }}
+                        className={cn(
+                          "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors text-left cursor-pointer",
+                          isSelected
+                            ? "bg-blue-50 text-[#2563EB] font-bold"
+                            : "text-[#0F172A] hover:bg-slate-50 hover:text-[#2563EB]"
+                        )}
+                      >
+                        <span className="truncate">{c.name}</span>
+                        {isSelected && (
+                          <Check className="w-3.5 h-3.5 text-[#2563EB] shrink-0 ml-2" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
-            <div className="space-y-1.5">
+            {/* Brand Custom Dropdown */}
+            <div className="space-y-1.5 relative" ref={brandRef}>
               <label className="text-xs font-semibold text-[#0F172A]">Brand</label>
-              <select
-                name="brandId"
-                value={formData.brandId}
-                onChange={handleChange}
-                className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-[#2563EB] shadow-sm"
+              <button
+                type="button"
+                onClick={() => {
+                  setIsBrandOpen((prev) => !prev);
+                  setIsCategoryOpen(false);
+                  setIsStatusOpen(false);
+                }}
+                className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between text-left hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20 transition-all text-xs text-[#0F172A] shadow-sm cursor-pointer"
               >
-                <option value="">No Brand</option>
-                {brands.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
+                <span className="truncate">
+                  {brands?.find((b) => b.id === formData.brandId)?.name || "No Brand"}
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "w-4 h-4 text-[#64748B] shrink-0 ml-2 transition-transform duration-200",
+                    isBrandOpen && "rotate-180 text-[#2563EB]"
+                  )}
+                />
+              </button>
+
+              {isBrandOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1.5 z-40 rounded-2xl border border-slate-200/90 bg-white shadow-xl shadow-slate-900/10 p-1.5 max-h-56 overflow-y-auto animate-in fade-in-0 zoom-in-95">
+                  <div className="text-[10px] font-bold text-[#94A3B8] px-2.5 py-1 uppercase tracking-wider">
+                    Select Brand
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, brandId: "" }));
+                      setIsBrandOpen(false);
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors text-left cursor-pointer",
+                      !formData.brandId
+                        ? "bg-blue-50 text-[#2563EB] font-bold"
+                        : "text-[#0F172A] hover:bg-slate-50 hover:text-[#2563EB]"
+                    )}
+                  >
+                    <span>No Brand</span>
+                    {!formData.brandId && (
+                      <Check className="w-3.5 h-3.5 text-[#2563EB] shrink-0 ml-2" />
+                    )}
+                  </button>
+                  {brands.map((b) => {
+                    const isSelected = formData.brandId === b.id;
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => {
+                          setFormData((prev) => ({ ...prev, brandId: b.id }));
+                          setIsBrandOpen(false);
+                        }}
+                        className={cn(
+                          "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors text-left cursor-pointer",
+                          isSelected
+                            ? "bg-blue-50 text-[#2563EB] font-bold"
+                            : "text-[#0F172A] hover:bg-slate-50 hover:text-[#2563EB]"
+                        )}
+                      >
+                        <span className="truncate">{b.name}</span>
+                        {isSelected && (
+                          <Check className="w-3.5 h-3.5 text-[#2563EB] shrink-0 ml-2" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </Card>
+          </div>
 
-          <Card className="space-y-4 border border-slate-200/90 shadow-sm">
-            <h2 className="text-base font-bold text-[#0F172A]">Visibility & Status</h2>
+          <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-4 sm:shadow-sm w-full">
+            <h2 className="text-base font-bold text-[#0F172A] border-b border-slate-100 pb-2.5 sm:border-0 sm:pb-0">Visibility & Status</h2>
 
-            <div className="space-y-1.5">
+            {/* Status Custom Dropdown */}
+            <div className="space-y-1.5 relative" ref={statusRef}>
               <label className="text-xs font-semibold text-[#0F172A]">Product Status</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-[#2563EB] shadow-sm"
+              <button
+                type="button"
+                onClick={() => {
+                  setIsStatusOpen((prev) => !prev);
+                  setIsCategoryOpen(false);
+                  setIsBrandOpen(false);
+                }}
+                className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between text-left hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20 transition-all text-xs font-semibold text-[#0F172A] shadow-sm cursor-pointer"
               >
-                <option value="ACTIVE">Active (Live in store)</option>
-                <option value="DRAFT">Draft (Hidden)</option>
-                <option value="INACTIVE">Inactive (Archived)</option>
-              </select>
+                <span>
+                  {formData.status === "ACTIVE"
+                    ? "Active (Live in store)"
+                    : formData.status === "DRAFT"
+                    ? "Draft (Hidden)"
+                    : "Inactive (Archived)"}
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "w-4 h-4 text-[#64748B] shrink-0 ml-2 transition-transform duration-200",
+                    isStatusOpen && "rotate-180 text-[#2563EB]"
+                  )}
+                />
+              </button>
+
+              {isStatusOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1.5 z-40 rounded-2xl border border-slate-200/90 bg-white shadow-xl shadow-slate-900/10 p-1.5 animate-in fade-in-0 zoom-in-95">
+                  {[
+                    { id: "ACTIVE", label: "Active (Live in store)" },
+                    { id: "DRAFT", label: "Draft (Hidden)" },
+                    { id: "INACTIVE", label: "Inactive (Archived)" },
+                  ].map((s) => {
+                    const isSelected = formData.status === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => {
+                          setFormData((prev) => ({ ...prev, status: s.id }));
+                          setIsStatusOpen(false);
+                        }}
+                        className={cn(
+                          "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors text-left cursor-pointer",
+                          isSelected
+                            ? "bg-blue-50 text-[#2563EB] font-bold"
+                            : "text-[#0F172A] hover:bg-slate-50 hover:text-[#2563EB]"
+                        )}
+                      >
+                        <span>{s.label}</span>
+                        {isSelected && (
+                          <Check className="w-3.5 h-3.5 text-[#2563EB] shrink-0 ml-2" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-between pt-2">
@@ -1484,7 +1673,7 @@ export function ProductForm({
                 />
               </button>
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </form>
