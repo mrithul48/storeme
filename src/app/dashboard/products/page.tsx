@@ -34,19 +34,23 @@ export default async function DashboardProductsPage({ searchParams }: ProductsPa
   }));
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#0F172A]">Products</h1>
-          <p className="text-xs sm:text-sm text-[#64748B]">
+    <div className="space-y-6 max-w-7xl mx-auto pt-3.5 sm:pt-0">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0 pr-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A]">Products</h1>
+          <p className="text-xs sm:text-sm text-[#64748B] truncate sm:whitespace-normal">
             Manage your store catalog, pricing, inventory levels, and visibility.
           </p>
         </div>
 
-        <Link href="/dashboard/products/new">
-          <Button variant="primary">
-            <Plus className="w-4 h-4 mr-1.5" />
-            Add New Product
+        <Link href="/dashboard/products/new" className="shrink-0">
+          <Button
+            variant="primary"
+            size="md"
+            className="text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 whitespace-nowrap"
+          >
+            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5 shrink-0" />
+            <span>Add New Product</span>
           </Button>
         </Link>
       </div>

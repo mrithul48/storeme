@@ -41,7 +41,7 @@ export default async function DashboardLayout({
   const isPlatformAdmin = session.user.role === "PLATFORM_ADMIN";
 
   return (
-    <div className="h-screen flex bg-slate-50 text-[#0F172A] overflow-hidden antialiased">
+    <div className="h-screen flex bg-white sm:bg-slate-50 text-[#0F172A] overflow-hidden antialiased">
       {/* Desktop Sidebar */}
       <aside className="w-64 h-full border-r border-slate-200/90 bg-white flex flex-col justify-between hidden md:flex flex-shrink-0 overflow-hidden shadow-sm">
         <div className="p-6 space-y-6 flex-1 overflow-y-auto">
@@ -79,7 +79,7 @@ export default async function DashboardLayout({
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white sm:bg-slate-50">
         {/* Top Navbar */}
         <header className="h-16 flex-shrink-0 border-b border-slate-200/90 bg-white/90 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -112,7 +112,7 @@ export default async function DashboardLayout({
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto min-h-0 bg-slate-50 pb-24 md:pb-8">
+        <main className="flex-1 px-3.5 pt-0 pb-24 sm:p-6 md:p-8 sm:pb-8 overflow-y-auto overflow-x-hidden min-h-0 bg-white sm:bg-slate-50">
           {children}
         </main>
 
