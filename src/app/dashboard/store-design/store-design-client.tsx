@@ -346,9 +346,31 @@ export function StoreDesignClient({
 
   return (
     <div className="space-y-6">
+      {/* Page Title & Mobile-Friendly Save Header */}
+      <div className="flex items-center justify-between gap-3 pb-2 border-b border-slate-100 sm:border-0 sm:pb-0">
+        <div className="min-w-0 pr-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A] tracking-tight">Live Store Design</h1>
+          <p className="text-xs sm:text-sm text-[#64748B] mt-0.5 line-clamp-1 sm:line-clamp-none">
+            Customize your storefront homepage, sections, and banners. Changes appear live immediately.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="primary"
+          size="sm"
+          onClick={handleSave}
+          isLoading={saving}
+          disabled={saving}
+          className="shrink-0 font-bold text-xs sm:text-sm px-3.5 sm:px-4 py-2 sm:py-2.5 shadow-sm shadow-blue-600/20 whitespace-nowrap cursor-pointer rounded-xl"
+        >
+          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
+          <span>{saving ? "Saving…" : success ? "Saved!" : "Save Design"}</span>
+        </Button>
+      </div>
+
       {/* Notifications */}
       {success && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center gap-2 shadow-sm">
+        <div className="hidden sm:flex p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm items-center gap-2 shadow-sm">
           <Check className="w-5 h-5 flex-shrink-0 text-emerald-600" />
           <span>{success}</span>
           <a
@@ -369,7 +391,7 @@ export function StoreDesignClient({
       )}
 
       {/* Preview Store Banner */}
-      <Card className="flex items-center justify-between py-3 px-5 bg-gradient-to-r from-blue-50/80 via-white to-indigo-50/40 border border-blue-100 shadow-sm">
+      <div className="hidden sm:flex items-center justify-between py-3 px-5 rounded-2xl bg-gradient-to-r from-blue-50/80 via-white to-indigo-50/40 border border-blue-100/90 shadow-sm">
         <div>
           <p className="text-xs font-bold text-[#2563EB]">Live Storefront</p>
           <p className="text-xs text-[#64748B] mt-0.5">
@@ -377,11 +399,11 @@ export function StoreDesignClient({
           </p>
         </div>
         <a href={`/store/${storeSlug}`} target="_blank" rel="noopener noreferrer">
-          <Button type="button" variant="outline" size="sm">
+          <Button type="button" variant="outline" size="sm" className="whitespace-nowrap shrink-0 text-xs sm:text-sm">
             <ExternalLink className="w-3.5 h-3.5 mr-1 text-[#2563EB]" /> Preview Store
           </Button>
         </a>
-      </Card>
+      </div>
 
       {/* Tabs */}
       <div className="flex border-b border-slate-200 gap-1 overflow-x-auto scrollbar-none">
@@ -505,7 +527,7 @@ export function StoreDesignClient({
       )}
 
       {/* ── Global Save Button ─────────────────────────────────────────────── */}
-      <div className="sticky bottom-4 z-20 flex items-center justify-end pointer-events-none pt-4 pb-2">
+      <div className="pt-6 pb-12 sm:pb-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 border-t border-slate-100 sm:border-0">
         <Button
           type="button"
           variant="primary"
@@ -513,9 +535,10 @@ export function StoreDesignClient({
           onClick={handleSave}
           isLoading={saving}
           disabled={saving}
-          className="pointer-events-auto shadow-lg shadow-blue-600/25"
+          className="w-full sm:w-auto font-bold shadow-md shadow-blue-600/20 cursor-pointer rounded-xl text-xs sm:text-sm"
         >
-          {saving ? "Saving…" : "Save Live Store Design"}
+          <Check className="w-4 h-4 mr-1.5" />
+          {saving ? "Saving…" : success ? "Saved!" : "Save Live Store Design"}
         </Button>
       </div>
     </div>

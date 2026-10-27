@@ -3,10 +3,11 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Card, Input } from "@/components/ui/card";
+import { Input } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Layers, Tag, AlertCircle, Pencil, X } from "lucide-react";
 import { ImageUploader } from "../store-design/_ui/image-uploader";
+import { cn } from "@/lib/utils";
 
 interface CategoriesBrandsClientProps {
   initialCategories: any[];
@@ -20,6 +21,7 @@ export function CategoriesBrandsClient({
   const router = useRouter();
   const [categories, setCategories] = useState(initialCategories);
   const [brands, setBrands] = useState(initialBrands);
+  const [activeTab, setActiveTab] = useState<"categories" | "brands">("categories");
 
   // Category create state
   const [catName, setCatName] = useState("");
@@ -244,210 +246,267 @@ export function CategoriesBrandsClient({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      {/* Categories Section */}
-      <div className="space-y-6">
-        <Card className="space-y-4 border border-slate-200/90 shadow-sm">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-            <Layers className="w-5 h-5 text-[#2563EB]" />
-            <h2 className="text-base font-bold text-[#0F172A]">Add New Category</h2>
-          </div>
-
-          {catError && (
-            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{catError}</span>
-            </div>
+    <div className="space-y-6">
+      {/* Mobile Switchable Tab Buttons */}
+      <div className="lg:hidden p-1 bg-slate-100 rounded-2xl border border-slate-200/80 flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => setActiveTab("categories")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all select-none cursor-pointer",
+            activeTab === "categories"
+              ? "bg-white text-[#2563EB] shadow-sm border border-slate-200/60"
+              : "text-[#64748B] hover:text-[#0F172A]"
           )}
+        >
+          <Layers className={cn("w-4 h-4", activeTab === "categories" ? "text-[#2563EB]" : "text-slate-400")} />
+          <span>Categories</span>
+          <span
+            className={cn(
+              "px-2 py-0.5 rounded-full text-[10px] font-extrabold transition-colors",
+              activeTab === "categories"
+                ? "bg-blue-50 text-[#2563EB]"
+                : "bg-slate-200 text-slate-500"
+            )}
+          >
+            {categories.length}
+          </span>
+        </button>
 
-          <form onSubmit={handleCreateCategory} className="space-y-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-[#0F172A]">Category Name *</label>
-              <Input
-                required
-                value={catName}
-                onChange={(e) => setCatName(e.target.value)}
-                placeholder="Enter category name"
-              />
-            </div>
-
-            <ImageUploader
-              label="Category Image"
-              url={catImageUrl}
-              folder="categories"
-              aspectHint="Recommended: Square or 4:3 (e.g. 400×400px)"
-              onUpload={(r) => {
-                setCatImageUrl(r.url);
-                setCatImagePublicId(r.publicId);
-              }}
-              onRemove={() => {
-                setCatImageUrl("");
-                setCatImagePublicId("");
-              }}
-            />
-
-            <Button type="submit" variant="primary" size="sm" isLoading={catLoading} className="w-full">
-              <Plus className="w-4 h-4 mr-1" />
-              Add Category
-            </Button>
-          </form>
-        </Card>
-
-        {/* Existing Categories List */}
-        <Card className="space-y-3 border border-slate-200/90 shadow-sm">
-          <h3 className="text-sm font-bold text-[#64748B] uppercase tracking-wider">
-            All Categories ({categories.length})
-          </h3>
-
-          {categories.length === 0 ? (
-            <p className="text-xs text-[#64748B] py-4 text-center">No categories created yet.</p>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {categories.map((c) => (
-                <div key={c.id} className="py-3 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    {c.imageUrl ? (
-                      <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex-shrink-0">
-                        <Image src={c.imageUrl} alt={c.name} fill className="object-cover" />
-                      </div>
-                    ) : (
-                      <div className="w-11 h-11 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-500 text-xs font-bold">
-                        {c.name.charAt(0)}
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[#0F172A] truncate">{c.name}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[11px] text-[#2563EB] font-semibold">
-                          {c._count?.products || 0} products
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleStartEditCategory(c)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-[#2563EB] hover:bg-blue-50 transition-colors"
-                      title="Edit Category"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteCategory(c.id, c.name)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                      title="Delete Category"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+        <button
+          type="button"
+          onClick={() => setActiveTab("brands")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all select-none cursor-pointer",
+            activeTab === "brands"
+              ? "bg-white text-emerald-600 shadow-sm border border-slate-200/60"
+              : "text-[#64748B] hover:text-[#0F172A]"
           )}
-        </Card>
+        >
+          <Tag className={cn("w-4 h-4", activeTab === "brands" ? "text-emerald-600" : "text-slate-400")} />
+          <span>Brands</span>
+          <span
+            className={cn(
+              "px-2 py-0.5 rounded-full text-[10px] font-extrabold transition-colors",
+              activeTab === "brands"
+                ? "bg-emerald-50 text-emerald-700"
+                : "bg-slate-200 text-slate-500"
+            )}
+          >
+            {brands.length}
+          </span>
+        </button>
       </div>
 
-      {/* Brands Section */}
-      <div className="space-y-6">
-        <Card className="space-y-4 border border-slate-200/90 shadow-sm">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-            <Tag className="w-5 h-5 text-emerald-600" />
-            <h2 className="text-base font-bold text-[#0F172A]">Add New Brand</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Categories Section */}
+        <div className={cn("space-y-6", activeTab !== "categories" && "hidden lg:block")}>
+          <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-4 sm:shadow-sm w-full">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+              <Layers className="w-5 h-5 text-[#2563EB]" />
+              <h2 className="text-base font-bold text-[#0F172A]">Add New Category</h2>
+            </div>
+
+            {catError && (
+              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{catError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleCreateCategory} className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-[#0F172A]">Category Name *</label>
+                <Input
+                  required
+                  value={catName}
+                  onChange={(e) => setCatName(e.target.value)}
+                  placeholder="Enter category name"
+                />
+              </div>
+
+              <ImageUploader
+                label="Category Image"
+                url={catImageUrl}
+                folder="categories"
+                aspectHint="Recommended: Square or 4:3 (e.g. 400×400px)"
+                onUpload={(r) => {
+                  setCatImageUrl(r.url);
+                  setCatImagePublicId(r.publicId);
+                }}
+                onRemove={() => {
+                  setCatImageUrl("");
+                  setCatImagePublicId("");
+                }}
+              />
+
+              <Button type="submit" variant="primary" size="sm" isLoading={catLoading} className="w-full">
+                <Plus className="w-4 h-4 mr-1" />
+                Add Category
+              </Button>
+            </form>
           </div>
 
-          {brandError && (
-            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{brandError}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleCreateBrand} className="space-y-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-[#0F172A]">Brand Name *</label>
-              <Input
-                required
-                value={brandName}
-                onChange={(e) => setBrandName(e.target.value)}
-                placeholder="Enter brand name"
-              />
+          {/* Existing Categories List */}
+          <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-3 sm:shadow-sm w-full">
+            <div className="border-b border-slate-100 pb-2.5 sm:border-0 sm:pb-0">
+              <h3 className="text-xs sm:text-sm font-bold text-[#64748B] uppercase tracking-wider">
+                All Categories ({categories.length})
+              </h3>
             </div>
 
-            <ImageUploader
-              label="Brand Logo"
-              url={brandLogoUrl}
-              folder="brands"
-              aspectHint="Recommended: Square or transparent PNG logo"
-              onUpload={(r) => {
-                setBrandLogoUrl(r.url);
-                setBrandLogoPublicId(r.publicId);
-              }}
-              onRemove={() => {
-                setBrandLogoUrl("");
-                setBrandLogoPublicId("");
-              }}
-            />
-
-            <Button type="submit" variant="emerald" size="sm" isLoading={brandLoading} className="w-full">
-              <Plus className="w-4 h-4 mr-1" />
-              Add Brand
-            </Button>
-          </form>
-        </Card>
-
-        {/* Existing Brands List */}
-        <Card className="space-y-3 border border-slate-200/90 shadow-sm">
-          <h3 className="text-sm font-bold text-[#64748B] uppercase tracking-wider">
-            All Brands ({brands.length})
-          </h3>
-
-          {brands.length === 0 ? (
-            <p className="text-xs text-[#64748B] py-4 text-center">No brands created yet.</p>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {brands.map((b) => (
-                <div key={b.id} className="py-3 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    {b.logoUrl ? (
-                      <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex-shrink-0 p-1">
-                        <Image src={b.logoUrl} alt={b.name} fill className="object-contain" />
+            {categories.length === 0 ? (
+              <p className="text-xs text-[#64748B] py-4 text-center">No categories created yet.</p>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {categories.map((c) => (
+                  <div key={c.id} className="py-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {c.imageUrl ? (
+                        <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex-shrink-0">
+                          <Image src={c.imageUrl} alt={c.name} fill className="object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-11 h-11 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-500 text-xs font-bold">
+                          {c.name.charAt(0)}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[#0F172A] truncate">{c.name}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[11px] text-[#2563EB] font-semibold">
+                            {c._count?.products || 0} products
+                          </span>
+                        </div>
                       </div>
-                    ) : (
-                      <div className="w-11 h-11 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-500 text-xs font-bold">
-                        {b.name.charAt(0)}
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[#0F172A] truncate">{b.name}</p>
+                    </div>
+
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleStartEditCategory(c)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-[#2563EB] hover:bg-blue-50 transition-colors"
+                        title="Edit Category"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCategory(c.id, c.name)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        title="Delete Category"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleStartEditBrand(b)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-                      title="Edit Brand"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteBrand(b.id, b.name)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                      title="Delete Brand"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+        {/* Brands Section */}
+        <div className={cn("space-y-6", activeTab !== "brands" && "hidden lg:block")}>
+          <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-4 sm:shadow-sm w-full">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+              <Tag className="w-5 h-5 text-emerald-600" />
+              <h2 className="text-base font-bold text-[#0F172A]">Add New Brand</h2>
             </div>
-          )}
-        </Card>
+
+            {brandError && (
+              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{brandError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleCreateBrand} className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-[#0F172A]">Brand Name *</label>
+                <Input
+                  required
+                  value={brandName}
+                  onChange={(e) => setBrandName(e.target.value)}
+                  placeholder="Enter brand name"
+                />
+              </div>
+
+              <ImageUploader
+                label="Brand Logo"
+                url={brandLogoUrl}
+                folder="brands"
+                aspectHint="Recommended: Square or transparent PNG logo"
+                onUpload={(r) => {
+                  setBrandLogoUrl(r.url);
+                  setBrandLogoPublicId(r.publicId);
+                }}
+                onRemove={() => {
+                  setBrandLogoUrl("");
+                  setBrandLogoPublicId("");
+                }}
+              />
+
+              <Button type="submit" variant="emerald" size="sm" isLoading={brandLoading} className="w-full">
+                <Plus className="w-4 h-4 mr-1" />
+                Add Brand
+              </Button>
+            </form>
+          </div>
+
+          {/* Existing Brands List */}
+          <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-3 sm:shadow-sm w-full">
+            <div className="border-b border-slate-100 pb-2.5 sm:border-0 sm:pb-0">
+              <h3 className="text-xs sm:text-sm font-bold text-[#64748B] uppercase tracking-wider">
+                All Brands ({brands.length})
+              </h3>
+            </div>
+
+            {brands.length === 0 ? (
+              <p className="text-xs text-[#64748B] py-4 text-center">No brands created yet.</p>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {brands.map((b) => (
+                  <div key={b.id} className="py-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {b.logoUrl ? (
+                        <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex-shrink-0 p-1">
+                          <Image src={b.logoUrl} alt={b.name} fill className="object-contain" />
+                        </div>
+                      ) : (
+                        <div className="w-11 h-11 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-500 text-xs font-bold">
+                          {b.name.charAt(0)}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[#0F172A] truncate">{b.name}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleStartEditBrand(b)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                        title="Edit Brand"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteBrand(b.id, b.name)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        title="Delete Brand"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Edit Category Modal */}

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Input, Textarea, Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Section } from "../_ui/primitives";
+import { Section, AccordionGroup } from "../_ui/primitives";
 import { PolicyPoint, genId } from "../_ui/types";
 
 interface PoliciesTabProps {
@@ -195,7 +195,7 @@ export function PoliciesTab({
       setPageHeading: setDeliveryPolicyHeading,
       points: deliveryPoints,
       addBtnLabel: "+ Add Delivery Point",
-      headingPlaceholder: "Enter delivery point heading",
+      headingPlaceholder: "Enter heading",
       descPlaceholder: "Enter delivery policy details and terms...",
     },
     {
@@ -207,7 +207,7 @@ export function PoliciesTab({
       setPageHeading: setRefundPolicyHeading,
       points: refundPoints,
       addBtnLabel: "+ Add Refund Point",
-      headingPlaceholder: "Enter refund point heading",
+      headingPlaceholder: "Enter heading",
       descPlaceholder: "Enter return and refund policy details...",
     },
     {
@@ -219,7 +219,7 @@ export function PoliciesTab({
       setPageHeading: setPrivacyPolicyHeading,
       points: privacyPoints,
       addBtnLabel: "+ Add Privacy Point",
-      headingPlaceholder: "Enter privacy point heading",
+      headingPlaceholder: "Enter heading",
       descPlaceholder: "Enter privacy and data protection details...",
     },
   ];
@@ -227,9 +227,9 @@ export function PoliciesTab({
   return (
     <div className="space-y-6">
       {/* Overview Card */}
-      <Card className="p-5 border-slate-200/90 bg-white shadow-sm">
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-50/80 via-white to-indigo-50/40 border border-blue-100/90 shadow-xs">
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-lg bg-blue-50 text-[#2563EB] mt-0.5">
+          <div className="p-2.5 rounded-xl bg-white text-[#2563EB] shadow-xs border border-blue-100/60 mt-0.5 shrink-0">
             <FileText className="w-5 h-5" />
           </div>
           <div className="space-y-1">
@@ -240,10 +240,11 @@ export function PoliciesTab({
             </p>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Policies */}
-      {policySections.map((sec) => {
+      <AccordionGroup>
+        {policySections.map((sec) => {
         const isSaving = savingPolicy[sec.key];
         const successMsg = policySuccess[sec.key];
         const errorMsg = policyError[sec.key];
@@ -254,14 +255,14 @@ export function PoliciesTab({
             <div className="space-y-5 pt-3">
               {/* Notification Banner */}
               {successMsg && (
-                <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2">
-                  <Check className="w-4 h-4 flex-shrink-0" />
+                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+                  <Check className="w-4 h-4 flex-shrink-0 text-emerald-600" />
                   <span className="font-medium">{successMsg}</span>
                   <a
                     href={liveUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ml-auto inline-flex items-center gap-1 text-emerald-300 hover:text-emerald-100 underline text-xs"
+                    className="ml-auto inline-flex items-center gap-1 text-[#2563EB] hover:text-blue-800 underline text-xs font-semibold"
                   >
                     View Live Page <ExternalLink className="w-3 h-3" />
                   </a>
@@ -269,8 +270,8 @@ export function PoliciesTab({
               )}
 
               {errorMsg && (
-                <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600" />
                   <span>{errorMsg}</span>
                 </div>
               )}
@@ -278,14 +279,14 @@ export function PoliciesTab({
               {/* Main Page Title */}
               <div className="space-y-1.5 pb-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-slate-200">
+                  <label className="text-xs font-semibold text-[#0F172A]">
                     Main Page Heading
                   </label>
                   <a
                     href={liveUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-blue-400 hover:text-blue-300 inline-flex items-center gap-1 font-medium"
+                    className="text-xs text-[#2563EB] hover:text-blue-800 inline-flex items-center gap-1 font-semibold"
                   >
                     <span>Preview Page</span>
                     <ExternalLink className="w-3 h-3" />
@@ -294,22 +295,23 @@ export function PoliciesTab({
                 <Input
                   value={sec.pageHeading}
                   onChange={(e) => sec.setPageHeading(e.target.value)}
-                  placeholder={`e.g. ${sec.title}`}
+                  placeholder="Enter heading"
                   maxLength={200}
+                  className="text-sm font-medium text-[#0F172A] placeholder:text-slate-400"
                 />
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-[#64748B]">
                   Top-level title on the public page. Default: &ldquo;{sec.title}&rdquo;
                 </p>
               </div>
 
               {/* Policy Points List */}
               <div className="space-y-3 pt-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <ListOrdered className="w-4 h-4 text-blue-400" />
+                <div className="flex items-center justify-between flex-wrap gap-1">
+                  <span className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
+                    <ListOrdered className="w-4 h-4 text-[#2563EB]" />
                     Policy Points ({sec.points.length})
                   </span>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-[#64748B]">
                     Each point renders with its own heading &amp; description
                   </span>
                 </div>
@@ -319,7 +321,7 @@ export function PoliciesTab({
                     <p className="text-xs text-[#64748B]">
                       No policy points added yet.
                     </p>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-[#64748B]">
                       Click below to add your first point (e.g. coverage, eligibility, or security clauses).
                     </p>
                   </div>
@@ -328,7 +330,7 @@ export function PoliciesTab({
                     {sec.points.map((pt, idx) => (
                       <div
                         key={pt.id}
-                        className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3.5 transition-all shadow-sm"
+                        className="p-3.5 sm:p-4 rounded-xl bg-slate-50/90 border border-slate-200 space-y-3.5 transition-all shadow-xs"
                       >
                         <div className="flex items-center justify-between pb-1 border-b border-slate-200">
                           <span className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
@@ -340,7 +342,7 @@ export function PoliciesTab({
                           <button
                             type="button"
                             onClick={() => removePoint(sec.key, idx)}
-                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                             title="Delete point"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -357,8 +359,9 @@ export function PoliciesTab({
                             onChange={(e) =>
                               updatePoint(sec.key, idx, "heading", e.target.value)
                             }
-                            placeholder={sec.headingPlaceholder}
+                            placeholder="Enter heading"
                             maxLength={200}
+                            className="text-sm font-medium text-[#0F172A] placeholder:text-slate-400"
                           />
                         </div>
 
@@ -373,7 +376,7 @@ export function PoliciesTab({
                               updatePoint(sec.key, idx, "description", e.target.value)
                             }
                             placeholder={sec.descPlaceholder}
-                            className="min-h-[90px] text-xs leading-relaxed"
+                            className="min-h-[90px] text-xs leading-relaxed text-[#0F172A] placeholder:text-slate-400"
                           />
                         </div>
                       </div>
@@ -388,7 +391,7 @@ export function PoliciesTab({
                     variant="outline"
                     size="sm"
                     onClick={() => addPoint(sec.key)}
-                    className="border-slate-200 text-[#2563EB] hover:bg-blue-50 hover:text-blue-700"
+                    className="w-full sm:w-auto border-slate-200 text-[#2563EB] hover:bg-blue-50 hover:text-blue-700 font-semibold cursor-pointer"
                   >
                     <Plus className="w-4 h-4 mr-1.5" />
                     {sec.addBtnLabel}
@@ -397,7 +400,7 @@ export function PoliciesTab({
               </div>
 
               {/* Save Footer for this specific policy */}
-              <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-slate-200">
                 <span className="text-[11px] text-[#64748B]">
                   {sec.points.length > 0 ? (
                     <span className="text-emerald-700 font-medium">
@@ -414,6 +417,7 @@ export function PoliciesTab({
                   onClick={() => saveIndividualPolicy(sec.key)}
                   disabled={isSaving}
                   isLoading={isSaving}
+                  className="w-full sm:w-auto font-semibold cursor-pointer"
                 >
                   {isSaving ? (
                     <>
@@ -428,6 +432,7 @@ export function PoliciesTab({
           </Section>
         );
       })}
+      </AccordionGroup>
     </div>
   );
 }
