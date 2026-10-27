@@ -33,9 +33,9 @@ export default async function DashboardOrdersPage({ searchParams }: OrdersPagePr
   }));
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto pt-3.5 sm:pt-0">
       <div>
-        <h1 className="text-2xl font-bold text-[#0F172A]">Orders</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A]">Orders</h1>
         <p className="text-xs sm:text-sm text-[#64748B]">
           Track customer purchases, fulfill packages, and view order channels.
         </p>

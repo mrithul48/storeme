@@ -19,9 +19,11 @@ import { Input, Textarea } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Section,
+  AccordionGroup,
   Toggle,
   ShapePicker,
   RadiusPicker,
+  CustomDropdown,
   CARD_RADIUS_OPTIONS,
   ALL_RADIUS_OPTIONS,
   selectClass,
@@ -142,8 +144,9 @@ export function HomepageTab({
 }: HomepageTabProps) {
   return (
     <div className="space-y-4">
-      {/* ── Hero Section (Image Slider) ────────────────────────────── */}
-      <Section title="Hero Section (Image Slider)" icon={Sparkles}>
+      <AccordionGroup>
+        {/* ── Hero Section (Image Slider) ────────────────────────────── */}
+        <Section title="Hero Section (Image Slider)" icon={Sparkles}>
         <div className="space-y-5 pt-2">
           <Toggle
             label="Enable Hero Section"
@@ -464,32 +467,34 @@ export function HomepageTab({
                         </button>
                       </div>
                       {banner.linkType === "CATEGORY" && (
-                        <select
-                          value={banner.linkValue ?? ""}
-                          onChange={(e) => updateOfferBanner(idx, { linkValue: e.target.value })}
-                          className={selectClass}
-                        >
-                          <option value="">— Select category —</option>
-                          {categories.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.name}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="pt-1">
+                          <label className="text-[11px] font-semibold text-[#64748B] mb-1.5 block">
+                            Select Category
+                          </label>
+                          <CustomDropdown
+                            placeholder="Choose category…"
+                            options={categories}
+                            value={banner.linkValue ?? null}
+                            onChange={(val) => updateOfferBanner(idx, { linkValue: val })}
+                            icon={Grid3X3}
+                            emptyText="No categories available"
+                          />
+                        </div>
                       )}
                       {banner.linkType === "PRODUCT" && (
-                        <select
-                          value={banner.linkValue ?? ""}
-                          onChange={(e) => updateOfferBanner(idx, { linkValue: e.target.value })}
-                          className={selectClass}
-                        >
-                          <option value="">— Select product —</option>
-                          {products.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.name}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="pt-1">
+                          <label className="text-[11px] font-semibold text-[#64748B] mb-1.5 block">
+                            Select Product
+                          </label>
+                          <CustomDropdown
+                            placeholder="Choose product…"
+                            options={products}
+                            value={banner.linkValue ?? null}
+                            onChange={(val) => updateOfferBanner(idx, { linkValue: val })}
+                            icon={Tag}
+                            emptyText="No products available"
+                          />
+                        </div>
                       )}
                     </div>
                   </>
@@ -636,6 +641,7 @@ export function HomepageTab({
           )}
         </div>
       </Section>
+      </AccordionGroup>
     </div>
   );
 }
