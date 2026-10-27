@@ -4,7 +4,7 @@ import React from "react";
 import { Info, Sparkles, Star, Trash2, Plus, GripVertical } from "lucide-react";
 import { Input, Textarea } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Section, Toggle } from "../_ui/primitives";
+import { Section, AccordionGroup, Toggle } from "../_ui/primitives";
 import { ImageUploader } from "../_ui/image-uploader";
 import { Badge } from "../_ui/types";
 
@@ -50,7 +50,8 @@ export function AboutTab({
 }: AboutTabProps) {
   return (
     <div className="space-y-4">
-      <Section title="About Section" icon={Info}>
+      <AccordionGroup>
+        <Section title="About Section" icon={Info}>
         <div className="space-y-4 pt-2">
           <Toggle
             label="Enable About Section"
@@ -194,6 +195,7 @@ export function AboutTab({
           </Section>
         </>
       )}
+      </AccordionGroup>
     </div>
   );
 }
