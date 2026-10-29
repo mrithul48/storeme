@@ -879,14 +879,14 @@ export function StoreSettingsClient({ store }: StoreSettingsClientProps) {
         )}
 
         {/* Global Save Button (for General, Order Methods and Theme only) */}
-        {activeTab !== "domain" && activeTab !== "payments" && activeTab !== "customerAuth" && (
-          <div className="sticky bottom-4 sm:bottom-6 z-30 flex items-center justify-end pointer-events-none pt-4 pb-2">
+        {activeTab !== "domain" && activeTab !== "payments" && activeTab !== "customerAuth" && activeTab !== "products" && (
+          <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(15,23,42,0.06)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pb-2 sm:pt-4 sm:sticky sm:bottom-6 sm:z-30 sm:flex sm:items-center sm:justify-end sm:pointer-events-none">
             <Button
               type="submit"
               variant="primary"
               size="lg"
               isLoading={loading}
-              className="pointer-events-auto shadow-xl shadow-blue-600/30 font-semibold"
+              className="w-full sm:w-auto h-11 sm:h-12 py-2.5 sm:py-3.5 px-4 sm:px-6 text-sm sm:text-base rounded-xl sm:rounded-2xl pointer-events-auto shadow-md sm:shadow-xl shadow-blue-600/25 sm:shadow-blue-600/30 font-bold"
             >
               Save All Changes
             </Button>

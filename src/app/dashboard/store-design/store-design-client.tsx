@@ -44,7 +44,7 @@ export function StoreDesignClient({
   const hp = homePage as Record<string, unknown> | null;
 
   // ── Tab ──
-  const [activeTab, setActiveTab] = useState<"homepage" | "header" | "about" | "contact" | "policies">("header");
+  const [activeTab, setActiveTab] = useState<"homepage" | "header" | "about" | "contact" | "policies">("homepage");
 
   // ── Notifications ──
   const [saving, setSaving] = useState(false);
@@ -335,8 +335,8 @@ export function StoreDesignClient({
   // ─── Tab Buttons ──────────────────────────────────────────────────────────
 
   const tabs: { id: typeof activeTab; label: string; icon: React.ElementType }[] = [
-    { id: "header", label: "Header", icon: Tag },
     { id: "homepage", label: "Home page", icon: Layout },
+    { id: "header", label: "Header", icon: Tag },
     { id: "about", label: "About page", icon: Info },
     { id: "contact", label: "Contact Page", icon: MessageCircle },
     { id: "policies", label: "Store Policies", icon: ShieldCheck },
@@ -354,18 +354,7 @@ export function StoreDesignClient({
             Customize your storefront homepage, sections, and banners. Changes appear live immediately.
           </p>
         </div>
-        <Button
-          type="button"
-          variant="primary"
-          size="sm"
-          onClick={handleSave}
-          isLoading={saving}
-          disabled={saving}
-          className="shrink-0 font-bold text-xs sm:text-sm px-3.5 sm:px-4 py-2 sm:py-2.5 shadow-sm shadow-blue-600/20 whitespace-nowrap cursor-pointer rounded-xl"
-        >
-          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
-          <span>{saving ? "Saving…" : success ? "Saved!" : "Save Design"}</span>
-        </Button>
+
       </div>
 
       {/* Notifications */}
@@ -406,20 +395,20 @@ export function StoreDesignClient({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-1 overflow-x-auto scrollbar-none">
+      <div className="p-1 sm:p-1.5 bg-slate-100/90 rounded-2xl border border-slate-200/80 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             type="button"
             onClick={() => setActiveTab(id)}
             className={cn(
-              "flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold border-b-2 transition-all whitespace-nowrap",
+              "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm transition-all whitespace-nowrap shrink-0 cursor-pointer select-none",
               activeTab === id
-                ? "border-[#2563EB] text-[#2563EB]"
-                : "border-transparent text-[#64748B] hover:text-[#0F172A] hover:border-slate-300"
+                ? "bg-white text-[#2563EB] shadow-xs border border-slate-200/80 font-bold"
+                : "text-[#64748B] hover:text-[#0F172A] hover:bg-slate-200/60 font-semibold"
             )}
           >
-            <Icon className={`w-4 h-4 ${activeTab === id ? "text-[#2563EB]" : "text-slate-400"}`} />
+            <Icon className={`w-4 h-4 shrink-0 ${activeTab === id ? "text-[#2563EB]" : "text-slate-400"}`} />
             {label}
           </button>
         ))}
@@ -527,7 +516,7 @@ export function StoreDesignClient({
       )}
 
       {/* ── Global Save Button ─────────────────────────────────────────────── */}
-      <div className="pt-6 pb-12 sm:pb-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 border-t border-slate-100 sm:border-0">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(15,23,42,0.06)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pt-6 sm:pb-4 sm:flex sm:flex-row sm:items-center sm:justify-end">
         <Button
           type="button"
           variant="primary"
@@ -535,7 +524,7 @@ export function StoreDesignClient({
           onClick={handleSave}
           isLoading={saving}
           disabled={saving}
-          className="w-full sm:w-auto font-bold shadow-md shadow-blue-600/20 cursor-pointer rounded-xl text-xs sm:text-sm"
+          className="w-full sm:w-auto h-11 sm:h-12 py-2.5 sm:py-3.5 px-4 sm:px-6 text-sm sm:text-base rounded-xl sm:rounded-2xl font-bold shadow-md sm:shadow-xl shadow-blue-600/25 sm:shadow-blue-600/30 cursor-pointer"
         >
           <Check className="w-4 h-4 mr-1.5" />
           {saving ? "Saving…" : success ? "Saved!" : "Save Live Store Design"}

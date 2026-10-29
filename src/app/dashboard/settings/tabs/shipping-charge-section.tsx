@@ -72,7 +72,7 @@ export function ShippingChargeSection({
   };
 
   return (
-    <Card className="space-y-6 bg-white border border-slate-200/90 shadow-sm">
+    <Card className="space-y-6 bg-transparent sm:bg-white border-0 sm:border sm:border-slate-200/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
       {/* Header */}
       <div className="border-b border-slate-200/90 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>

@@ -64,7 +64,7 @@ export function ThemeTab({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Controls Column */}
         <div className="lg:col-span-7 space-y-6">
-          <Card className="space-y-6 bg-white border border-slate-200/90 shadow-sm">
+          <Card className="space-y-6 bg-transparent sm:bg-white border-0 sm:border sm:border-slate-200/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
             <div className="border-b border-slate-200/90 pb-3">
               <h2 className="text-base font-bold text-[#0F172A]">Color Presets</h2>
               <p className="text-xs text-[#64748B]">
@@ -136,7 +136,7 @@ export function ThemeTab({
           </Card>
 
           {/* Detailed Color Pickers */}
-          <Card className="space-y-4 bg-white border border-slate-200/90 shadow-sm">
+          <Card className="space-y-4 bg-transparent sm:bg-white border-0 sm:border sm:border-slate-200/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
             <div className="border-b border-slate-200/90 pb-3">
               <h2 className="text-base font-bold text-[#0F172A]">Element Colors</h2>
               <p className="text-xs text-[#64748B]">

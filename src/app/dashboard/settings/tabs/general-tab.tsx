@@ -44,7 +44,7 @@ export function GeneralTab({
 }: GeneralTabProps) {
   return (
     <div className="space-y-6">
-      <Card className="space-y-6 bg-white border border-slate-200/90 shadow-sm">
+      <Card className="space-y-6 bg-transparent sm:bg-white border-0 sm:border sm:border-slate-200/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
         <div className="border-b border-slate-200/90 pb-3">
           <h2 className="text-base font-bold text-[#0F172A]">Business Details</h2>
           <p className="text-xs text-[#64748B]">
@@ -110,7 +110,7 @@ export function GeneralTab({
         </div>
       </Card>
 
-      <Card className="space-y-4 bg-white border border-slate-200/90 shadow-sm">
+      <Card className="space-y-4 bg-transparent sm:bg-white border-0 sm:border sm:border-slate-200/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
         <div className="border-b border-slate-200/90 pb-3">
           <h2 className="text-base font-bold text-[#0F172A]">Contact & Support Details</h2>
           <p className="text-xs text-[#64748B]">

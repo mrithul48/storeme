@@ -40,7 +40,7 @@ export function ProductsTab({
 }: ProductsTabProps) {
   return (
     <div className="space-y-6">
-      <Card className="space-y-6 bg-white border border-slate-200/90 shadow-sm">
+      <Card className="space-y-6 bg-transparent sm:bg-white border-0 sm:border sm:border-slate-200/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
         <div className="border-b border-slate-200/90 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -293,8 +293,8 @@ export function ProductsTab({
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-200/90">
-          <p className="text-[11px] text-[#64748B]">
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(15,23,42,0.06)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pt-3 sm:border-t sm:border-slate-200/90 sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+          <p className="hidden sm:block text-[11px] text-[#64748B]">
             Saving applies this inventory configuration globally across all products in your store.
           </p>
           <Button
@@ -303,6 +303,7 @@ export function ProductsTab({
             size="md"
             isLoading={savingStockSettings}
             onClick={onSaveStockSettings}
+            className="w-full sm:w-auto h-11 sm:h-auto py-2.5 sm:py-2.5 text-sm font-bold"
           >
             Save Stock Settings
           </Button>

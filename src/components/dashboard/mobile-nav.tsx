@@ -53,6 +53,10 @@ export function MobileNav({
     { label: "Analytics", href: "/dashboard/analytics", icon: TrendingUp },
   ];
 
+  if (pathname?.startsWith("/dashboard/settings") || pathname?.startsWith("/dashboard/store-design")) {
+    return null;
+  }
+
   return (
     <>
       {/* Mobile Fixed Bottom Navigation Bar */}

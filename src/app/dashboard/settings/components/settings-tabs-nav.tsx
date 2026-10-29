@@ -38,7 +38,7 @@ export function SettingsTabsNav({
   ];
 
   return (
-    <div className="flex border-b border-slate-200 space-x-2 overflow-x-auto scrollbar-none">
+    <div className="p-1 sm:p-1.5 bg-slate-100/90 rounded-2xl border border-slate-200/80 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
@@ -47,14 +47,14 @@ export function SettingsTabsNav({
             key={tab.id}
             type="button"
             onClick={tab.onClick}
-            className={`flex items-center gap-2 px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all shrink-0 ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm transition-all shrink-0 select-none whitespace-nowrap cursor-pointer ${
               isActive
-                ? "border-[#2563EB] text-[#2563EB]"
-                : "border-transparent text-[#64748B] hover:text-[#0F172A] hover:border-slate-300"
+                ? "bg-white text-[#2563EB] shadow-xs border border-slate-200/80 font-bold"
+                : "text-[#64748B] hover:text-[#0F172A] hover:bg-slate-200/60 font-semibold"
             }`}
           >
-            <Icon className={`w-4 h-4 ${isActive ? "text-[#2563EB]" : "text-slate-400"}`} />
-            {tab.label}
+            <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-[#2563EB]" : "text-slate-400"}`} />
+            <span>{tab.label}</span>
           </button>
         );
       })}
