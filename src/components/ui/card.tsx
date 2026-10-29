@@ -5,17 +5,26 @@ export const Card = ({
   className,
   children,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm shadow-slate-200/40 text-slate-900 transition-all",
-      className
-    )}
-    {...props}
-  >
-    {children}
-  </div>
-);
+}: React.HTMLAttributes<HTMLDivElement>) => {
+  const isCustomOrTransparent =
+    className?.includes("bg-transparent") ||
+    className?.includes("border-0 sm:border") ||
+    className?.includes("p-0 sm:p-6");
+
+  return (
+    <div
+      className={cn(
+        "text-slate-900 transition-all",
+        !isCustomOrTransparent &&
+          "rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm shadow-slate-200/40",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
 
 export const Input = React.forwardRef<
   HTMLInputElement,
