@@ -97,7 +97,7 @@ export function DomainTab({
       )}
 
       {/* Domain Configuration Form Card */}
-      <Card className="space-y-6 bg-white border border-slate-200/90 shadow-sm">
+      <Card className="space-y-6 bg-transparent sm:bg-white border-0 sm:border sm:border-slate-200/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
         <div className="border-b border-slate-200/90 pb-3 flex items-center justify-between flex-wrap gap-2">
           <div>
             <h2 className="text-base font-bold text-[#0F172A]">Custom Domain Mapping</h2>
@@ -129,7 +129,7 @@ export function DomainTab({
               placeholder="Enter custom domain (e.g. store.yourbrand.com)"
               className="flex-1"
             />
-            <Button type="button" variant="primary" onClick={onSaveDomain} isLoading={loading}>
+            <Button type="button" variant="primary" onClick={onSaveDomain} isLoading={loading} className="w-full sm:w-auto h-11 sm:h-auto py-2.5 sm:py-2 text-sm font-bold">
               <Globe className="w-4 h-4 mr-1.5" />
               {domainStatus === "CONNECTED" || domainStatus === "VERIFIED" ? "Update Domain" : "Register Domain"}
             </Button>

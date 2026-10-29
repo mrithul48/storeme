@@ -74,7 +74,7 @@ export function CustomerAuthTab({
         </div>
       )}
 
-      <Card className="space-y-6 bg-white border border-slate-200/90 shadow-sm">
+      <Card className="space-y-6 bg-transparent sm:bg-white border-0 sm:border sm:border-slate-200/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
         <div className="border-b border-slate-200/90 pb-4">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#2563EB]">
@@ -210,13 +210,14 @@ export function CustomerAuthTab({
             </div>
 
             {/* Save Button for Customer Auth */}
-            <div className="flex items-center justify-end pt-4 border-t border-slate-200/90">
+            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(15,23,42,0.06)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pt-4 sm:border-t sm:border-slate-200/90 sm:flex sm:items-center sm:justify-end">
               <Button
                 type="button"
                 variant="primary"
                 size="md"
                 isLoading={googleAuthSaving}
                 onClick={onSave}
+                className="w-full sm:w-auto h-11 sm:h-auto py-2.5 sm:py-2 text-sm font-bold shadow-sm shadow-blue-500/20"
               >
                 Save Authentication Settings
               </Button>
