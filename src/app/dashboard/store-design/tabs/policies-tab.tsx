@@ -233,8 +233,8 @@ export function PoliciesTab({
             <FileText className="w-5 h-5" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-sm font-semibold text-[#0F172A]">Store Policies Management</h3>
-            <p className="text-xs text-[#64748B] leading-relaxed">
+            <h3 className="text-sm font-semibold text-[#F5F7FF]">Store Policies Management</h3>
+            <p className="text-xs text-[#A5B2D1] leading-relaxed">
               Add multiple policy points (heading and description) for each policy page. Each point will be displayed
               as a structured section on your live store&apos;s public policy pages.
             </p>
@@ -279,7 +279,7 @@ export function PoliciesTab({
               {/* Main Page Title */}
               <div className="space-y-1.5 pb-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-[#0F172A]">
+                  <label className="text-xs font-semibold text-[#F5F7FF]">
                     Main Page Heading
                   </label>
                   <a
@@ -297,9 +297,9 @@ export function PoliciesTab({
                   onChange={(e) => sec.setPageHeading(e.target.value)}
                   placeholder="Enter heading"
                   maxLength={200}
-                  className="text-sm font-medium text-[#0F172A] placeholder:text-slate-400"
+                  className="text-sm font-medium text-[#F5F7FF] placeholder:text-[#7181A8]"
                 />
-                <p className="text-[11px] text-[#64748B]">
+                <p className="text-[11px] text-[#A5B2D1]">
                   Top-level title on the public page. Default: &ldquo;{sec.title}&rdquo;
                 </p>
               </div>
@@ -307,21 +307,21 @@ export function PoliciesTab({
               {/* Policy Points List */}
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between flex-wrap gap-1">
-                  <span className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-[#F5F7FF] flex items-center gap-1.5">
                     <ListOrdered className="w-4 h-4 text-[#2563EB]" />
                     Policy Points ({sec.points.length})
                   </span>
-                  <span className="text-[11px] text-[#64748B]">
+                  <span className="text-[11px] text-[#A5B2D1]">
                     Each point renders with its own heading &amp; description
                   </span>
                 </div>
 
                 {sec.points.length === 0 ? (
-                  <div className="p-6 rounded-xl border border-dashed border-slate-200 text-center space-y-2 bg-slate-50">
-                    <p className="text-xs text-[#64748B]">
+                  <div className="p-6 rounded-xl border border-dashed border-[#202D55] text-center space-y-2 bg-[#080D28]">
+                    <p className="text-xs text-[#A5B2D1]">
                       No policy points added yet.
                     </p>
-                    <p className="text-[11px] text-[#64748B]">
+                    <p className="text-[11px] text-[#A5B2D1]">
                       Click below to add your first point (e.g. coverage, eligibility, or security clauses).
                     </p>
                   </div>
@@ -330,10 +330,10 @@ export function PoliciesTab({
                     {sec.points.map((pt, idx) => (
                       <div
                         key={pt.id}
-                        className="p-3.5 sm:p-4 rounded-xl bg-slate-50/90 border border-slate-200 space-y-3.5 transition-all shadow-xs"
+                        className="p-3.5 sm:p-4 rounded-xl bg-[#080D28]/90 border border-[#202D55] space-y-3.5 transition-all shadow-xs"
                       >
-                        <div className="flex items-center justify-between pb-1 border-b border-slate-200">
-                          <span className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
+                        <div className="flex items-center justify-between pb-1 border-b border-[#202D55]">
+                          <span className="text-xs font-bold text-[#F5F7FF] flex items-center gap-1.5">
                             <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-[#2563EB] text-[10px] font-extrabold">
                               {idx + 1}
                             </span>
@@ -342,7 +342,7 @@ export function PoliciesTab({
                           <button
                             type="button"
                             onClick={() => removePoint(sec.key, idx)}
-                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            className="p-1 rounded text-[#7181A8] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                             title="Delete point"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -351,7 +351,7 @@ export function PoliciesTab({
 
                         {/* Point Heading */}
                         <div className="space-y-1">
-                          <label className="text-[11px] font-semibold text-[#0F172A]">
+                          <label className="text-[11px] font-semibold text-[#F5F7FF]">
                             Point Heading
                           </label>
                           <Input
@@ -361,13 +361,13 @@ export function PoliciesTab({
                             }
                             placeholder="Enter heading"
                             maxLength={200}
-                            className="text-sm font-medium text-[#0F172A] placeholder:text-slate-400"
+                            className="text-sm font-medium text-[#F5F7FF] placeholder:text-[#7181A8]"
                           />
                         </div>
 
                         {/* Point Description */}
                         <div className="space-y-1">
-                          <label className="text-[11px] font-semibold text-[#0F172A]">
+                          <label className="text-[11px] font-semibold text-[#F5F7FF]">
                             Point Description
                           </label>
                           <Textarea
@@ -376,7 +376,7 @@ export function PoliciesTab({
                               updatePoint(sec.key, idx, "description", e.target.value)
                             }
                             placeholder={sec.descPlaceholder}
-                            className="min-h-[90px] text-xs leading-relaxed text-[#0F172A] placeholder:text-slate-400"
+                            className="min-h-[90px] text-xs leading-relaxed text-[#F5F7FF] placeholder:text-[#7181A8]"
                           />
                         </div>
                       </div>
@@ -391,7 +391,7 @@ export function PoliciesTab({
                     variant="outline"
                     size="sm"
                     onClick={() => addPoint(sec.key)}
-                    className="w-full sm:w-auto border-slate-200 text-[#2563EB] hover:bg-blue-50 hover:text-blue-700 font-semibold cursor-pointer"
+                    className="w-full sm:w-auto border-[#202D55] text-[#2563EB] hover:bg-blue-50 hover:text-blue-700 font-semibold cursor-pointer"
                   >
                     <Plus className="w-4 h-4 mr-1.5" />
                     {sec.addBtnLabel}
@@ -400,8 +400,8 @@ export function PoliciesTab({
               </div>
 
               {/* Save Footer for this specific policy */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-slate-200">
-                <span className="text-[11px] text-[#64748B]">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-[#202D55]">
+                <span className="text-[11px] text-[#A5B2D1]">
                   {sec.points.length > 0 ? (
                     <span className="text-emerald-700 font-medium">
                       ● {sec.points.length} point{sec.points.length > 1 ? "s" : ""} configured

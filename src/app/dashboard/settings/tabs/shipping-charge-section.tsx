@@ -72,20 +72,20 @@ export function ShippingChargeSection({
   };
 
   return (
-    <Card className="space-y-6 bg-transparent sm:bg-white border-0 sm:border sm:border-slate-200/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
+    <Card className="space-y-6 bg-[#101A3D] border border-[#202D55] shadow-sm p-4 sm:p-6 rounded-2xl">
       {/* Header */}
-      <div className="border-b border-slate-200/90 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="border-b border-[#172347] pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <Truck className="w-5 h-5 text-[#2563EB]" />
-            <h2 className="text-base font-bold text-[#0F172A]">Shipping Charge Configuration</h2>
+            <Truck className="w-5 h-5 text-[#638BFF]" />
+            <h2 className="text-base font-bold text-[#F5F7FF]">Shipping Charge Configuration</h2>
           </div>
-          <p className="text-xs text-[#64748B] mt-1">
+          <p className="text-xs text-[#A5B2D1] mt-1">
             Choose how shipping fees are calculated for your store orders. Only one shipping charge method can be active at a time.
           </p>
         </div>
         {shippingType && shippingType !== "NONE" && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-[#2563EB] border border-blue-200 self-start sm:self-auto shrink-0">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#172653] text-[#638BFF] border border-[#4169E1]/30 self-start sm:self-auto shrink-0">
             <CheckCircle2 className="w-3.5 h-3.5" />
             {shippingType === "FIXED"
               ? "Fixed Rate Active"
@@ -104,7 +104,7 @@ export function ShippingChargeSection({
           className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
             shippingType === "FIXED"
               ? "border-[#2563EB] bg-blue-50/40 shadow-sm ring-1 ring-[#2563EB]"
-              : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"
+              : "border-[#202D55] bg-[#080D28] hover:border-[#4169E1]/50 hover:bg-[#172653]/30"
           }`}
         >
           <div className="space-y-2">
@@ -112,7 +112,7 @@ export function ShippingChargeSection({
               <div
                 className={`p-2 rounded-lg border ${
                   shippingType === "FIXED"
-                    ? "bg-blue-100 text-[#2563EB] border-blue-200"
+                    ? "bg-[#1C3066] text-[#638BFF] border-blue-200"
                     : "bg-slate-100 text-slate-600 border-slate-200"
                 }`}
               >
@@ -127,8 +127,8 @@ export function ShippingChargeSection({
               />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-[#0F172A]">Fixed Shipping Charge</h4>
-              <p className="text-xs text-[#64748B] mt-0.5 leading-relaxed">
+              <h4 className="text-sm font-bold text-[#F5F7FF]">Fixed Shipping Charge</h4>
+              <p className="text-xs text-[#A5B2D1] mt-0.5 leading-relaxed">
                 Charge a standard flat shipping fee on every order regardless of order value or weight.
               </p>
             </div>
@@ -141,7 +141,7 @@ export function ShippingChargeSection({
           className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
             shippingType === "FREE_ABOVE_MIN"
               ? "border-[#2563EB] bg-blue-50/40 shadow-sm ring-1 ring-[#2563EB]"
-              : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"
+              : "border-[#202D55] bg-[#080D28] hover:border-[#4169E1]/50 hover:bg-[#172653]/30"
           }`}
         >
           <div className="space-y-2">
@@ -149,7 +149,7 @@ export function ShippingChargeSection({
               <div
                 className={`p-2 rounded-lg border ${
                   shippingType === "FREE_ABOVE_MIN"
-                    ? "bg-blue-100 text-[#2563EB] border-blue-200"
+                    ? "bg-[#1C3066] text-[#638BFF] border-blue-200"
                     : "bg-slate-100 text-slate-600 border-slate-200"
                 }`}
               >
@@ -164,8 +164,8 @@ export function ShippingChargeSection({
               />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-[#0F172A]">Free Shipping Over Min Amount</h4>
-              <p className="text-xs text-[#64748B] mt-0.5 leading-relaxed">
+              <h4 className="text-sm font-bold text-[#F5F7FF]">Free Shipping Over Min Amount</h4>
+              <p className="text-xs text-[#A5B2D1] mt-0.5 leading-relaxed">
                 Free shipping when order subtotal meets minimum amount; otherwise applies standard fee.
               </p>
             </div>
@@ -178,7 +178,7 @@ export function ShippingChargeSection({
           className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
             shippingType === "WEIGHT_BASED"
               ? "border-[#2563EB] bg-blue-50/40 shadow-sm ring-1 ring-[#2563EB]"
-              : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"
+              : "border-[#202D55] bg-[#080D28] hover:border-[#4169E1]/50 hover:bg-[#172653]/30"
           }`}
         >
           <div className="space-y-2">
@@ -186,7 +186,7 @@ export function ShippingChargeSection({
               <div
                 className={`p-2 rounded-lg border ${
                   shippingType === "WEIGHT_BASED"
-                    ? "bg-blue-100 text-[#2563EB] border-blue-200"
+                    ? "bg-[#1C3066] text-[#638BFF] border-blue-200"
                     : "bg-slate-100 text-slate-600 border-slate-200"
                 }`}
               >
@@ -201,8 +201,8 @@ export function ShippingChargeSection({
               />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-[#0F172A]">Weight-Based Shipping</h4>
-              <p className="text-xs text-[#64748B] mt-0.5 leading-relaxed">
+              <h4 className="text-sm font-bold text-[#F5F7FF]">Weight-Based Shipping</h4>
+              <p className="text-xs text-[#A5B2D1] mt-0.5 leading-relaxed">
                 Calculate shipping dynamically based on total order weight and configured weight tiers.
               </p>
             </div>
@@ -211,7 +211,7 @@ export function ShippingChargeSection({
       </div>
 
       {/* Free for all / Disabled option toggle */}
-      <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50/50">
+      <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-[#080D28]/50">
         <div className="flex items-center gap-2.5">
           <Ban className="w-4 h-4 text-[#64748B]" />
           <div>
@@ -235,17 +235,17 @@ export function ShippingChargeSection({
       {shippingType === "FIXED" && (
         <div className="p-4 sm:p-5 rounded-2xl border border-blue-200 bg-blue-50/20 space-y-4">
           <div className="border-b border-blue-100 pb-2">
-            <h3 className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
+            <h3 className="text-sm font-bold text-[#F5F7FF] flex items-center gap-2">
               <Truck className="w-4 h-4 text-[#2563EB]" />
               Fixed Shipping Charge Settings
             </h3>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#A5B2D1] mt-0.5">
               Specify the flat fee added to every checkout order.
             </p>
           </div>
 
           <div className="max-w-sm space-y-1.5">
-            <label className="text-xs font-semibold text-[#0F172A] flex items-center justify-between">
+            <label className="text-xs font-semibold text-[#F5F7FF] flex items-center justify-between">
               <span>Fixed Shipping Fee (₹)</span>
               <span className="text-[10px] text-[#64748B]">Required</span>
             </label>
@@ -269,18 +269,18 @@ export function ShippingChargeSection({
       {shippingType === "FREE_ABOVE_MIN" && (
         <div className="p-4 sm:p-5 rounded-2xl border border-blue-200 bg-blue-50/20 space-y-4">
           <div className="border-b border-blue-100 pb-2">
-            <h3 className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
+            <h3 className="text-sm font-bold text-[#F5F7FF] flex items-center gap-2">
               <Gift className="w-4 h-4 text-[#2563EB]" />
               Free Shipping Above Minimum Amount Settings
             </h3>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#A5B2D1] mt-0.5">
               Encourage larger orders by offering free shipping once customers reach your target order subtotal.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#0F172A] flex items-center justify-between">
+              <label className="text-xs font-semibold text-[#F5F7FF] flex items-center justify-between">
                 <span>Minimum Order Amount for Free Shipping (₹)</span>
                 <span className="text-[10px] text-[#64748B]">Required</span>
               </label>
@@ -299,7 +299,7 @@ export function ShippingChargeSection({
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#0F172A] flex items-center justify-between">
+              <label className="text-xs font-semibold text-[#F5F7FF] flex items-center justify-between">
                 <span>Standard Shipping Charge (₹)</span>
                 <span className="text-[10px] text-[#64748B]">If below minimum</span>
               </label>
@@ -324,18 +324,18 @@ export function ShippingChargeSection({
       {shippingType === "WEIGHT_BASED" && (
         <div className="p-4 sm:p-5 rounded-2xl border border-blue-200 bg-blue-50/20 space-y-5">
           <div className="border-b border-blue-100 pb-2">
-            <h3 className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
+            <h3 className="text-sm font-bold text-[#F5F7FF] flex items-center gap-2">
               <Scale className="w-4 h-4 text-[#2563EB]" />
               Weight-Based Shipping Charge Settings
             </h3>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#A5B2D1] mt-0.5">
               Configure shipping charges based on total parcel weight. Products without individual weight will use the fallback weight.
             </p>
           </div>
 
           {/* Fallback default weight */}
           <div className="max-w-md space-y-1.5 bg-white p-3.5 rounded-xl border border-slate-200">
-            <label className="text-xs font-semibold text-[#0F172A] flex items-center justify-between">
+            <label className="text-xs font-semibold text-[#F5F7FF] flex items-center justify-between">
               <span>Default Weight per Item (kg)</span>
               <span className="text-[10px] text-emerald-600 font-semibold">Recommended</span>
             </label>
@@ -346,7 +346,7 @@ export function ShippingChargeSection({
               value={shippingDefaultWeight}
               onChange={(e) => setShippingDefaultWeight(e.target.value)}
               placeholder="e.g. 0.50 (in kg)"
-              className="bg-slate-50"
+              className="bg-[#080D28]"
             />
             <p className="text-[11px] text-[#64748B] flex items-center gap-1">
               <Info className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />
@@ -374,8 +374,8 @@ export function ShippingChargeSection({
 
             {shippingWeightRates.length === 0 ? (
               <div className="p-6 text-center border-2 border-dashed border-slate-200 rounded-xl bg-white space-y-2">
-                <Scale className="w-8 h-8 text-slate-400 mx-auto" />
-                <p className="text-xs font-semibold text-[#0F172A]">No weight tiers configured yet</p>
+                <Scale className="w-8 h-8 text-[#7181A8] mx-auto" />
+                <p className="text-xs font-semibold text-[#F5F7FF]">No weight tiers configured yet</p>
                 <p className="text-[11px] text-[#64748B] max-w-sm mx-auto">
                   Click &ldquo;Add Weight Tier&rdquo; to define price ranges for different parcel weights.
                 </p>
@@ -394,7 +394,7 @@ export function ShippingChargeSection({
               <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-[#64748B] font-semibold">
+                    <thead className="bg-[#080D28] border-b border-slate-200 text-[#64748B] font-semibold">
                       <tr>
                         <th className="py-2.5 px-3">From Weight (kg)</th>
                         <th className="py-2.5 px-3">To Weight (kg)</th>
@@ -404,7 +404,7 @@ export function ShippingChargeSection({
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {shippingWeightRates.map((tier, idx) => (
-                        <tr key={tier.id || idx} className="hover:bg-slate-50/60">
+                        <tr key={tier.id || idx} className="hover:bg-[#080D28]">
                           <td className="py-2.5 px-3">
                             <Input
                               type="number"

@@ -62,7 +62,7 @@ export function AboutTab({
           {aboutEnabled && (
             <>
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#0F172A]">Section Heading</label>
+                <label className="text-xs font-semibold text-[#F5F7FF]">Section Heading</label>
                 <Input
                   value={aboutHeading}
                   onChange={(e) => setAboutHeading(e.target.value)}
@@ -72,7 +72,7 @@ export function AboutTab({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#0F172A]">About Content</label>
+                <label className="text-xs font-semibold text-[#F5F7FF]">About Content</label>
                 <Textarea
                   value={aboutContent}
                   onChange={(e) => setAboutContent(e.target.value)}
@@ -105,7 +105,7 @@ export function AboutTab({
           <Section title="Vision & Mission" icon={Sparkles} defaultOpen={false}>
             <div className="space-y-4 pt-2">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#0F172A]">Our Vision</label>
+                <label className="text-xs font-semibold text-[#F5F7FF]">Our Vision</label>
                 <Textarea
                   value={vision}
                   onChange={(e) => setVision(e.target.value)}
@@ -114,7 +114,7 @@ export function AboutTab({
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#0F172A]">Our Mission</label>
+                <label className="text-xs font-semibold text-[#F5F7FF]">Our Mission</label>
                 <Textarea
                   value={mission}
                   onChange={(e) => setMission(e.target.value)}
@@ -128,19 +128,19 @@ export function AboutTab({
           <Section title="Achievement Badges" icon={Star} defaultOpen={false}>
             <div className="space-y-4 pt-2">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-[#64748B]">
+                <p className="text-xs text-[#A5B2D1]">
                   Highlight key stats or achievements (e.g. &quot;500+&quot;, &quot;Happy Customers&quot;)
                 </p>
-                <span className="text-xs text-[#64748B] font-medium">
+                <span className="text-xs text-[#A5B2D1] font-medium">
                   {badges.length}/4
                 </span>
               </div>
               <div className="space-y-3">
                 {badges.map((badge, idx) => (
-                  <div key={badge.id} className="p-3.5 rounded-xl bg-white border border-slate-200/90 shadow-xs space-y-3">
+                  <div key={badge.id} className="p-3.5 rounded-xl bg-white border border-[#202D55]/90 shadow-xs space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#0F172A] flex items-center gap-2">
-                        <GripVertical className="w-3.5 h-3.5 text-slate-400" />
+                      <span className="text-xs font-bold text-[#F5F7FF] flex items-center gap-2">
+                        <GripVertical className="w-3.5 h-3.5 text-[#7181A8]" />
                         Badge {idx + 1}
                       </span>
                       <button
@@ -154,7 +154,7 @@ export function AboutTab({
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                       <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-[#0F172A]">Count / Value</label>
+                        <label className="text-[11px] font-semibold text-[#F5F7FF]">Count / Value</label>
                         <Input
                           value={badge.count ?? badge.text ?? ""}
                           onChange={(e) => updateBadge(idx, "count", e.target.value)}
@@ -163,7 +163,7 @@ export function AboutTab({
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-[#0F172A]">Heading</label>
+                        <label className="text-[11px] font-semibold text-[#F5F7FF]">Heading</label>
                         <Input
                           value={badge.heading ?? ""}
                           onChange={(e) => updateBadge(idx, "heading", e.target.value)}
@@ -172,7 +172,7 @@ export function AboutTab({
                         />
                       </div>
                       <div className="space-y-1 sm:col-span-2 md:col-span-1">
-                        <label className="text-[11px] font-semibold text-slate-400">Description</label>
+                        <label className="text-[11px] font-semibold text-[#7181A8]">Description</label>
                         <Input
                           value={badge.description ?? ""}
                           onChange={(e) => updateBadge(idx, "description", e.target.value)}

@@ -21,7 +21,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer";
+      "inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#070B24] disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer";
 
     const sizeStyles = {
       sm: "text-xs px-3 py-1.5 rounded-lg gap-1.5",
@@ -32,17 +32,17 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary:
-        "bg-[#2563EB] hover:bg-blue-700 text-white shadow-sm shadow-blue-500/25 hover:shadow-md hover:shadow-blue-500/35 focus:ring-blue-500 border border-blue-600 font-semibold pointer",
+        "bg-[#4169E1] hover:bg-[#3458C7] text-[#F5F7FF] shadow-sm shadow-[#4169E1]/20 hover:shadow-md hover:shadow-[#4169E1]/30 focus:ring-[#638BFF] border border-[#638BFF]/30 font-semibold",
       secondary:
-        "bg-slate-100 hover:bg-slate-200/90 text-[#0F172A] border border-slate-200 focus:ring-slate-400 font-medium",
+        "bg-[#172653] hover:bg-[#1C3066] text-[#F5F7FF] border border-[#202D55] focus:ring-[#638BFF]/40 font-medium",
       outline:
-        "border border-slate-200 bg-white hover:bg-slate-50 text-[#0F172A] hover:border-slate-300 shadow-sm focus:ring-blue-500 font-medium",
+        "border border-[#202D55] bg-[#101A3D] hover:bg-[#172653] text-[#F5F7FF] hover:border-[#638BFF]/40 shadow-sm focus:ring-[#638BFF]/40 font-medium",
       ghost:
-        "text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100 focus:ring-slate-300 font-medium",
+        "text-[#A5B2D1] hover:text-[#F5F7FF] hover:bg-[#172653] focus:ring-[#202D55] font-medium",
       danger:
-        "bg-rose-600 hover:bg-rose-700 text-white shadow-sm shadow-rose-500/20 focus:ring-rose-500 font-semibold",
+        "bg-[#EF4444] hover:bg-red-700 text-white shadow-sm shadow-red-500/20 focus:ring-red-500 font-semibold",
       emerald:
-        "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-500/25 focus:ring-emerald-500 font-semibold",
+        "bg-[#22C55E] hover:bg-emerald-700 text-white shadow-sm shadow-emerald-500/25 focus:ring-emerald-500 font-semibold",
     };
 
     return (

@@ -74,15 +74,15 @@ export function CustomerAuthTab({
         </div>
       )}
 
-      <Card className="space-y-6 bg-transparent sm:bg-white border-0 sm:border sm:border-slate-200/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
-        <div className="border-b border-slate-200/90 pb-4">
+      <Card className="space-y-6 bg-[#101A3D] border border-[#202D55] shadow-sm p-4 sm:p-6 rounded-2xl">
+        <div className="border-b border-[#202D55]/90 pb-4">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#2563EB]">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-[#0F172A]">Google Customer Authentication</h2>
-              <p className="text-xs text-[#64748B]">
+              <h2 className="text-base font-bold text-[#F5F7FF]">Google Customer Authentication</h2>
+              <p className="text-xs text-[#A5B2D1]">
                 Allow your store customers to sign in with their Google accounts using your store credentials.
               </p>
             </div>
@@ -97,10 +97,10 @@ export function CustomerAuthTab({
         ) : (
           <div className="space-y-6">
             {/* Enable Toggle */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-[#080D28] border border-[#202D55]">
               <div>
                 <p className="text-sm font-semibold text-[#0F172A]">Enable Google Login</p>
-                <p className="text-xs text-[#64748B] mt-0.5">
+                <p className="text-xs text-[#A5B2D1] mt-0.5">
                   Displays &ldquo;Continue with Google&rdquo; on your storefront customer login page.
                 </p>
               </div>
@@ -117,7 +117,7 @@ export function CustomerAuthTab({
 
             {/* Client ID */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#0F172A] flex items-center gap-1.5">
+              <label className="text-xs font-semibold text-[#F5F7FF] flex items-center gap-1.5">
                 <Key className="w-4 h-4 text-slate-400" />
                 Google Client ID
               </label>
@@ -133,13 +133,13 @@ export function CustomerAuthTab({
 
             {/* Client Secret */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#0F172A] flex items-center gap-1.5">
+              <label className="text-xs font-semibold text-[#F5F7FF] flex items-center gap-1.5">
                 <Lock className="w-4 h-4 text-slate-400" />
                 Google Client Secret
               </label>
               {hasGoogleClientSecret && !isEditingSecret ? (
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 font-mono text-sm text-[#0F172A] tracking-wider">
+                  <div className="flex-1 px-4 py-2.5 rounded-xl border border-[#202D55] bg-[#080D28] font-mono text-sm text-[#0F172A] tracking-wider">
                     ••••••••••••••••••••••••••••••••
                   </div>
                   <Button
@@ -166,7 +166,7 @@ export function CustomerAuthTab({
                     <button
                       type="button"
                       onClick={() => setIsEditingSecret(false)}
-                      className="text-xs text-[#64748B] hover:text-[#0F172A] underline"
+                      className="text-xs text-[#A5B2D1] hover:text-[#0F172A] underline"
                     >
                       Cancel and keep existing secret
                     </button>
@@ -180,7 +180,7 @@ export function CustomerAuthTab({
 
             {/* Authorized Redirect URI */}
             <div className="space-y-2 pt-2">
-              <label className="text-xs font-semibold text-[#0F172A]">
+              <label className="text-xs font-semibold text-[#F5F7FF]">
                 Authorized Redirect URI (Copy to Google Cloud Console)
               </label>
               <div className="flex items-center gap-2">
@@ -188,7 +188,7 @@ export function CustomerAuthTab({
                   type="text"
                   readOnly
                   value={defaultCallback}
-                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-[#0F172A] select-all"
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#080D28] border border-[#202D55] text-xs font-mono text-[#0F172A] select-all"
                 />
                 <Button
                   type="button"
@@ -210,7 +210,7 @@ export function CustomerAuthTab({
             </div>
 
             {/* Save Button for Customer Auth */}
-            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(15,23,42,0.06)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pt-4 sm:border-t sm:border-slate-200/90 sm:flex sm:items-center sm:justify-end">
+            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-[#202D55]/90 p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(15,23,42,0.06)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pt-4 sm:border-t sm:border-[#202D55]/90 sm:flex sm:items-center sm:justify-end">
               <Button
                 type="button"
                 variant="primary"
@@ -227,9 +227,9 @@ export function CustomerAuthTab({
       </Card>
 
       {/* Email/Password Info Card */}
-      <Card className="bg-slate-50 border border-slate-200/90 shadow-sm space-y-2">
+      <Card className="bg-[#080D28] border border-[#202D55]/90 shadow-sm space-y-2">
         <h3 className="text-sm font-semibold text-[#0F172A]">Email &amp; Username Authentication</h3>
-        <p className="text-xs text-[#64748B] leading-relaxed">
+        <p className="text-xs text-[#A5B2D1] leading-relaxed">
           Email and Username + Password login is always active for your storefront customers with built-in secure scrypt hashing, account registration, and password recovery.
         </p>
       </Card>

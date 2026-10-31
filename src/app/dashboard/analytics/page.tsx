@@ -22,8 +22,8 @@ export default async function DashboardAnalyticsPage({ searchParams }: Analytics
   return (
     <div className="space-y-8 max-w-7xl mx-auto pt-3.5 sm:pt-0">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A] tracking-tight">Merchant Analytics</h1>
-        <p className="text-xs sm:text-sm text-[#64748B]">
+        <h1 className="text-xl sm:text-2xl font-bold text-[#F5F7FF] tracking-tight">Merchant Analytics</h1>
+        <p className="text-xs sm:text-sm text-[#A5B2D1]">
           Real database revenue metrics, order channel distribution, and top product insights.
         </p>
       </div>

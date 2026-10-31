@@ -34,12 +34,12 @@ const STATUS_CONFIG: Record<
   string,
   { label: string; dot: string; bg: string; text: string }
 > = {
-  PENDING: { label: "Pending", dot: "bg-amber-500", bg: "bg-amber-50", text: "text-amber-700" },
-  CONFIRMED: { label: "Confirmed", dot: "bg-blue-500", bg: "bg-blue-50", text: "text-blue-700" },
-  PROCESSING: { label: "Processing", dot: "bg-purple-500", bg: "bg-purple-50", text: "text-purple-700" },
-  SHIPPED: { label: "Shipped", dot: "bg-cyan-500", bg: "bg-cyan-50", text: "text-cyan-700" },
-  DELIVERED: { label: "Delivered", dot: "bg-emerald-500", bg: "bg-emerald-50", text: "text-emerald-700" },
-  CANCELLED: { label: "Cancelled", dot: "bg-rose-500", bg: "bg-rose-50", text: "text-rose-700" },
+  PENDING: { label: "Pending", dot: "bg-[#F59E0B]", bg: "bg-amber-500/10 border border-amber-500/20", text: "text-[#F59E0B]" },
+  CONFIRMED: { label: "Confirmed", dot: "bg-[#4169E1]", bg: "bg-[#172653] border border-[#4169E1]/30", text: "text-[#638BFF]" },
+  PROCESSING: { label: "Processing", dot: "bg-[#8BA8FF]", bg: "bg-[#172653] border border-[#4169E1]/30", text: "text-[#8BA8FF]" },
+  SHIPPED: { label: "Shipped", dot: "bg-[#38BDF8]", bg: "bg-cyan-500/10 border border-cyan-500/20", text: "text-[#38BDF8]" },
+  DELIVERED: { label: "Delivered", dot: "bg-[#22C55E]", bg: "bg-emerald-500/10 border border-emerald-500/20", text: "text-[#22C55E]" },
+  CANCELLED: { label: "Cancelled", dot: "bg-[#EF4444]", bg: "bg-rose-500/10 border border-rose-500/20", text: "text-[#EF4444]" },
 };
 
 const statusTabs = [
@@ -190,13 +190,13 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search order ID, customer..."
-              className="pl-10 pr-9 h-11 text-xs shadow-sm bg-white rounded-xl"
+              className="pl-10 pr-9 h-11 text-xs shadow-sm bg-[#101A3D] border-[#202D55] text-[#F5F7FF] rounded-xl"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7181A8] hover:text-[#F5F7FF] p-1"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -209,14 +209,14 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
             className={cn(
               "h-11 px-3.5 rounded-xl border flex items-center justify-center gap-1.5 text-xs font-semibold shadow-sm transition-all cursor-pointer shrink-0",
               showMobileFilters || hasActiveSecondaryFilters
-                ? "bg-blue-50 border-blue-300 text-[#2563EB]"
-                : "bg-white border-slate-300 text-[#0F172A] hover:bg-slate-50"
+                ? "bg-[#172653] border-[#4169E1]/40 text-[#638BFF]"
+                : "bg-[#101A3D] border-[#202D55] text-[#A5B2D1] hover:bg-[#172653]"
             )}
           >
             <SlidersHorizontal className="w-4 h-4" />
             <span>Filters</span>
             {hasActiveSecondaryFilters && (
-              <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
+              <span className="w-2 h-2 rounded-full bg-[#4169E1]" />
             )}
           </button>
         </div>
@@ -224,7 +224,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
         {/* Desktop Search & Filters Grid */}
         <div className="hidden sm:grid sm:grid-cols-3 lg:grid-cols-4 gap-3">
           <div className="relative lg:col-span-2">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64748B]" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7181A8]" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -235,7 +235,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7181A8] hover:text-[#F5F7FF] p-1"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -246,7 +246,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
           <select
             value={channelFilter}
             onChange={(e) => setChannelFilter(e.target.value)}
-            className="h-11 rounded-xl border border-slate-300 bg-white px-4 text-xs font-semibold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-[#2563EB] shadow-sm"
+            className="h-11 rounded-xl border border-[#202D55] bg-[#101A3D] px-4 text-xs font-semibold text-[#F5F7FF] focus:outline-none focus:ring-2 focus:ring-[#638BFF]/20 focus:border-[#4169E1] shadow-sm"
           >
             <option value="ALL">All Order Channels</option>
             <option value="COD">Cash on Delivery (COD)</option>
@@ -258,7 +258,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
           <select
             value={paymentFilter}
             onChange={(e) => setPaymentFilter(e.target.value)}
-            className="h-11 rounded-xl border border-slate-300 bg-white px-4 text-xs font-semibold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-[#2563EB] shadow-sm"
+            className="h-11 rounded-xl border border-[#202D55] bg-[#101A3D] px-4 text-xs font-semibold text-[#F5F7FF] focus:outline-none focus:ring-2 focus:ring-[#638BFF]/20 focus:border-[#4169E1] shadow-sm"
           >
             <option value="ALL">All Payment Statuses</option>
             {paymentStatusOptions.map((p) => (
@@ -271,9 +271,9 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
 
         {/* Mobile Collapsible Secondary Filters Drawer */}
         {showMobileFilters && (
-          <div className="sm:hidden p-3.5 bg-slate-50/90 rounded-2xl border border-slate-200/90 space-y-3 animate-in fade-in-0 duration-150">
-            <div className="flex items-center justify-between pb-1 border-b border-slate-200/70">
-              <span className="text-xs font-bold text-[#0F172A]">Refine By</span>
+          <div className="sm:hidden p-3.5 bg-[#0A1030] rounded-2xl border border-[#202D55] space-y-3 animate-in fade-in-0 duration-150">
+            <div className="flex items-center justify-between pb-1 border-b border-[#172347]">
+              <span className="text-xs font-bold text-[#F5F7FF]">Refine By</span>
               {hasActiveSecondaryFilters && (
                 <button
                   type="button"
@@ -296,7 +296,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                 <select
                   value={channelFilter}
                   onChange={(e) => setChannelFilter(e.target.value)}
-                  className="w-full h-10 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-semibold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-blue-600/20 shadow-sm"
+                  className="w-full h-10 rounded-xl border border-[#202D55] bg-[#080D28] px-2.5 text-xs font-semibold text-[#F5F7FF] focus:outline-none focus:ring-2 focus:ring-[#638BFF]/20 shadow-sm"
                 >
                   <option value="ALL">All Channels</option>
                   <option value="COD">COD</option>
@@ -312,7 +312,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                 <select
                   value={paymentFilter}
                   onChange={(e) => setPaymentFilter(e.target.value)}
-                  className="w-full h-10 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-semibold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-blue-600/20 shadow-sm"
+                  className="w-full h-10 rounded-xl border border-[#202D55] bg-[#080D28] px-2.5 text-xs font-semibold text-[#F5F7FF] focus:outline-none focus:ring-2 focus:ring-[#638BFF]/20 shadow-sm"
                 >
                   <option value="ALL">All Payments</option>
                   {paymentStatusOptions.map((p) => (
@@ -343,8 +343,8 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                 className={cn(
                   "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer border",
                   isActive
-                    ? "bg-[#2563EB] text-white border-[#2563EB] shadow-xs"
-                    : "bg-white text-[#64748B] border-slate-200/90 hover:text-[#0F172A] hover:border-slate-300 shadow-2xs"
+                    ? "bg-[#4169E1] text-white border-[#4169E1] shadow-xs"
+                    : "bg-[#101A3D] text-[#7181A8] border-[#202D55] hover:text-[#F5F7FF] hover:border-[#4169E1]/40 shadow-2xs"
                 )}
               >
                 <span>{tab.label}</span>
@@ -353,7 +353,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                     "px-1.5 py-0.2 rounded-full text-[10px] font-extrabold",
                     isActive
                       ? "bg-white/20 text-white"
-                      : "bg-slate-100 text-slate-600"
+                      : "bg-[#080D28] text-[#A5B2D1]"
                   )}
                 >
                   {count}
@@ -366,27 +366,27 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
 
       {/* ── Bulk Printing Selection Bar ── */}
       {selectedIds.length > 0 && (
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-3 shadow-sm shadow-slate-200/50 animate-in fade-in-50 duration-150">
+        <div className="rounded-2xl border border-[#202D55] bg-[#101A3D] p-3 shadow-lg animate-in fade-in-50 duration-150">
           <div className="flex items-center justify-between gap-3">
             {/* Left: Badge + Count + Deselect */}
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#2563EB] flex items-center justify-center shrink-0 border border-blue-100">
+              <div className="w-8 h-8 rounded-xl bg-[#172653] text-[#638BFF] flex items-center justify-center shrink-0 border border-[#4169E1]/30">
                 <FileCheck className="w-4 h-4" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs text-[#0F172A] truncate">
+                  <span className="font-bold text-xs text-[#F5F7FF] truncate">
                     {selectedIds.length} {selectedIds.length === 1 ? "order" : "orders"} selected
                   </span>
-                  <span className="w-1 h-1 rounded-full bg-slate-300 hidden sm:inline-block" />
-                  <span className="text-[11px] text-[#64748B] hidden sm:inline-block">
+                  <span className="w-1 h-1 rounded-full bg-[#202D55] hidden sm:inline-block" />
+                  <span className="text-[11px] text-[#7181A8] hidden sm:inline-block">
                     A4 sheet ready
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedIds([])}
-                  className="text-[11px] font-semibold text-[#2563EB] hover:text-blue-700 hover:underline cursor-pointer text-left block"
+                  className="text-[11px] font-semibold text-[#638BFF] hover:text-[#8BA8FF] hover:underline cursor-pointer text-left block"
                 >
                   Deselect all
                 </button>
@@ -397,7 +397,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
             <button
               type="button"
               onClick={() => handleOpenReceipts(selectedIds)}
-              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 active:scale-[0.98] text-white text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#4169E1] hover:bg-[#3458C7] active:scale-[0.98] text-white text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print Receipts ({selectedIds.length})</span>
@@ -408,11 +408,11 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
 
       {/* ── Orders Content ── */}
       {filteredOrders.length === 0 ? (
-        <Card className="p-0 overflow-hidden border border-slate-200/90 shadow-sm">
+        <Card className="p-0 overflow-hidden border border-[#202D55] bg-[#101A3D] shadow-sm">
           <div className="py-16 text-center space-y-3">
-            <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
-            <h3 className="text-base font-bold text-[#0F172A]">No orders found</h3>
-            <p className="text-xs text-[#64748B]">
+            <ShoppingBag className="w-12 h-12 text-[#536184] mx-auto stroke-1" />
+            <h3 className="text-base font-bold text-[#F5F7FF]">No orders found</h3>
+            <p className="text-xs text-[#7181A8]">
               {orders.length === 0
                 ? "Your store has not received any orders yet."
                 : "No orders matched your current filters."}
@@ -425,16 +425,16 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
           <div className="md:hidden space-y-3">
             {/* Mobile Select-All row */}
             <div className="flex items-center justify-between px-1 text-xs">
-              <label className="flex items-center gap-2 font-semibold text-[#64748B] cursor-pointer select-none">
+              <label className="flex items-center gap-2 font-semibold text-[#A5B2D1] cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={isAllSelected}
                   onChange={handleToggleSelectAll}
-                  className="w-4 h-4 rounded border-slate-300 text-[#2563EB] focus:ring-blue-500 cursor-pointer accent-[#2563EB]"
+                  className="w-4 h-4 rounded border-[#202D55] bg-[#101A3D] text-[#4169E1] focus:ring-[#638BFF] cursor-pointer accent-[#4169E1]"
                 />
                 <span>Select all ({filteredOrders.length})</span>
               </label>
-              <span className="text-[11px] text-[#64748B]">
+              <span className="text-[11px] text-[#7181A8]">
                 {filteredOrders.length} {filteredOrders.length === 1 ? "order" : "orders"}
               </span>
             </div>
@@ -448,10 +448,10 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                 <div
                   key={order.id}
                   className={cn(
-                    "bg-white rounded-2xl border transition-all shadow-sm overflow-visible",
+                    "bg-[#101A3D] rounded-2xl border transition-all shadow-sm overflow-visible",
                     isSelected
-                      ? "border-[#2563EB] ring-1 ring-[#2563EB]/20 bg-blue-50/10"
-                      : "border-slate-200/90"
+                      ? "border-[#4169E1] ring-1 ring-[#4169E1]/40 bg-[#172653]/40"
+                      : "border-[#202D55]"
                   )}
                 >
                   {/* Front Row (Collapsed): Checkbox, Name, Price, Dropdown Icon */}
@@ -469,15 +469,15 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => handleToggleSelect(order.id)}
-                          className="w-4 h-4 rounded border-slate-300 text-[#2563EB] focus:ring-blue-500 cursor-pointer accent-[#2563EB]"
+                          className="w-4 h-4 rounded border-[#202D55] bg-[#101A3D] text-[#4169E1] focus:ring-[#638BFF] cursor-pointer accent-[#4169E1]"
                         />
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="font-bold text-xs sm:text-sm text-[#0F172A] truncate">
+                        <p className="font-bold text-xs sm:text-sm text-[#F5F7FF] truncate">
                           {order.customer?.name || "Customer"}
                         </p>
-                        <p className="font-mono text-[11px] text-[#2563EB] truncate mt-0.5">
+                        <p className="font-mono text-[11px] text-[#638BFF] truncate mt-0.5">
                           #{order.orderNumber}
                         </p>
                       </div>
@@ -486,7 +486,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                     {/* Right: Price + Dropdown Icon */}
                     <div className="flex items-center gap-2.5 shrink-0">
                       <div className="text-right">
-                        <span className="font-extrabold text-xs sm:text-sm text-[#0F172A] block">
+                        <span className="font-extrabold text-xs sm:text-sm text-[#F5F7FF] block">
                           {formatCurrency(Number(order.total))}
                         </span>
                         <span className="text-[10px] text-[#64748B] block">
@@ -502,8 +502,8 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                           toggleExpand(order.id);
                         }}
                         className={cn(
-                          "w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 transition-transform duration-200 shrink-0 hover:bg-slate-200 cursor-pointer",
-                          isExpanded && "rotate-180 bg-blue-50 text-[#2563EB]"
+                          "w-7 h-7 rounded-full bg-[#172653] flex items-center justify-center text-[#A5B2D1] hover:text-[#F5F7FF] transition-transform duration-200 shrink-0 cursor-pointer",
+                          isExpanded && "rotate-180 bg-[#1C3066] text-[#638BFF]"
                         )}
                       >
                         <ChevronDown className="w-4 h-4" />
@@ -513,11 +513,11 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
 
                   {/* Expanded: Full Order Details + Proper UI Status Dropdown + PDF */}
                   {isExpanded && (
-                    <div className="px-3.5 pb-3.5 pt-1 space-y-3 bg-slate-50/70 border-t border-slate-100 animate-in fade-in-50 duration-200">
-                      <div className="bg-white rounded-xl p-3.5 border border-slate-200/90 shadow-2xs space-y-3">
+                    <div className="px-3.5 pb-3.5 pt-1 space-y-3 bg-[#0A1030] border-t border-[#172347] animate-in fade-in-50 duration-200">
+                      <div className="bg-[#101A3D] rounded-xl p-3.5 border border-[#202D55] shadow-xs space-y-3">
                         {/* Header Row: Full Details Title + Channel Badge */}
-                        <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                          <span className="text-xs font-bold text-[#0F172A]">Full Order Details</span>
+                        <div className="flex items-center justify-between gap-2 border-b border-[#172347] pb-2.5">
+                          <span className="text-xs font-bold text-[#F5F7FF]">Full Order Details</span>
                           <div className="shrink-0">
                             {renderChannelBadge(order.orderChannel || "COD")}
                           </div>
@@ -527,7 +527,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                         <div className="space-y-2 text-xs">
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-[#64748B]">Customer</span>
-                            <span className="font-semibold text-[#0F172A] text-right truncate">
+                            <span className="font-semibold text-[#F5F7FF] text-right truncate">
                               {order.customer?.name || "Customer"}
                             </span>
                           </div>
@@ -537,9 +537,9 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                               <span className="text-[#64748B]">Phone</span>
                               <a
                                 href={`tel:${order.customer.phone}`}
-                                className="text-[#2563EB] font-semibold flex items-center gap-1 hover:underline text-right"
+                                className="text-[#638BFF] font-semibold flex items-center gap-1 hover:underline text-right"
                               >
-                                <Phone className="w-3 h-3 text-slate-400" />
+                                <Phone className="w-3 h-3 text-[#7181A8]" />
                                 <span>{order.customer.phone}</span>
                               </a>
                             </div>
@@ -547,15 +547,15 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
 
                           {order.customer?.email && (
                             <div className="flex items-center justify-between gap-2">
-                              <span className="text-[#64748B]">Email</span>
-                              <span className="text-[#0F172A] font-medium text-right truncate">
+                              <span className="text-[#7181A8]">Email</span>
+                              <span className="text-[#F5F7FF] font-medium text-right truncate">
                                 {order.customer.email}
                               </span>
                             </div>
                           )}
 
-                          <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
-                            <span className="text-[#64748B]">Payment</span>
+                          <div className="flex items-center justify-between gap-2 pt-1 border-t border-[#172347]">
+                            <span className="text-[#7181A8]">Payment</span>
                             <Badge
                               variant={
                                 order.paymentStatus === "PAID"
@@ -570,15 +570,15 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                           </div>
 
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-[#64748B]">Placed On</span>
-                            <span className="text-slate-600 font-medium text-right text-[11px]">
+                            <span className="text-[#7181A8]">Placed On</span>
+                            <span className="text-[#A5B2D1] font-medium text-right text-[11px]">
                               {formatDateTime(order.createdAt)}
                             </span>
                           </div>
                         </div>
 
                         {/* Actions: Custom Status Dropdown with Proper UI + Receipt PDF */}
-                        <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
+                        <div className="pt-2 border-t border-[#172347] flex items-center gap-2">
                           {/* Custom Status Dropdown */}
                           <div className="relative flex-1">
                             <button
@@ -588,13 +588,13 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                                 e.stopPropagation();
                                 setOpenStatusOrderId(openStatusOrderId === order.id ? null : order.id);
                               }}
-                              className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white flex items-center justify-between text-left hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20 transition-all text-xs font-semibold text-[#0F172A] shadow-2xs cursor-pointer disabled:opacity-50"
+                              className="w-full h-10 px-3 rounded-xl border border-[#202D55] bg-[#080D28] flex items-center justify-between text-left hover:border-[#4169E1]/50 focus:outline-none focus:ring-2 focus:ring-[#638BFF]/20 transition-all text-xs font-semibold text-[#F5F7FF] shadow-xs cursor-pointer disabled:opacity-50"
                             >
                               <div className="flex items-center gap-2 min-w-0">
                                 <span
                                   className={cn(
                                     "w-2 h-2 rounded-full shrink-0",
-                                    STATUS_CONFIG[order.status]?.dot || "bg-slate-400"
+                                    STATUS_CONFIG[order.status]?.dot || "bg-[#7181A8]"
                                   )}
                                 />
                                 <span className="truncate">
@@ -605,8 +605,8 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                               </div>
                               <ChevronDown
                                 className={cn(
-                                  "w-4 h-4 text-[#64748B] shrink-0 ml-1.5 transition-transform duration-200",
-                                  openStatusOrderId === order.id && "rotate-180 text-[#2563EB]"
+                                  "w-4 h-4 text-[#7181A8] shrink-0 ml-1.5 transition-transform duration-200",
+                                  openStatusOrderId === order.id && "rotate-180 text-[#638BFF]"
                                 )}
                               />
                             </button>
@@ -615,9 +615,9 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                             {openStatusOrderId === order.id && (
                               <div
                                 onClick={(e) => e.stopPropagation()}
-                                className="absolute left-0 right-0 top-full mt-1.5 z-40 rounded-2xl border border-slate-200/90 bg-white shadow-xl shadow-slate-900/10 p-1.5 animate-in fade-in-0 zoom-in-95 space-y-0.5"
+                                className="absolute left-0 right-0 top-full mt-1.5 z-40 rounded-2xl border border-[#202D55] bg-[#0A1030] shadow-2xl p-1.5 animate-in fade-in-0 zoom-in-95 space-y-0.5"
                               >
-                                <div className="text-[10px] font-bold text-[#94A3B8] px-2.5 py-1 uppercase tracking-wider">
+                                <div className="text-[10px] font-bold text-[#7181A8] px-2.5 py-1 uppercase tracking-wider">
                                   Select Status
                                 </div>
                                 {statusOptions.map((s) => {
@@ -634,16 +634,16 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                                       className={cn(
                                         "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors text-left cursor-pointer",
                                         isSelected
-                                          ? "bg-blue-50 text-[#2563EB] font-bold"
-                                          : "text-[#0F172A] hover:bg-slate-50 hover:text-[#2563EB]"
+                                          ? "bg-[#172653] text-[#638BFF] font-bold"
+                                          : "text-[#F5F7FF] hover:bg-[#101A3D] hover:text-[#638BFF]"
                                       )}
                                     >
                                       <div className="flex items-center gap-2">
-                                        <span className={cn("w-2 h-2 rounded-full shrink-0", cfg?.dot || "bg-slate-400")} />
+                                        <span className={cn("w-2 h-2 rounded-full shrink-0", cfg?.dot || "bg-[#7181A8]")} />
                                         <span>{cfg?.label || s}</span>
                                       </div>
                                       {isSelected && (
-                                        <Check className="w-3.5 h-3.5 text-[#2563EB] shrink-0 ml-2" />
+                                        <Check className="w-3.5 h-3.5 text-[#638BFF] shrink-0 ml-2" />
                                       )}
                                     </button>
                                   );
@@ -659,7 +659,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                               e.stopPropagation();
                               handleOpenReceipts([order.id]);
                             }}
-                            className="h-10 inline-flex items-center justify-center gap-1.5 px-3.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#2563EB] text-xs font-semibold border border-blue-200/80 transition-colors shadow-2xs shrink-0 cursor-pointer"
+                            className="h-10 inline-flex items-center justify-center gap-1.5 px-3.5 rounded-xl bg-[#172653] hover:bg-[#1C3066] text-[#638BFF] hover:text-[#F5F7FF] text-xs font-semibold border border-[#202D55] transition-colors shadow-xs shrink-0 cursor-pointer"
                           >
                             <Printer className="w-3.5 h-3.5" />
                             <span>Receipt PDF</span>
@@ -675,17 +675,17 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
 
           {/* ── DESKTOP VIEW: Full Data Table ── */}
           <div className="hidden md:block">
-            <Card className="p-0 overflow-hidden border border-slate-200/90 shadow-sm">
+            <Card className="p-0 overflow-hidden border border-[#202D55] bg-[#101A3D] shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 text-xs font-semibold text-[#64748B] uppercase border-b border-slate-200">
+                  <thead className="bg-[#0A1030] text-xs font-semibold text-[#7181A8] uppercase border-b border-[#202D55]">
                     <tr>
                       <th className="w-10 px-4 py-4 text-center">
                         <input
                           type="checkbox"
                           checked={isAllSelected}
                           onChange={handleToggleSelectAll}
-                          className="w-4 h-4 rounded border-slate-300 text-[#2563EB] focus:ring-blue-500 cursor-pointer accent-[#2563EB]"
+                          className="w-4 h-4 rounded border-[#202D55] bg-[#101A3D] text-[#4169E1] focus:ring-[#638BFF] cursor-pointer accent-[#4169E1]"
                           title={isAllSelected ? "Deselect all" : "Select all orders"}
                         />
                       </th>
@@ -700,14 +700,14 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                       <th className="px-5 py-4 text-right whitespace-nowrap">Receipt</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-[#172347]">
                     {filteredOrders.map((order) => (
                       <tr
                         key={order.id}
                         className={`transition-colors ${
                           selectedIds.includes(order.id)
-                            ? "bg-blue-50/50 hover:bg-blue-50/70"
-                            : "hover:bg-slate-50/70"
+                            ? "bg-[#172653]/60 hover:bg-[#172653]/80"
+                            : "hover:bg-[#172653]/30"
                         }`}
                       >
                         <td className="w-10 px-4 py-4 text-center">
@@ -715,19 +715,19 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                             type="checkbox"
                             checked={selectedIds.includes(order.id)}
                             onChange={() => handleToggleSelect(order.id)}
-                            className="w-4 h-4 rounded border-slate-300 text-[#2563EB] focus:ring-blue-500 cursor-pointer accent-[#2563EB]"
+                            className="w-4 h-4 rounded border-[#202D55] bg-[#101A3D] text-[#4169E1] focus:ring-[#638BFF] cursor-pointer accent-[#4169E1]"
                           />
                         </td>
 
-                        <td className="px-5 py-4 font-mono font-semibold text-[#2563EB]">
+                        <td className="px-5 py-4 font-mono font-semibold text-[#638BFF]">
                           #{order.orderNumber}
                         </td>
 
                         <td className="px-5 py-4">
-                          <p className="font-semibold text-[#0F172A]">{order.customer?.name || "Customer"}</p>
+                          <p className="font-semibold text-[#F5F7FF]">{order.customer?.name || "Customer"}</p>
                           <p className="text-xs text-[#64748B]">{order.customer?.email}</p>
                           {order.customer?.phone && (
-                            <p className="text-xs text-slate-400">{order.customer.phone}</p>
+                            <p className="text-xs text-[#7181A8]">{order.customer.phone}</p>
                           )}
                         </td>
 
@@ -739,7 +739,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                           {order.itemCount} items
                         </td>
 
-                        <td className="px-5 py-4 font-bold text-[#0F172A]">
+                        <td className="px-5 py-4 font-bold text-[#F5F7FF]">
                           {formatCurrency(Number(order.total))}
                         </td>
 
@@ -763,7 +763,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                               value={order.status}
                               disabled={updatingId === order.id}
                               onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                              className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-[#0F172A] focus:outline-none focus:ring-1 focus:ring-blue-600 shadow-sm disabled:opacity-50"
+                              className="h-8 rounded-lg border border-[#202D55] bg-[#101A3D] px-2 text-xs font-semibold text-[#F5F7FF] focus:outline-none focus:ring-1 focus:ring-[#638BFF] shadow-sm disabled:opacity-50"
                             >
                               {statusOptions.map((s) => (
                                 <option key={s} value={s}>
@@ -782,7 +782,7 @@ export function OrdersTableClient({ initialOrders, storeSlug }: OrdersTableClien
                           <button
                             type="button"
                             onClick={() => handleOpenReceipts([order.id])}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#2563EB] transition-colors text-xs font-semibold border border-blue-200/80 shadow-xs cursor-pointer whitespace-nowrap flex-nowrap"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#172653] hover:bg-[#1C3066] text-[#638BFF] hover:text-[#F5F7FF] transition-colors text-xs font-semibold border border-[#202D55] shadow-xs cursor-pointer whitespace-nowrap flex-nowrap"
                             title="Generate and Download PDF Receipt"
                           >
                             <Printer className="w-3.5 h-3.5 flex-shrink-0" />
