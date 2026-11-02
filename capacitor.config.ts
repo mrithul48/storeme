@@ -12,7 +12,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 // - Set CAPACITOR_SERVER_URL=http://10.0.2.2:3000 (Android emulator local dev)
 // - Or CAPACITOR_SERVER_URL=https://app.launchcommerce.io (production hosted server)
 // const serverBase = (process.env.CAPACITOR_SERVER_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://app.launchcommerce.io').replace(/\/+$/, '');
-const serverBase = (process.env.CAPACITOR_SERVER_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://storeme-6uzb.vercel.app').replace(/\/+$/, '');
+const serverBase = ('https://storeme-6uzb.vercel.app').replace(/\/+$/, '');
 
 
 const config: CapacitorConfig = {
@@ -23,6 +23,8 @@ const config: CapacitorConfig = {
     url: `${serverBase}/dashboard`,
     cleartext: serverBase.startsWith('http://'),
     allowNavigation: [
+      'storeme-6uzb.vercel.app',
+      '*.vercel.app',
       'launchcommerce.io',
       '*.launchcommerce.io',
       'accounts.google.com',
