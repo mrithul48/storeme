@@ -73,9 +73,9 @@ export function DashboardNav({ isPlatformAdmin, onItemClick }: DashboardNavProps
   return (
     <nav className="space-y-6">
       {navSections.map((section, idx) => (
-        <div key={section.title || idx} className="space-y-1">
+        <div key={section.title || idx} className="space-y-1.5">
           {section.title && (
-            <h3 className="px-3.5 mb-1.5 text-[11px] font-extrabold tracking-wider text-black uppercase select-none">
+            <h3 className="px-3.5 mb-1.5 text-[11px] font-extrabold tracking-wider text-[#7181A8] uppercase select-none">
               {section.title}
             </h3>
           )}
@@ -92,26 +92,26 @@ export function DashboardNav({ isPlatformAdmin, onItemClick }: DashboardNavProps
                   key={item.href}
                   href={item.href}
                   onClick={onItemClick}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition-all group ${
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition-all duration-200 group ${
                     isActive
-                      ? "bg-blue-50 text-[#2563EB] font-bold border border-blue-200/80 shadow-sm shadow-blue-500/5"
-                      : "text-black font-semibold hover:text-black hover:bg-slate-100/90"
+                      ? "bg-[#172653] text-[#638BFF] font-bold border border-[#4169E1]/30 shadow-sm shadow-[#4169E1]/15"
+                      : "text-[#A5B2D1] font-medium hover:text-[#F5F7FF] hover:bg-[#101A3D]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <Icon
-                      className={`w-4 h-4 transition-colors ${
+                      className={`w-4 h-4 transition-colors duration-200 ${
                         isActive
-                          ? "text-[#2563EB]"
-                          : "text-black"
+                          ? "text-[#638BFF]"
+                          : "text-[#7181A8] group-hover:text-[#F5F7FF]"
                       }`}
                     />
-                    <span className={isActive ? "text-[#2563EB]" : "text-black"}>
+                    <span className={isActive ? "text-[#638BFF]" : "text-[#A5B2D1] group-hover:text-[#F5F7FF]"}>
                       {item.label}
                     </span>
                   </div>
                   {isActive && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] shadow-sm shadow-blue-500/40" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#638BFF] shadow-xs shadow-[#638BFF]/50" />
                   )}
                 </Link>
               );

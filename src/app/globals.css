@@ -105,3 +105,71 @@ input[type="search"]::-webkit-search-results-decoration {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.28);
 }
+
+/* ==========================================================================
+   LAUNCHCOMMERCE ADMIN DASHBOARD — MIDNIGHT ROYAL BLUE THEME
+   ========================================================================== */
+.admin-dashboard {
+  --dash-main: #070B24;
+  --dash-sidebar: #080D28;
+  --dash-navbar: #0A1030;
+  --dash-card: #101A3D;
+  --dash-elevated: #172653;
+  --dash-hover: #1C3066;
+
+  --dash-primary: #4169E1;
+  --dash-primary-hover: #3458C7;
+  --dash-electric: #638BFF;
+  --dash-accent: #8BA8FF;
+
+  --dash-text-primary: #F5F7FF;
+  --dash-text-secondary: #A5B2D1;
+  --dash-text-muted: #7181A8;
+  --dash-text-disabled: #536184;
+
+  --dash-border: #202D55;
+  --dash-border-subtle: #172347;
+
+  --dash-success: #22C55E;
+  --dash-warning: #F59E0B;
+  --dash-error: #EF4444;
+  --dash-info: #38BDF8;
+
+  color-scheme: dark;
+  background-color: #070B24;
+  color: #F5F7FF;
+}
+
+.admin-dashboard ::-webkit-scrollbar-track {
+  background: #080D28;
+}
+
+.admin-dashboard ::-webkit-scrollbar-thumb {
+  background: #202D55;
+  border-radius: 9999px;
+}
+
+.admin-dashboard ::-webkit-scrollbar-thumb:hover {
+  background: #4169E1;
+}
+
+/* Scoped Form Input Defaults for Admin Dashboard */
+.admin-dashboard input:not([type="checkbox"]):not([type="radio"]),
+.admin-dashboard select,
+.admin-dashboard textarea {
+  background-color: #080D28;
+  border-color: #202D55;
+  color: #F5F7FF;
+}
+
+.admin-dashboard input::placeholder,
+.admin-dashboard textarea::placeholder {
+  color: #7181A8;
+}
+
+.admin-dashboard input:focus,
+.admin-dashboard select:focus,
+.admin-dashboard textarea:focus {
+  border-color: #638BFF !important;
+  outline: none;
+}

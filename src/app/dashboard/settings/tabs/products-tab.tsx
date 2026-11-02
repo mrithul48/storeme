@@ -40,19 +40,19 @@ export function ProductsTab({
 }: ProductsTabProps) {
   return (
     <div className="space-y-6">
-      <Card className="space-y-6 bg-transparent sm:bg-white border-0 sm:border sm:border-slate-200/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
-        <div className="border-b border-slate-200/90 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <Card className="space-y-6 bg-[#101A3D] border border-[#202D55] shadow-sm p-4 sm:p-6 rounded-2xl">
+        <div className="border-b border-[#172347] pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <Package className="w-5 h-5 text-[#2563EB]" />
-              <h2 className="text-base font-bold text-[#0F172A]">Stock Management</h2>
+              <Package className="w-5 h-5 text-[#638BFF]" />
+              <h2 className="text-base font-bold text-[#F5F7FF]">Stock Management</h2>
             </div>
-            <p className="text-xs text-[#64748B] mt-1">
+            <p className="text-xs text-[#A5B2D1] mt-1">
               Choose how inventory is managed across all products in your store. The selected option applies globally to all products and determines which stock fields appear when adding or editing products.
             </p>
           </div>
           {stockManagementType && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start sm:self-auto shrink-0">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-[#22C55E] border border-emerald-500/20 self-start sm:self-auto shrink-0">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Configured
             </span>
@@ -97,8 +97,8 @@ export function ProductsTab({
             onClick={() => onRequestStockTypeChange("AVAILABILITY")}
             className={`cursor-pointer rounded-xl border p-4.5 transition-all ${
               stockManagementType === "AVAILABILITY"
-                ? "border-[#2563EB] bg-blue-50/50 shadow-sm ring-1 ring-[#2563EB]/40"
-                : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"
+                ? "border-[#4169E1] bg-[#172653] shadow-md ring-1 ring-[#638BFF]/40"
+                : "border-[#202D55] bg-[#080D28] hover:border-[#4169E1]/50 hover:bg-[#172653]/30"
             }`}
           >
             <div className="flex items-start gap-3.5">
@@ -115,19 +115,19 @@ export function ProductsTab({
               </div>
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
-                  <label htmlFor="stock-opt-availability" className="text-sm font-bold text-[#0F172A] cursor-pointer">
+                  <label htmlFor="stock-opt-availability" className="text-sm font-bold text-[#F5F7FF] cursor-pointer">
                     Option 1: Manage Stock Availability
                   </label>
                   {stockManagementType === "AVAILABILITY" && (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-[#2563EB]">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#1C3066] text-[#638BFF]">
                       Active
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[#64748B]">
+                <p className="text-xs text-[#A5B2D1]">
                   Admin can mark products as In Stock or Out of Stock without numeric quantities.
                 </p>
-                <ul className="text-[11px] text-[#64748B] list-disc list-inside space-y-0.5 pt-1">
+                <ul className="text-[11px] text-[#7181A8] list-disc list-inside space-y-0.5 pt-1">
                   <li>Product Add/Edit forms display only the stock availability control (In Stock / Out of Stock).</li>
                   <li>Stock quantity management and color-wise inventory controls are hidden.</li>
                   <li>Products marked Out of Stock cannot be purchased by storefront customers.</li>
@@ -141,8 +141,8 @@ export function ProductsTab({
             onClick={() => onRequestStockTypeChange("QUANTITY")}
             className={`cursor-pointer rounded-xl border p-4.5 transition-all ${
               stockManagementType === "QUANTITY"
-                ? "border-[#2563EB] bg-blue-50/50 shadow-sm ring-1 ring-[#2563EB]/40"
-                : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"
+                ? "border-[#4169E1] bg-[#172653] shadow-md ring-1 ring-[#638BFF]/40"
+                : "border-[#202D55] bg-[#080D28] hover:border-[#4169E1]/50 hover:bg-[#172653]/30"
             }`}
           >
             <div className="flex items-start gap-3.5">
@@ -154,24 +154,24 @@ export function ProductsTab({
                   value="QUANTITY"
                   checked={stockManagementType === "QUANTITY"}
                   onChange={() => onRequestStockTypeChange("QUANTITY")}
-                  className="w-4 h-4 text-[#2563EB] focus:ring-[#2563EB] cursor-pointer"
+                  className="w-4 h-4 text-[#4169E1] focus:ring-[#638BFF] cursor-pointer"
                 />
               </div>
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
-                  <label htmlFor="stock-opt-quantity" className="text-sm font-bold text-[#0F172A] cursor-pointer">
+                  <label htmlFor="stock-opt-quantity" className="text-sm font-bold text-[#F5F7FF] cursor-pointer">
                     Option 2: Manage Stock Quantity
                   </label>
                   {stockManagementType === "QUANTITY" && (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-[#2563EB]">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#1C3066] text-[#638BFF]">
                       Active
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[#64748B]">
+                <p className="text-xs text-[#A5B2D1]">
                   Admin enters and updates the numeric stock quantity for each product.
                 </p>
-                <ul className="text-[11px] text-[#64748B] list-disc list-inside space-y-0.5 pt-1">
+                <ul className="text-[11px] text-[#7181A8] list-disc list-inside space-y-0.5 pt-1">
                   <li>Product Add/Edit forms display only the stock quantity field.</li>
                   <li>Product availability is automatically calculated from the available quantity.</li>
                   <li>If quantity is zero, the product is automatically marked unavailable and cannot be purchased.</li>
@@ -186,8 +186,8 @@ export function ProductsTab({
             onClick={() => onRequestStockTypeChange("COLOR_WISE")}
             className={`cursor-pointer rounded-xl border p-4.5 transition-all ${
               stockManagementType === "COLOR_WISE"
-                ? "border-[#2563EB] bg-blue-50/50 shadow-sm ring-1 ring-[#2563EB]/40"
-                : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"
+                ? "border-[#4169E1] bg-[#172653] shadow-md ring-1 ring-[#638BFF]/40"
+                : "border-[#202D55] bg-[#080D28] hover:border-[#4169E1]/50 hover:bg-[#172653]/30"
             }`}
           >
             <div className="flex items-start gap-3.5">
@@ -199,31 +199,31 @@ export function ProductsTab({
                   value="COLOR_WISE"
                   checked={stockManagementType === "COLOR_WISE"}
                   onChange={() => onRequestStockTypeChange("COLOR_WISE")}
-                  className="w-4 h-4 text-[#2563EB] focus:ring-[#2563EB] cursor-pointer"
+                  className="w-4 h-4 text-[#4169E1] focus:ring-[#638BFF] cursor-pointer"
                 />
               </div>
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
-                  <label htmlFor="stock-opt-colorwise" className="text-sm font-bold text-[#0F172A] cursor-pointer">
+                  <label htmlFor="stock-opt-colorwise" className="text-sm font-bold text-[#F5F7FF] cursor-pointer">
                     Option 3: Enable Color-wise Inventory & Image Upload
                   </label>
                   {stockManagementType === "COLOR_WISE" && (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-[#2563EB]">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#1C3066] text-[#638BFF]">
                       Active
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[#64748B]">
+                <p className="text-xs text-[#A5B2D1]">
                   Manage inventory and upload dedicated product images for each color variant (e.g. Red, Blue, Black).
                 </p>
 
                 {/* Sub-options for Color-wise Inventory */}
                 {stockManagementType === "COLOR_WISE" && (
                   <div
-                    className="mt-3 pt-3 border-t border-slate-200/90 space-y-2.5"
+                    className="mt-3 pt-3 border-t border-[#172347] space-y-2.5"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <label className="text-xs font-semibold text-[#0F172A] block">
+                    <label className="text-xs font-semibold text-[#F5F7FF] block">
                       Choose Color-wise Inventory Configuration:
                     </label>
 
@@ -233,8 +233,8 @@ export function ProductsTab({
                         onClick={() => onRequestColorWiseTypeChange("AVAILABILITY")}
                         className={`p-3 rounded-lg border cursor-pointer transition-all ${
                           colorWiseStockType === "AVAILABILITY"
-                            ? "border-[#2563EB] bg-blue-50 shadow-sm"
-                            : "border-slate-200 bg-slate-50/70 hover:border-slate-300"
+                            ? "border-[#4169E1] bg-[#1C3066] shadow-md"
+                            : "border-[#202D55] bg-[#080D28] hover:border-[#4169E1]/40"
                         }`}
                       >
                         <label className="flex items-start gap-2.5 cursor-pointer">
@@ -247,10 +247,10 @@ export function ProductsTab({
                             className="w-3.5 h-3.5 text-[#2563EB] focus:ring-[#2563EB] mt-0.5 cursor-pointer"
                           />
                           <div className="space-y-0.5">
-                            <span className="text-xs font-bold text-[#0F172A] block">
+                            <span className="text-xs font-bold text-[#F5F7FF] block">
                               1. Manage Stock Availability
                             </span>
-                            <span className="text-[11px] text-[#64748B] block leading-tight">
+                            <span className="text-[11px] text-[#7181A8] block leading-tight">
                               Manage In Stock / Out of Stock independently for each color variant.
                             </span>
                           </div>
@@ -262,8 +262,8 @@ export function ProductsTab({
                         onClick={() => onRequestColorWiseTypeChange("QUANTITY")}
                         className={`p-3 rounded-lg border cursor-pointer transition-all ${
                           colorWiseStockType === "QUANTITY"
-                            ? "border-[#2563EB] bg-blue-50 shadow-sm"
-                            : "border-slate-200 bg-slate-50/70 hover:border-slate-300"
+                            ? "border-[#4169E1] bg-[#1C3066] shadow-md"
+                            : "border-[#202D55] bg-[#080D28] hover:border-[#4169E1]/40"
                         }`}
                       >
                         <label className="flex items-start gap-2.5 cursor-pointer">
@@ -276,10 +276,10 @@ export function ProductsTab({
                             className="w-3.5 h-3.5 text-[#2563EB] focus:ring-[#2563EB] mt-0.5 cursor-pointer"
                           />
                           <div className="space-y-0.5">
-                            <span className="text-xs font-bold text-[#0F172A] block">
+                            <span className="text-xs font-bold text-[#F5F7FF] block">
                               2. Manage Stock Quantity
                             </span>
-                            <span className="text-[11px] text-[#64748B] block leading-tight">
+                            <span className="text-[11px] text-[#7181A8] block leading-tight">
                               Manage stock quantity independently for each color variant (0 quantity means unavailable).
                             </span>
                           </div>
@@ -293,8 +293,8 @@ export function ProductsTab({
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(15,23,42,0.06)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pt-3 sm:border-t sm:border-slate-200/90 sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-          <p className="hidden sm:block text-[11px] text-[#64748B]">
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0A1030]/95 backdrop-blur-xl border-t border-[#202D55] p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(0,0,0,0.5)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pt-3 sm:border-t sm:border-[#172347] sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+          <p className="hidden sm:block text-[11px] text-[#7181A8]">
             Saving applies this inventory configuration globally across all products in your store.
           </p>
           <Button

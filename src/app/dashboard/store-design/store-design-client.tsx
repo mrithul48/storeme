@@ -347,10 +347,10 @@ export function StoreDesignClient({
   return (
     <div className="space-y-6">
       {/* Page Title & Mobile-Friendly Save Header */}
-      <div className="flex items-center justify-between gap-3 pb-2 border-b border-slate-100 sm:border-0 sm:pb-0">
+      <div className="flex items-center justify-between gap-3 pb-2 border-b border-[#202D55] sm:border-0 sm:pb-0">
         <div className="min-w-0 pr-2">
-          <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A] tracking-tight">Live Store Design</h1>
-          <p className="text-xs sm:text-sm text-[#64748B] mt-0.5 line-clamp-1 sm:line-clamp-none">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#F5F7FF] tracking-tight">Live Store Design</h1>
+          <p className="text-xs sm:text-sm text-[#A5B2D1] mt-0.5 line-clamp-1 sm:line-clamp-none">
             Customize your storefront homepage, sections, and banners. Changes appear live immediately.
           </p>
         </div>
@@ -359,43 +359,43 @@ export function StoreDesignClient({
 
       {/* Notifications */}
       {success && (
-        <div className="hidden sm:flex p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm items-center gap-2 shadow-sm">
-          <Check className="w-5 h-5 flex-shrink-0 text-emerald-600" />
+        <div className="hidden sm:flex p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[#22C55E] text-sm items-center gap-2 shadow-sm">
+          <Check className="w-5 h-5 flex-shrink-0 text-[#22C55E]" />
           <span>{success}</span>
           <a
             href={`/store/${storeSlug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto flex items-center gap-1 text-[#2563EB] hover:text-blue-800 text-xs font-semibold underline"
+            className="ml-auto flex items-center gap-1 text-[#638BFF] hover:text-[#8BA8FF] text-xs font-semibold underline"
           >
             <Eye className="w-3.5 h-3.5" /> View Live Store
           </a>
         </div>
       )}
       {error && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-center gap-2 shadow-sm">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 text-rose-600" />
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-[#EF4444] text-sm flex items-center gap-2 shadow-sm">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 text-[#EF4444]" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Preview Store Banner */}
-      <div className="hidden sm:flex items-center justify-between py-3 px-5 rounded-2xl bg-gradient-to-r from-blue-50/80 via-white to-indigo-50/40 border border-blue-100/90 shadow-sm">
+      <div className="hidden sm:flex items-center justify-between py-3 px-5 rounded-2xl bg-[#101A3D] border border-[#202D55] shadow-md">
         <div>
-          <p className="text-xs font-bold text-[#2563EB]">Live Storefront</p>
-          <p className="text-xs text-[#64748B] mt-0.5">
+          <p className="text-xs font-bold text-[#638BFF]">Live Storefront</p>
+          <p className="text-xs text-[#A5B2D1] mt-0.5">
             Changes save to DB and appear live immediately after saving.
           </p>
         </div>
         <a href={`/store/${storeSlug}`} target="_blank" rel="noopener noreferrer">
-          <Button type="button" variant="outline" size="sm" className="whitespace-nowrap shrink-0 text-xs sm:text-sm">
-            <ExternalLink className="w-3.5 h-3.5 mr-1 text-[#2563EB]" /> Preview Store
+          <Button type="button" variant="outline" size="sm" className="whitespace-nowrap shrink-0 text-xs sm:text-sm bg-[#172653] hover:bg-[#1C3066] text-[#F5F7FF] border-[#202D55]">
+            <ExternalLink className="w-3.5 h-3.5 mr-1 text-[#638BFF]" /> Preview Store
           </Button>
         </a>
       </div>
 
       {/* Tabs */}
-      <div className="p-1 sm:p-1.5 bg-slate-100/90 rounded-2xl border border-slate-200/80 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+      <div className="p-1 sm:p-1.5 bg-[#080D28] rounded-2xl border border-[#202D55] flex items-center gap-1.5 overflow-x-auto scrollbar-none shadow-sm">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -404,12 +404,12 @@ export function StoreDesignClient({
             className={cn(
               "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm transition-all whitespace-nowrap shrink-0 cursor-pointer select-none",
               activeTab === id
-                ? "bg-white text-[#2563EB] shadow-xs border border-slate-200/80 font-bold"
-                : "text-[#64748B] hover:text-[#0F172A] hover:bg-slate-200/60 font-semibold"
+                ? "bg-[#172653] text-[#638BFF] shadow-xs border border-[#4169E1]/30 font-bold"
+                : "text-[#7181A8] hover:text-[#F5F7FF] hover:bg-[#101A3D] font-semibold"
             )}
           >
-            <Icon className={`w-4 h-4 shrink-0 ${activeTab === id ? "text-[#2563EB]" : "text-slate-400"}`} />
-            {label}
+            <Icon className={cn("w-4 h-4 shrink-0", activeTab === id ? "text-[#638BFF]" : "text-[#7181A8]")} />
+            <span>{label}</span>
           </button>
         ))}
       </div>
@@ -516,7 +516,7 @@ export function StoreDesignClient({
       )}
 
       {/* ── Global Save Button ─────────────────────────────────────────────── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(15,23,42,0.06)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pt-6 sm:pb-4 sm:flex sm:flex-row sm:items-center sm:justify-end">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0A1030]/95 backdrop-blur-xl border-t border-[#202D55] p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(0,0,0,0.5)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pt-6 sm:pb-4 sm:flex sm:flex-row sm:items-center sm:justify-end">
         <Button
           type="button"
           variant="primary"

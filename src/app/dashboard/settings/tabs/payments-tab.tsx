@@ -74,40 +74,40 @@ export function PaymentsTab({
       )}
 
       {rzpLoading ? (
-        <Card className="flex items-center justify-center py-12 bg-white border border-slate-200/90 shadow-sm">
-          <Loader2 className="w-6 h-6 animate-spin text-[#2563EB]" />
-          <span className="ml-3 text-[#64748B] text-sm">Loading payment settings...</span>
+        <Card className="flex items-center justify-center py-12 bg-[#101A3D] border border-[#202D55] shadow-sm">
+          <Loader2 className="w-6 h-6 animate-spin text-[#638BFF]" />
+          <span className="ml-3 text-[#A5B2D1] text-sm">Loading payment settings...</span>
         </Card>
       ) : (
         <>
           {/* Connection Status Card */}
           {rzpStatus?.connected && (
-            <Card className="bg-emerald-50/60 border border-emerald-200/90 shadow-sm">
+            <Card className="bg-emerald-500/10 border border-emerald-500/30 shadow-sm">
               <div className="flex items-start justify-between flex-wrap gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                    <span className="text-sm font-bold text-emerald-800">Razorpay Connected</span>
+                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                    <span className="text-sm font-bold text-emerald-300">Razorpay Connected</span>
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
                         rzpStatus.mode === "live"
-                          ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                          : "bg-amber-100 text-amber-800 border border-amber-300"
+                          ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                          : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
                       }`}
                     >
                       {rzpStatus.mode ?? "test"}
                     </span>
                   </div>
-                  <p className="text-xs text-[#64748B]">
+                  <p className="text-xs text-[#A5B2D1]">
                     Key ID:{" "}
-                    <span className="font-mono text-[#0F172A] font-medium">
+                    <span className="font-mono text-[#F5F7FF] font-medium">
                       {rzpStatus.keyId
                         ? `${rzpStatus.keyId.slice(0, 12)}${"..".padEnd(8, "●")}`
                         : "—"}
                     </span>
                   </p>
-                  <p className="text-xs text-[#64748B]">
-                    Secret: <span className="font-mono text-[#0F172A]">●●●●●●●●●●●●●●●●</span>
+                  <p className="text-xs text-[#A5B2D1]">
+                    Secret: <span className="font-mono text-[#F5F7FF]">●●●●●●●●●●●●●●●●</span>
                   </p>
                 </div>
 
@@ -125,11 +125,11 @@ export function PaymentsTab({
               </div>
 
               {rzpConfirmDisconnect && (
-                <div className="mt-4 p-4 rounded-lg bg-rose-50 border border-rose-200 space-y-3">
-                  <p className="text-sm text-rose-800 font-semibold">
+                <div className="mt-4 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 space-y-3">
+                  <p className="text-sm text-rose-300 font-semibold">
                     Disconnect Razorpay?
                   </p>
-                  <p className="text-xs text-[#64748B]">
+                  <p className="text-xs text-[#A5B2D1]">
                     Online payments will be disabled until you reconnect. Existing orders and payment records remain intact.
                   </p>
                   <div className="flex gap-2">
@@ -139,7 +139,7 @@ export function PaymentsTab({
                       size="sm"
                       isLoading={rzpDisconnecting}
                       onClick={onDisconnect}
-                      className="!bg-rose-600 hover:!bg-rose-700 text-white"
+                      className="!bg-[#EF4444] hover:!bg-red-700 text-white"
                     >
                       Yes, Disconnect
                     </Button>
@@ -158,13 +158,13 @@ export function PaymentsTab({
           )}
 
           {/* Connect / Update Form */}
-          <Card className="space-y-5 bg-transparent sm:bg-white border-0 sm:border sm:border-slate-200/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
-            <div className="border-b border-slate-200/90 pb-3">
-              <h2 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
+          <Card className="space-y-5 bg-[#101A3D] border border-[#202D55] shadow-sm p-4 sm:p-6 rounded-2xl">
+            <div className="border-b border-[#172347] pb-3">
+              <h2 className="text-base font-bold text-[#F5F7FF] flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-[#2563EB]" />
                 {rzpStatus?.connected ? "Update Razorpay Credentials" : "Connect Razorpay"}
               </h2>
-              <p className="text-xs text-[#64748B] mt-1">
+              <p className="text-xs text-[#A5B2D1] mt-1">
                 Connect your Razorpay account so customers can pay online directly into your Razorpay account.
                 Your credentials are encrypted and stored securely — never visible to anyone.
               </p>
@@ -173,7 +173,7 @@ export function PaymentsTab({
             <div className="space-y-4">
               {/* Mode selector */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#0F172A]">Account Mode</label>
+                <label className="text-xs font-semibold text-[#F5F7FF]">Account Mode</label>
                 <div className="flex gap-3">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -182,9 +182,9 @@ export function PaymentsTab({
                       value="test"
                       checked={rzpMode === "test"}
                       onChange={() => setRzpMode("test")}
-                      className="accent-[#2563EB]"
+                      className="accent-[#4169E1]"
                     />
-                    <span className="text-sm text-[#0F172A]">Test Mode</span>
+                    <span className="text-sm text-[#F5F7FF]">Test Mode</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -193,20 +193,20 @@ export function PaymentsTab({
                       value="live"
                       checked={rzpMode === "live"}
                       onChange={() => setRzpMode("live")}
-                      className="accent-emerald-600"
+                      className="accent-emerald-500"
                     />
-                    <span className="text-sm text-[#0F172A]">Live Mode</span>
+                    <span className="text-sm text-[#F5F7FF]">Live Mode</span>
                   </label>
                 </div>
                 {rzpMode === "live" && (
-                  <p className="text-[11px] text-amber-700">
+                  <p className="text-[11px] text-amber-400">
                     ⚠ Live mode will charge real money. Ensure your credentials are from a verified Razorpay account.
                   </p>
                 )}
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#0F172A]">Key ID *</label>
+                <label className="text-xs font-semibold text-[#F5F7FF]">Key ID *</label>
                 <Input
                   required
                   value={rzpKeyId}
@@ -217,7 +217,7 @@ export function PaymentsTab({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#0F172A]">Key Secret *</label>
+                <label className="text-xs font-semibold text-[#F5F7FF]">Key Secret *</label>
                 <div className="relative">
                   <Input
                     required
@@ -231,12 +231,12 @@ export function PaymentsTab({
                   <button
                     type="button"
                     onClick={() => setRzpShowSecret(!rzpShowSecret)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#0F172A]"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7181A8] hover:text-[#F5F7FF]"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
                 </div>
-                <p className="text-[11px] text-[#64748B]">
+                <p className="text-[11px] text-[#7181A8]">
                   Your secret is encrypted with AES-256-GCM before storage. It is never visible or logged after saving.
                 </p>
               </div>
@@ -257,8 +257,8 @@ export function PaymentsTab({
           </Card>
 
           {/* Help Card */}
-          <Card className="bg-slate-50 border border-slate-200/90 shadow-sm space-y-3">
-            <h3 className="text-sm font-semibold text-[#0F172A]">Need help?</h3>
+          <Card className="bg-[#101A3D] border border-[#202D55] shadow-sm space-y-3">
+            <h3 className="text-sm font-semibold text-[#F5F7FF]">Need help?</h3>
             <div className="flex flex-wrap gap-3">
               <a
                 href="https://razorpay.com/"
@@ -281,7 +281,7 @@ export function PaymentsTab({
                 </Button>
               </a>
             </div>
-            <p className="text-xs text-[#64748B]">
+            <p className="text-xs text-[#A5B2D1]">
               Find your API keys at Dashboard → Settings → API Keys in your Razorpay account.
             </p>
           </Card>

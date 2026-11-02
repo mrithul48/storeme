@@ -37,16 +37,16 @@ export default async function DashboardLayout({
   const isPlatformAdmin = session.user.role === "PLATFORM_ADMIN";
 
   return (
-    <div className="h-screen flex bg-white sm:bg-slate-50 text-[#0F172A] overflow-hidden antialiased">
+    <div className="admin-dashboard h-screen flex bg-[#070B24] text-[#F5F7FF] overflow-hidden antialiased font-sans">
       {/* Desktop Sidebar */}
-      <aside className="w-64 h-full border-r border-slate-200/90 bg-white flex flex-col justify-between hidden md:flex flex-shrink-0 overflow-hidden shadow-sm">
+      <aside className="w-64 h-full border-r border-[#202D55] bg-[#080D28] flex flex-col justify-between hidden md:flex flex-shrink-0 overflow-hidden shadow-2xl shadow-black/40">
         <div className="p-6 space-y-6 flex-1 overflow-y-auto">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center font-bold text-white shadow-md shadow-blue-500/25">
+            <div className="w-8 h-8 rounded-lg bg-[#4169E1] flex items-center justify-center font-bold text-white shadow-md shadow-[#4169E1]/30">
               L
             </div>
-            <span className="font-extrabold text-base tracking-tight text-[#0F172A]">
+            <span className="font-extrabold text-base tracking-tight text-[#F5F7FF]">
               LaunchCommerce
             </span>
           </div>
@@ -56,7 +56,7 @@ export default async function DashboardLayout({
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-slate-100 flex-shrink-0 bg-slate-50/50">
+        <div className="p-4 border-t border-[#172347] flex-shrink-0 bg-[#080D28]">
           <form
             action={async () => {
               "use server";
@@ -65,7 +65,7 @@ export default async function DashboardLayout({
           >
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-700 shadow-sm transition-all cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-[#EF4444] bg-[#EF4444]/15 hover:bg-[#EF4444]/25 border border-[#EF4444]/30 shadow-sm transition-all cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
               <span>Sign Out</span>
@@ -75,7 +75,7 @@ export default async function DashboardLayout({
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white sm:bg-slate-50">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#070B24]">
         {/* Top Navbar */}
         <DashboardHeader
           storeName={store.name}
@@ -85,7 +85,7 @@ export default async function DashboardLayout({
         />
 
         {/* Page Content */}
-        <main className="flex-1 px-3.5 pt-0 pb-24 sm:p-6 md:p-8 sm:pb-8 overflow-y-auto overflow-x-hidden min-h-0 bg-white sm:bg-slate-50">
+        <main className="flex-1 px-3.5 pt-0 pb-24 sm:p-6 md:p-8 sm:pb-8 overflow-y-auto overflow-x-hidden min-h-0 bg-[#070B24] text-[#F5F7FF]">
           {children}
         </main>
 
