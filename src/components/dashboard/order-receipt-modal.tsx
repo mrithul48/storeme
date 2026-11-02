@@ -103,19 +103,19 @@ export function OrderReceiptModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-5xl h-[92vh] flex flex-col rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-[#070B24]/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-5xl h-[92vh] flex flex-col rounded-2xl border border-[#202D55] bg-[#080D28] shadow-2xl overflow-hidden text-[#F5F7FF]">
         {/* Header Toolbar */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 bg-slate-50/80">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#202D55] bg-[#0A1030]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-blue-100/70 text-[#2563EB]">
+            <div className="p-2 rounded-lg bg-[#172653] text-[#638BFF]">
               <FileText className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-[#0F172A]">
+              <h2 className="text-base font-bold text-[#F5F7FF]">
                 {orders.length === 1 ? "Order Receipt" : "Bulk Order Receipts"}
               </h2>
-              <p className="text-xs text-[#64748B]">
+              <p className="text-xs text-[#A5B2D1]">
                 {loading
                   ? "Loading order details..."
                   : `${orders.length} order(s) · ${totalPages} A4 page(s) (4 receipts per page)`}
@@ -130,7 +130,7 @@ export function OrderReceiptModal({
               size="sm"
               onClick={handleDownloadPdf}
               disabled={loading || orders.length === 0 || isGeneratingPdf}
-              className="border-slate-300 text-slate-700 hover:bg-slate-100"
+              className="border-[#202D55] text-[#F5F7FF] bg-[#101A3D] hover:bg-[#172653]"
             >
               {isGeneratingPdf ? (
                 <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
@@ -146,7 +146,7 @@ export function OrderReceiptModal({
               size="sm"
               onClick={handlePrint}
               disabled={loading || orders.length === 0}
-              className="bg-[#2563EB] hover:bg-blue-700 text-white"
+              className="bg-[#4169E1] hover:bg-[#3458C7] text-white"
             >
               <Printer className="w-4 h-4 mr-1.5" />
               Print (A4)
@@ -155,7 +155,7 @@ export function OrderReceiptModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/80 transition-colors ml-1"
+              className="p-1.5 rounded-lg text-[#7181A8] hover:text-[#F5F7FF] hover:bg-[#172653] transition-colors ml-1"
             >
               <X className="w-5 h-5" />
             </button>
@@ -163,7 +163,7 @@ export function OrderReceiptModal({
         </div>
 
         {/* Content Preview Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-100/80">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#070B24]">
           {loading ? (
             <div className="h-full flex flex-col items-center justify-center gap-3 text-slate-500">
               <Loader2 className="w-8 h-8 animate-spin text-[#2563EB]" />

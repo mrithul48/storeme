@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- LaunchCommerce Admin — Midnight Royal Blue Palette -->
+    <color name="colorPrimary">#4169E1</color>
+    <color name="colorPrimaryDark">#0A1030</color>
+    <color name="colorAccent">#638BFF</color>
+    <color name="statusBarColor">#0A1030</color>
+    <color name="navigationBarColor">#070B24</color>
+    <color name="backgroundColor">#070B24</color>
+</resources>
+

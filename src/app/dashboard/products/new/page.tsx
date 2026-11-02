@@ -22,8 +22,8 @@ export default async function NewProductPage() {
   return (
     <div className="w-full min-w-0 max-w-6xl mx-auto">
       <div className="hidden sm:block mb-6">
-        <h1 className="text-2xl font-bold text-[#0F172A]">Create New Product</h1>
-        <p className="text-xs sm:text-sm text-[#64748B]">
+        <h1 className="text-2xl font-bold text-[#F5F7FF]">Create New Product</h1>
+        <p className="text-xs sm:text-sm text-[#A5B2D1]">
           Add an item to your online store catalog with pricing, images, and inventory.
         </p>
       </div>

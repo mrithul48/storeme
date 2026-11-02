@@ -65,24 +65,24 @@ export function Section({
   };
 
   return (
-    <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white sm:shadow-sm bg-transparent border-0 shadow-none rounded-none overflow-visible">
+    <div className="rounded-2xl border border-[#202D55] bg-[#101A3D] shadow-sm p-4 sm:p-6 space-y-4 overflow-visible">
       <button
         type="button"
         onClick={handleToggle}
-        className="w-full flex items-center justify-between px-0 py-3 sm:px-6 sm:py-4 hover:bg-slate-50/50 transition-colors text-left border-b border-slate-100 sm:border-0 cursor-pointer"
+        className="w-full flex items-center justify-between py-1 text-left border-b border-[#172347] pb-3 cursor-pointer hover:opacity-90 transition-opacity"
       >
-        <span className="flex items-center gap-2.5 font-bold text-sm sm:text-base text-[#0F172A]">
-          <Icon className="w-4 h-4 text-[#2563EB]" />
+        <span className="flex items-center gap-2.5 font-bold text-sm sm:text-base text-[#F5F7FF]">
+          <Icon className="w-4 h-4 text-[#638BFF]" />
           {title}
         </span>
         {isOpen ? (
-          <ChevronUp className="w-4 h-4 text-[#64748B]" />
+          <ChevronUp className="w-4 h-4 text-[#7181A8]" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-[#64748B]" />
+          <ChevronDown className="w-4 h-4 text-[#7181A8]" />
         )}
       </button>
       {isOpen && (
-        <div className="px-0 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-2 border-0 sm:border-t sm:border-slate-100">
+        <div className="pt-4 border-0">
           {children}
         </div>
       )}
@@ -103,8 +103,8 @@ export function Toggle({ label, description, checked, onChange }: ToggleProps) {
   return (
     <div className="flex items-center justify-between gap-4 py-1.5">
       <div className="min-w-0 flex-1 pr-2">
-        <p className="text-sm font-semibold text-[#0F172A]">{label}</p>
-        {description && <p className="text-xs text-[#64748B] mt-0.5 leading-relaxed">{description}</p>}
+        <p className="text-sm font-semibold text-[#F5F7FF]">{label}</p>
+        {description && <p className="text-xs text-[#A5B2D1] mt-0.5 leading-relaxed">{description}</p>}
       </div>
       <button
         type="button"
@@ -113,7 +113,7 @@ export function Toggle({ label, description, checked, onChange }: ToggleProps) {
         onClick={() => onChange(!checked)}
         className={cn(
           "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
-          checked ? "bg-[#2563EB]" : "bg-slate-300"
+          checked ? "bg-[#4169E1]" : "bg-[#172653]"
         )}
       >
         <span
@@ -140,7 +140,7 @@ interface ShapePickerProps {
 export function ShapePicker({ label, value, onChange, options }: ShapePickerProps) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-semibold text-[#0F172A]">{label}</label>
+      <label className="text-xs font-semibold text-[#F5F7FF]">{label}</label>
       <div className="flex gap-2 flex-wrap">
         {options.map((opt) => (
           <button
@@ -150,8 +150,8 @@ export function ShapePicker({ label, value, onChange, options }: ShapePickerProp
             className={cn(
               "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all shadow-sm",
               value === opt.value
-                ? "bg-blue-50 border-[#2563EB] text-[#2563EB]"
-                : "bg-white border-slate-200 text-[#64748B] hover:border-slate-300 hover:text-[#0F172A] hover:bg-slate-50"
+                ? "bg-[#172653] border-[#4169E1] text-[#638BFF]"
+                : "bg-[#080D28] border-[#202D55] text-[#7181A8] hover:border-[#4169E1]/50 hover:text-[#F5F7FF] hover:bg-[#101A3D]"
             )}
           >
             <span className="text-base leading-none">{opt.icon}</span>
@@ -187,7 +187,7 @@ interface RadiusPickerProps {
 export function RadiusPicker({ label, value, onChange, options = ALL_RADIUS_OPTIONS }: RadiusPickerProps) {
   return (
     <div className="space-y-2">
-      <label className="text-xs font-semibold text-[#0F172A]">{label}</label>
+      <label className="text-xs font-semibold text-[#F5F7FF]">{label}</label>
       <div className="flex gap-2 flex-wrap">
         {options.map((opt) => (
           <button
@@ -197,8 +197,8 @@ export function RadiusPicker({ label, value, onChange, options = ALL_RADIUS_OPTI
             className={cn(
               "px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all shadow-sm",
               value === opt.value
-                ? "bg-blue-50 border-[#2563EB] text-[#2563EB]"
-                : "bg-white border-slate-200 text-[#64748B] hover:border-slate-300 hover:text-[#0F172A] hover:bg-slate-50"
+                ? "bg-[#172653] border-[#4169E1] text-[#638BFF]"
+                : "bg-[#080D28] border-[#202D55] text-[#7181A8] hover:border-[#4169E1]/50 hover:text-[#F5F7FF] hover:bg-[#101A3D]"
             )}
           >
             {opt.label}
@@ -212,7 +212,7 @@ export function RadiusPicker({ label, value, onChange, options = ALL_RADIUS_OPTI
 // ─── Select helper (shared select styling) ────────────────────────────────────
 
 export const selectClass =
-  "w-full h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-[#2563EB] shadow-sm";
+  "w-full h-11 rounded-xl border border-[#202D55] bg-[#080D28] px-4 text-sm text-[#F5F7FF] focus:outline-none focus:ring-2 focus:ring-[#638BFF]/20 focus:border-[#4169E1] shadow-sm";
 
 // ─── Custom Select / Dropdown ────────────────────────────────────────────────
 
@@ -270,17 +270,17 @@ export function CustomDropdown({
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          "w-full h-11 px-3.5 rounded-xl border bg-white flex items-center justify-between text-left transition-all cursor-pointer shadow-xs",
+          "w-full h-11 px-3.5 rounded-xl border bg-[#080D28] flex items-center justify-between text-left transition-all cursor-pointer shadow-xs",
           isOpen
-            ? "border-[#2563EB] ring-2 ring-blue-600/15 shadow-sm"
-            : "border-slate-300 hover:border-slate-400 hover:bg-slate-50/50"
+            ? "border-[#4169E1] bg-[#172653] ring-2 ring-[#638BFF]/20 shadow-sm"
+            : "border-[#202D55] bg-[#080D28] hover:border-[#4169E1]/50 hover:bg-[#172653]/30"
         )}
       >
         <div className="flex items-center gap-2.5 min-w-0 pr-2">
           <div
             className={cn(
               "w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-              selected ? "bg-blue-50 text-[#2563EB]" : "bg-slate-100 text-slate-400"
+              selected ? "bg-[#172653] text-[#638BFF]" : "bg-[#101A3D] text-[#7181A8]"
             )}
           >
             <Icon className="w-3.5 h-3.5" />
@@ -288,7 +288,7 @@ export function CustomDropdown({
           <span
             className={cn(
               "text-xs sm:text-sm font-medium truncate",
-              selected ? "text-[#0F172A]" : "text-slate-400"
+              selected ? "text-[#F5F7FF]" : "text-[#7181A8]"
             )}
           >
             {selected ? selected.name : placeholder}
@@ -304,7 +304,7 @@ export function CustomDropdown({
                 e.stopPropagation();
                 onChange(null);
               }}
-              className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              className="p-1 rounded-md text-[#7181A8] hover:text-[#F5F7FF] hover:bg-[#172653] transition-colors"
               title="Clear selection"
             >
               <X className="w-3.5 h-3.5" />
@@ -312,7 +312,7 @@ export function CustomDropdown({
           )}
           <ChevronDown
             className={cn(
-              "w-4 h-4 text-slate-400 transition-transform duration-200",
+              "w-4 h-4 text-[#7181A8] transition-transform duration-200",
               isOpen && "rotate-180 text-[#2563EB]"
             )}
           />
@@ -320,9 +320,9 @@ export function CustomDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1.5 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute z-50 left-0 right-0 mt-1.5 bg-[#0A1030] rounded-xl border border-[#202D55] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
           {options.length > 5 && (
-            <div className="p-2 border-b border-slate-100 bg-slate-50/80">
+            <div className="p-2 border-b border-[#172347] bg-[#080D28]">
               <div className="relative">
                 <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
@@ -330,7 +330,7 @@ export function CustomDropdown({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search..."
-                  className="w-full h-8 pl-8 pr-3 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none focus:border-[#2563EB] text-[#0F172A]"
+                  className="w-full h-8 pl-8 pr-3 text-xs rounded-lg border border-[#202D55] bg-[#0A1030] focus:outline-none focus:border-[#4169E1] text-[#F5F7FF]"
                   autoFocus
                 />
               </div>
@@ -357,8 +357,8 @@ export function CustomDropdown({
                     className={cn(
                       "w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors text-left cursor-pointer",
                       isSelected
-                        ? "bg-blue-50 text-[#2563EB] font-semibold"
-                        : "text-[#0F172A] hover:bg-slate-50"
+                        ? "bg-[#172653] text-[#638BFF] font-semibold"
+                        : "text-[#F5F7FF] hover:bg-[#101A3D] hover:text-[#638BFF]"
                     )}
                   >
                     <div className="flex items-center gap-2 min-w-0 pr-2">

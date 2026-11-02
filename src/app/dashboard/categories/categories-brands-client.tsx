@@ -248,25 +248,25 @@ export function CategoriesBrandsClient({
   return (
     <div className="space-y-6">
       {/* Mobile Switchable Tab Buttons */}
-      <div className="lg:hidden p-1 bg-slate-100 rounded-2xl border border-slate-200/80 flex items-center gap-1">
+      <div className="lg:hidden p-1 bg-[#101A3D] rounded-2xl border border-[#202D55] flex items-center gap-1 shadow-sm">
         <button
           type="button"
           onClick={() => setActiveTab("categories")}
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all select-none cursor-pointer",
             activeTab === "categories"
-              ? "bg-white text-[#2563EB] shadow-sm border border-slate-200/60"
-              : "text-[#64748B] hover:text-[#0F172A]"
+              ? "bg-[#4169E1] text-[#F5F7FF] shadow-sm border border-[#638BFF]/40"
+              : "text-[#A5B2D1] hover:text-[#F5F7FF] hover:bg-[#172653]"
           )}
         >
-          <Layers className={cn("w-4 h-4", activeTab === "categories" ? "text-[#2563EB]" : "text-slate-400")} />
+          <Layers className={cn("w-4 h-4", activeTab === "categories" ? "text-[#F5F7FF]" : "text-[#7181A8]")} />
           <span>Categories</span>
           <span
             className={cn(
               "px-2 py-0.5 rounded-full text-[10px] font-extrabold transition-colors",
               activeTab === "categories"
-                ? "bg-blue-50 text-[#2563EB]"
-                : "bg-slate-200 text-slate-500"
+                ? "bg-white/20 text-[#F5F7FF]"
+                : "bg-[#172653] text-[#7181A8]"
             )}
           >
             {categories.length}
@@ -279,18 +279,18 @@ export function CategoriesBrandsClient({
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all select-none cursor-pointer",
             activeTab === "brands"
-              ? "bg-white text-emerald-600 shadow-sm border border-slate-200/60"
-              : "text-[#64748B] hover:text-[#0F172A]"
+              ? "bg-[#4169E1] text-[#F5F7FF] shadow-sm border border-[#638BFF]/40"
+              : "text-[#A5B2D1] hover:text-[#F5F7FF] hover:bg-[#172653]"
           )}
         >
-          <Tag className={cn("w-4 h-4", activeTab === "brands" ? "text-emerald-600" : "text-slate-400")} />
+          <Tag className={cn("w-4 h-4", activeTab === "brands" ? "text-[#F5F7FF]" : "text-[#7181A8]")} />
           <span>Brands</span>
           <span
             className={cn(
               "px-2 py-0.5 rounded-full text-[10px] font-extrabold transition-colors",
               activeTab === "brands"
-                ? "bg-emerald-50 text-emerald-700"
-                : "bg-slate-200 text-slate-500"
+                ? "bg-white/20 text-[#F5F7FF]"
+                : "bg-[#172653] text-[#7181A8]"
             )}
           >
             {brands.length}
@@ -301,10 +301,10 @@ export function CategoriesBrandsClient({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Categories Section */}
         <div className={cn("space-y-6", activeTab !== "categories" && "hidden lg:block")}>
-          <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-4 sm:shadow-sm w-full">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-              <Layers className="w-5 h-5 text-[#2563EB]" />
-              <h2 className="text-base font-bold text-[#0F172A]">Add New Category</h2>
+          <div className="rounded-2xl border border-[#202D55] bg-[#101A3D] p-4 sm:p-6 space-y-4 shadow-sm w-full">
+            <div className="flex items-center gap-2 border-b border-[#172347] pb-3">
+              <Layers className="w-5 h-5 text-[#638BFF]" />
+              <h2 className="text-base font-bold text-[#F5F7FF]">Add New Category</h2>
             </div>
 
             {catError && (
@@ -316,7 +316,7 @@ export function CategoriesBrandsClient({
 
             <form onSubmit={handleCreateCategory} className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#0F172A]">Category Name *</label>
+                <label className="text-xs font-semibold text-[#F5F7FF]">Category Name *</label>
                 <Input
                   required
                   value={catName}
@@ -348,33 +348,33 @@ export function CategoriesBrandsClient({
           </div>
 
           {/* Existing Categories List */}
-          <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-3 sm:shadow-sm w-full">
-            <div className="border-b border-slate-100 pb-2.5 sm:border-0 sm:pb-0">
-              <h3 className="text-xs sm:text-sm font-bold text-[#64748B] uppercase tracking-wider">
+          <div className="rounded-2xl border border-[#202D55] bg-[#101A3D] p-4 sm:p-6 space-y-3 shadow-sm w-full">
+            <div className="border-b border-[#172347] pb-2.5 sm:border-0 sm:pb-0">
+              <h3 className="text-xs sm:text-sm font-bold text-[#7181A8] uppercase tracking-wider">
                 All Categories ({categories.length})
               </h3>
             </div>
 
             {categories.length === 0 ? (
-              <p className="text-xs text-[#64748B] py-4 text-center">No categories created yet.</p>
+              <p className="text-xs text-[#7181A8] py-4 text-center">No categories created yet.</p>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-[#172347]">
                 {categories.map((c) => (
                   <div key={c.id} className="py-3 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       {c.imageUrl ? (
-                        <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex-shrink-0">
+                        <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-[#202D55] bg-[#080D28] flex-shrink-0">
                           <Image src={c.imageUrl} alt={c.name} fill className="object-cover" />
                         </div>
                       ) : (
-                        <div className="w-11 h-11 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-500 text-xs font-bold">
+                        <div className="w-11 h-11 rounded-lg border border-[#202D55] bg-[#080D28] flex items-center justify-center flex-shrink-0 text-[#7181A8] text-xs font-bold">
                           {c.name.charAt(0)}
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[#0F172A] truncate">{c.name}</p>
+                        <p className="text-sm font-semibold text-[#F5F7FF] truncate">{c.name}</p>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[11px] text-[#2563EB] font-semibold">
+                          <span className="text-[11px] text-[#638BFF] font-semibold">
                             {c._count?.products || 0} products
                           </span>
                         </div>
@@ -385,7 +385,7 @@ export function CategoriesBrandsClient({
                       <button
                         type="button"
                         onClick={() => handleStartEditCategory(c)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-[#2563EB] hover:bg-blue-50 transition-colors"
+                        className="p-1.5 rounded-lg text-[#7181A8] hover:text-[#638BFF] hover:bg-[#172653] transition-colors"
                         title="Edit Category"
                       >
                         <Pencil className="w-4 h-4" />
@@ -393,7 +393,7 @@ export function CategoriesBrandsClient({
                       <button
                         type="button"
                         onClick={() => handleDeleteCategory(c.id, c.name)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        className="p-1.5 rounded-lg text-[#7181A8] hover:text-[#EF4444] hover:bg-rose-500/10 transition-colors"
                         title="Delete Category"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -408,10 +408,10 @@ export function CategoriesBrandsClient({
 
         {/* Brands Section */}
         <div className={cn("space-y-6", activeTab !== "brands" && "hidden lg:block")}>
-          <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-4 sm:shadow-sm w-full">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-              <Tag className="w-5 h-5 text-emerald-600" />
-              <h2 className="text-base font-bold text-[#0F172A]">Add New Brand</h2>
+          <div className="rounded-2xl border border-[#202D55] bg-[#101A3D] p-4 sm:p-6 space-y-4 shadow-sm w-full">
+            <div className="flex items-center gap-2 border-b border-[#172347] pb-3">
+              <Tag className="w-5 h-5 text-[#22C55E]" />
+              <h2 className="text-base font-bold text-[#F5F7FF]">Add New Brand</h2>
             </div>
 
             {brandError && (
@@ -423,7 +423,7 @@ export function CategoriesBrandsClient({
 
             <form onSubmit={handleCreateBrand} className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#0F172A]">Brand Name *</label>
+                <label className="text-xs font-semibold text-[#F5F7FF]">Brand Name *</label>
                 <Input
                   required
                   value={brandName}
@@ -455,31 +455,31 @@ export function CategoriesBrandsClient({
           </div>
 
           {/* Existing Brands List */}
-          <div className="sm:rounded-2xl sm:border sm:border-slate-200/90 sm:bg-white p-0 sm:p-6 space-y-3 sm:shadow-sm w-full">
-            <div className="border-b border-slate-100 pb-2.5 sm:border-0 sm:pb-0">
-              <h3 className="text-xs sm:text-sm font-bold text-[#64748B] uppercase tracking-wider">
+          <div className="rounded-2xl border border-[#202D55] bg-[#101A3D] p-4 sm:p-6 space-y-3 shadow-sm w-full">
+            <div className="border-b border-[#172347] pb-2.5 sm:border-0 sm:pb-0">
+              <h3 className="text-xs sm:text-sm font-bold text-[#7181A8] uppercase tracking-wider">
                 All Brands ({brands.length})
               </h3>
             </div>
 
             {brands.length === 0 ? (
-              <p className="text-xs text-[#64748B] py-4 text-center">No brands created yet.</p>
+              <p className="text-xs text-[#7181A8] py-4 text-center">No brands created yet.</p>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-[#172347]">
                 {brands.map((b) => (
                   <div key={b.id} className="py-3 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       {b.logoUrl ? (
-                        <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex-shrink-0 p-1">
+                        <div className="relative w-11 h-11 rounded-lg overflow-hidden border border-[#202D55] bg-[#080D28] flex-shrink-0 p-1">
                           <Image src={b.logoUrl} alt={b.name} fill className="object-contain" />
                         </div>
                       ) : (
-                        <div className="w-11 h-11 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-500 text-xs font-bold">
+                        <div className="w-11 h-11 rounded-lg border border-[#202D55] bg-[#080D28] flex items-center justify-center flex-shrink-0 text-[#7181A8] text-xs font-bold">
                           {b.name.charAt(0)}
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[#0F172A] truncate">{b.name}</p>
+                        <p className="text-sm font-semibold text-[#F5F7FF] truncate">{b.name}</p>
                       </div>
                     </div>
 
@@ -487,7 +487,7 @@ export function CategoriesBrandsClient({
                       <button
                         type="button"
                         onClick={() => handleStartEditBrand(b)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                        className="p-1.5 rounded-lg text-[#7181A8] hover:text-[#22C55E] hover:bg-emerald-500/10 transition-colors"
                         title="Edit Brand"
                       >
                         <Pencil className="w-4 h-4" />
@@ -495,7 +495,7 @@ export function CategoriesBrandsClient({
                       <button
                         type="button"
                         onClick={() => handleDeleteBrand(b.id, b.name)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        className="p-1.5 rounded-lg text-[#7181A8] hover:text-[#EF4444] hover:bg-rose-500/10 transition-colors"
                         title="Delete Brand"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -511,17 +511,17 @@ export function CategoriesBrandsClient({
 
       {/* Edit Category Modal */}
       {editingCategory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#070B24]/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg rounded-2xl border border-[#202D55] bg-[#080D28] p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#172347] pb-3 mb-4">
               <div className="flex items-center gap-2">
                 <Layers className="w-5 h-5 text-[#2563EB]" />
-                <h3 className="text-base font-bold text-[#0F172A]">Edit Category</h3>
+                <h3 className="text-base font-bold text-[#F5F7FF]">Edit Category</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingCategory(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                className="p-1.5 rounded-lg text-[#7181A8] hover:text-[#F5F7FF] hover:bg-[#172653] transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -536,7 +536,7 @@ export function CategoriesBrandsClient({
 
             <form onSubmit={handleUpdateCategory} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#0F172A]">Category Name *</label>
+                <label className="text-xs font-semibold text-[#F5F7FF]">Category Name *</label>
                 <Input
                   required
                   value={editCatName}
@@ -560,7 +560,7 @@ export function CategoriesBrandsClient({
                 }}
               />
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#172347]">
                 <Button
                   type="button"
                   variant="ghost"
@@ -586,17 +586,17 @@ export function CategoriesBrandsClient({
 
       {/* Edit Brand Modal */}
       {editingBrand && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#070B24]/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg rounded-2xl border border-[#202D55] bg-[#080D28] p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#172347] pb-3 mb-4">
               <div className="flex items-center gap-2">
                 <Tag className="w-5 h-5 text-emerald-600" />
-                <h3 className="text-base font-bold text-[#0F172A]">Edit Brand</h3>
+                <h3 className="text-base font-bold text-[#F5F7FF]">Edit Brand</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingBrand(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                className="p-1.5 rounded-lg text-[#7181A8] hover:text-[#F5F7FF] hover:bg-[#172653] transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -611,7 +611,7 @@ export function CategoriesBrandsClient({
 
             <form onSubmit={handleUpdateBrand} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#0F172A]">Brand Name *</label>
+                <label className="text-xs font-semibold text-[#F5F7FF]">Brand Name *</label>
                 <Input
                   required
                   value={editBrandName}
@@ -635,7 +635,7 @@ export function CategoriesBrandsClient({
                 }}
               />
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#172347]">
                 <Button
                   type="button"
                   variant="ghost"

@@ -157,8 +157,8 @@ export function HomepageTab({
 
           {heroEnabled && (
             <div className="space-y-4">
-              <p className="text-xs text-[#64748B]">
-                Upload up to <strong className="text-[#0F172A]">3 banner slides</strong>. Banners will auto-slide on the live store. You can upload both a <strong className="text-[#0F172A]">Desktop Banner</strong> and a separate <strong className="text-[#0F172A]">Mobile Banner</strong> for each slide.
+              <p className="text-xs text-[#A5B2D1]">
+                Upload up to <strong className="text-[#F5F7FF]">3 banner slides</strong>. Banners will auto-slide on the live store. You can upload both a <strong className="text-[#F5F7FF]">Desktop Banner</strong> and a separate <strong className="text-[#F5F7FF]">Mobile Banner</strong> for each slide.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -167,10 +167,10 @@ export function HomepageTab({
                   return (
                     <div
                       key={idx}
-                      className="space-y-3 p-3.5 rounded-xl border border-slate-200 bg-white flex flex-col justify-between shadow-sm"
+                      className="space-y-3 p-3.5 rounded-xl border border-[#202D55] bg-[#080D28] flex flex-col justify-between shadow-sm"
                     >
-                      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                        <label className="text-xs font-bold text-[#0F172A]">Slide {idx + 1}</label>
+                      <div className="flex items-center justify-between border-b border-[#202D55] pb-2">
+                        <label className="text-xs font-bold text-[#F5F7FF]">Slide {idx + 1}</label>
                         {banner?.url && (
                           <button
                             type="button"
@@ -187,10 +187,10 @@ export function HomepageTab({
                           {/* Desktop Banner Image */}
                           <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
-                              <label className="text-[11px] font-semibold text-[#0F172A]">Desktop Banner *</label>
-                              <span className="text-[10px] text-[#64748B]">Desktop & Tablet</span>
+                              <label className="text-[11px] font-semibold text-[#F5F7FF]">Desktop Banner *</label>
+                              <span className="text-[10px] text-[#A5B2D1]">Desktop & Tablet</span>
                             </div>
-                            <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-video shadow-xs">
+                            <div className="relative group rounded-xl overflow-hidden border border-[#202D55] bg-[#172653] aspect-video shadow-xs">
                               <Image
                                 src={banner.url}
                                 alt={`Slide ${idx + 1} Desktop`}
@@ -225,11 +225,11 @@ export function HomepageTab({
                           {/* Mobile Banner Image */}
                           <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
-                              <label className="text-[11px] font-semibold text-[#0F172A]">Mobile Banner (Optional)</label>
-                              <span className="text-[10px] text-[#64748B]">Phone view</span>
+                              <label className="text-[11px] font-semibold text-[#F5F7FF]">Mobile Banner (Optional)</label>
+                              <span className="text-[10px] text-[#A5B2D1]">Phone view</span>
                             </div>
                             {banner.mobileUrl ? (
-                              <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-[4/3] shadow-xs">
+                              <div className="relative group rounded-xl overflow-hidden border border-[#202D55] bg-[#172653] aspect-[4/3] shadow-xs">
                                 <Image
                                   src={banner.mobileUrl}
                                   alt={`Slide ${idx + 1} Mobile`}
@@ -267,9 +267,9 @@ export function HomepageTab({
                                 </div>
                               </div>
                             ) : (
-                              <label className="flex flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-slate-200 bg-slate-50 hover:border-[#2563EB]/50 transition-all cursor-pointer h-24 p-2 text-center">
-                                <span className="text-[11px] text-[#64748B] font-medium">Upload Mobile Banner</span>
-                                <span className="text-[10px] text-slate-400">Optimized for phones (e.g. 800×1000)</span>
+                              <label className="flex flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-[#202D55] bg-[#080D28] hover:border-[#2563EB]/50 transition-all cursor-pointer h-24 p-2 text-center">
+                                <span className="text-[11px] text-[#A5B2D1] font-medium">Upload Mobile Banner</span>
+                                <span className="text-[10px] text-[#7181A8]">Optimized for phones (e.g. 800×1000)</span>
                                 <input
                                   type="file"
                                   accept="image/*"
@@ -409,14 +409,14 @@ export function HomepageTab({
       {/* ── Offer Banners ─────────────────────────────────────────────── */}
       <Section title="Offer Banners" icon={ImageIcon} defaultOpen={false}>
         <div className="space-y-6 pt-2">
-          <p className="text-xs text-[#64748B]">
+          <p className="text-xs text-[#A5B2D1]">
             Upload up to 2 promotional banners. Each can link to a category or product.
           </p>
           {[0, 1].map((idx) => {
             const banner = offerBanners[idx] ?? ({} as OfferBanner);
             return (
-              <div key={idx} className="space-y-4 p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm">
-                <p className="text-sm font-bold text-[#0F172A]">Offer Banner {idx + 1}</p>
+              <div key={idx} className="space-y-4 p-5 rounded-2xl bg-[#080D28] border border-[#202D55] shadow-sm">
+                <p className="text-sm font-bold text-[#F5F7FF]">Offer Banner {idx + 1}</p>
                 <ImageUploader
                   label="Banner Image"
                   url={banner.url}
@@ -436,7 +436,7 @@ export function HomepageTab({
                       options={CARD_RADIUS_OPTIONS}
                     />
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold text-[#0F172A]">Link Destination</label>
+                      <label className="text-xs font-semibold text-[#F5F7FF]">Link Destination</label>
                       <div className="flex gap-2 flex-wrap">
                         {(["CATEGORY", "PRODUCT"] as const).map((opt) => (
                           <button
@@ -446,8 +446,8 @@ export function HomepageTab({
                             className={cn(
                               "px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all shadow-xs cursor-pointer",
                               banner.linkType === opt
-                                ? "bg-blue-50 border-[#2563EB] text-[#2563EB]"
-                                : "bg-white border-slate-200 text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50 hover:border-slate-300"
+                                ? "bg-[#172653] border-[#4169E1] text-[#638BFF] font-bold"
+                                : "bg-[#101A3D] border-[#202D55] text-[#A5B2D1] hover:text-[#F5F7FF] hover:bg-[#172653]"
                             )}
                           >
                             {opt === "CATEGORY" ? "Category" : "Product"}
@@ -459,8 +459,8 @@ export function HomepageTab({
                           className={cn(
                             "px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all shadow-xs cursor-pointer",
                             !banner.linkType
-                              ? "bg-blue-50 border-[#2563EB] text-[#2563EB]"
-                              : "bg-white border-slate-200 text-[#64748B] hover:text-[#0F172A] hover:bg-slate-50 hover:border-slate-300"
+                              ? "bg-[#172653] border-[#4169E1] text-[#638BFF] font-bold"
+                              : "bg-[#101A3D] border-[#202D55] text-[#A5B2D1] hover:text-[#F5F7FF] hover:bg-[#172653]"
                           )}
                         >
                           No link
@@ -468,7 +468,7 @@ export function HomepageTab({
                       </div>
                       {banner.linkType === "CATEGORY" && (
                         <div className="pt-1">
-                          <label className="text-[11px] font-semibold text-[#64748B] mb-1.5 block">
+                          <label className="text-[11px] font-semibold text-[#A5B2D1] mb-1.5 block">
                             Select Category
                           </label>
                           <CustomDropdown
@@ -483,7 +483,7 @@ export function HomepageTab({
                       )}
                       {banner.linkType === "PRODUCT" && (
                         <div className="pt-1">
-                          <label className="text-[11px] font-semibold text-[#64748B] mb-1.5 block">
+                          <label className="text-[11px] font-semibold text-[#A5B2D1] mb-1.5 block">
                             Select Product
                           </label>
                           <CustomDropdown
@@ -531,10 +531,10 @@ export function HomepageTab({
             <>
               <div className="space-y-3">
                 {testimonials.map((t, idx) => (
-                  <div key={t.id} className="p-4 rounded-xl bg-white border border-slate-200/90 shadow-xs space-y-3">
+                  <div key={t.id} className="p-4 rounded-xl bg-[#080D28] border border-[#202D55] shadow-xs space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#0F172A] flex items-center gap-2">
-                        <GripVertical className="w-3.5 h-3.5 text-slate-400" />
+                      <span className="text-xs font-bold text-[#F5F7FF] flex items-center gap-2">
+                        <GripVertical className="w-3.5 h-3.5 text-[#7181A8]" />
                         Testimonial {idx + 1}
                       </span>
                       <button
@@ -547,7 +547,7 @@ export function HomepageTab({
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-[#0F172A]">Customer Name</label>
+                        <label className="text-[11px] font-semibold text-[#F5F7FF]">Customer Name</label>
                         <Input
                           value={t.name}
                           onChange={(e) => updateTestimonial(idx, "name", e.target.value)}
@@ -556,7 +556,7 @@ export function HomepageTab({
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-[#0F172A]">Rating (1–5)</label>
+                        <label className="text-[11px] font-semibold text-[#F5F7FF]">Rating (1–5)</label>
                         <div className="flex gap-1 pt-2">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <button
@@ -575,7 +575,7 @@ export function HomepageTab({
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[11px] font-semibold text-[#0F172A]">Review Text</label>
+                      <label className="text-[11px] font-semibold text-[#F5F7FF]">Review Text</label>
                       <Textarea
                         value={t.description}
                         onChange={(e) => updateTestimonial(idx, "description", e.target.value)}
@@ -585,15 +585,15 @@ export function HomepageTab({
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[11px] font-semibold text-[#0F172A]">Card Background Color</label>
+                      <label className="text-[11px] font-semibold text-[#F5F7FF]">Card Background Color</label>
                       <div className="flex items-center gap-3">
                         <input
                           type="color"
                           value={t.bgColor || "#ffffff"}
                           onChange={(e) => updateTestimonial(idx, "bgColor", e.target.value)}
-                          className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-slate-200"
+                          className="w-10 h-10 rounded-lg cursor-pointer bg-transparent border border-[#202D55]"
                         />
-                        <span className="text-xs text-[#64748B] font-mono">{t.bgColor || "#ffffff"}</span>
+                        <span className="text-xs text-[#A5B2D1] font-mono">{t.bgColor || "#ffffff"}</span>
                       </div>
                     </div>
                   </div>

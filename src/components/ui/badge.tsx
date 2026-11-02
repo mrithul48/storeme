@@ -14,12 +14,12 @@ export function Badge({
   ...props
 }: BadgeProps) {
   const variantStyles = {
-    success: "bg-emerald-50 text-emerald-700 border-emerald-200 font-medium",
-    warning: "bg-amber-50 text-amber-700 border-amber-200 font-medium",
-    danger: "bg-rose-50 text-rose-700 border-rose-200 font-medium",
-    info: "bg-blue-50 text-blue-700 border-blue-200 font-medium",
-    neutral: "bg-slate-100 text-slate-700 border-slate-200 font-medium",
-    purple: "bg-purple-50 text-purple-700 border-purple-200 font-medium",
+    success: "bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/30 font-semibold",
+    warning: "bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/30 font-semibold",
+    danger: "bg-[#EF4444]/15 text-[#EF4444] border-[#EF4444]/30 font-semibold",
+    info: "bg-[#38BDF8]/15 text-[#38BDF8] border-[#38BDF8]/30 font-semibold",
+    neutral: "bg-[#172653] text-[#A5B2D1] border-[#202D55] font-medium",
+    purple: "bg-[#638BFF]/15 text-[#638BFF] border-[#638BFF]/30 font-medium",
   };
 
   const sizeStyles = {

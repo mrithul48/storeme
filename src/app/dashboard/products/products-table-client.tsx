@@ -101,13 +101,13 @@ export function ProductsTableClient({
         <span
           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
             isInStock
-              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-              : "bg-rose-50 text-rose-700 border border-rose-200"
+              ? "bg-emerald-500/10 text-[#22C55E] border border-emerald-500/20"
+              : "bg-rose-500/10 text-[#EF4444] border border-rose-500/20"
           }`}
         >
           <span
             className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-              isInStock ? "bg-emerald-500" : "bg-rose-500"
+              isInStock ? "bg-[#22C55E]" : "bg-[#EF4444]"
             }`}
           />
           {isInStock ? "In Stock" : "Out of Stock"}
@@ -124,15 +124,15 @@ export function ProductsTableClient({
         <span
           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
             isOut
-              ? "bg-rose-50 text-rose-700 border border-rose-200"
+              ? "bg-rose-500/10 text-[#EF4444] border border-rose-500/20"
               : isLow
-              ? "bg-amber-50 text-amber-700 border border-amber-200"
-              : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+              ? "bg-amber-500/10 text-[#F59E0B] border border-amber-500/20"
+              : "bg-emerald-500/10 text-[#22C55E] border border-emerald-500/20"
           }`}
         >
           <span
             className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-              isOut ? "bg-rose-500" : isLow ? "bg-amber-500" : "bg-emerald-500"
+              isOut ? "bg-[#EF4444]" : isLow ? "bg-[#F59E0B]" : "bg-[#22C55E]"
             }`}
           />
           {isOut ? "0 in stock" : `${qty} in stock`}
@@ -145,7 +145,7 @@ export function ProductsTableClient({
       const variants = p.variants || [];
       if (variants.length === 0) {
         return (
-          <span className="text-xs font-medium text-[#64748B] whitespace-nowrap">
+          <span className="text-xs font-medium text-[#7181A8] whitespace-nowrap">
             No color variants
           </span>
         );
@@ -162,18 +162,18 @@ export function ProductsTableClient({
             <span
               className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap w-fit ${
                 isOut
-                  ? "bg-rose-50 text-rose-700 border border-rose-200"
-                  : "bg-blue-50 text-blue-700 border border-blue-200"
+                  ? "bg-rose-500/10 text-[#EF4444] border border-rose-500/20"
+                  : "bg-[#172653] text-[#638BFF] border border-[#4169E1]/30"
               }`}
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  isOut ? "bg-rose-500" : "bg-[#2563EB]"
+                  isOut ? "bg-[#EF4444]" : "bg-[#638BFF]"
                 }`}
               />
               {totalQty} in stock
             </span>
-            <span className="text-[11px] text-[#64748B] whitespace-nowrap">
+            <span className="text-[11px] text-[#7181A8] whitespace-nowrap">
               {variants.length} {variants.length === 1 ? "color" : "colors"}
             </span>
           </div>
@@ -188,20 +188,20 @@ export function ProductsTableClient({
             <span
               className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap w-fit ${
                 isAllOut
-                  ? "bg-rose-50 text-rose-700 border border-rose-200"
-                  : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  ? "bg-rose-500/10 text-[#EF4444] border border-rose-500/20"
+                  : "bg-emerald-500/10 text-[#22C55E] border border-emerald-500/20"
               }`}
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  isAllOut ? "bg-rose-500" : "bg-emerald-500"
+                  isAllOut ? "bg-[#EF4444]" : "bg-[#22C55E]"
                 }`}
               />
               {isAllOut
                 ? "Out of Stock"
                 : `${inStockCount}/${variants.length} in stock`}
             </span>
-            <span className="text-[11px] text-[#64748B] whitespace-nowrap">
+            <span className="text-[11px] text-[#7181A8] whitespace-nowrap">
               {variants.length} {variants.length === 1 ? "color" : "colors"}
             </span>
           </div>
@@ -216,13 +216,13 @@ export function ProductsTableClient({
         <span
           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
             isInStock
-              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-              : "bg-rose-50 text-rose-700 border border-rose-200"
+              ? "bg-emerald-500/10 text-[#22C55E] border border-emerald-500/20"
+              : "bg-rose-500/10 text-[#EF4444] border border-rose-500/20"
           }`}
         >
           <span
             className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-              isInStock ? "bg-emerald-500" : "bg-rose-500"
+              isInStock ? "bg-[#22C55E]" : "bg-[#EF4444]"
             }`}
           />
           {isInStock ? "In Stock" : "Out of Stock"}
@@ -239,18 +239,18 @@ export function ProductsTableClient({
           <span
             className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap w-fit ${
               hasAnyInStock
-                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                : "bg-rose-50 text-rose-700 border border-rose-200"
+                ? "bg-emerald-500/10 text-[#22C55E] border border-emerald-500/20"
+                : "bg-rose-500/10 text-[#EF4444] border border-rose-500/20"
             }`}
           >
             <span
               className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                hasAnyInStock ? "bg-emerald-500" : "bg-rose-500"
+                hasAnyInStock ? "bg-[#22C55E]" : "bg-[#EF4444]"
               }`}
             />
             {hasAnyInStock ? "In Stock" : "Out of Stock"}
           </span>
-          <span className="text-[11px] text-[#64748B] whitespace-nowrap">
+          <span className="text-[11px] text-[#7181A8] whitespace-nowrap">
             {p.variants.length} colors
           </span>
         </div>
@@ -263,15 +263,15 @@ export function ProductsTableClient({
       <span
         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
           isOut
-            ? "bg-rose-50 text-rose-700 border border-rose-200"
+            ? "bg-rose-500/10 text-[#EF4444] border border-rose-500/20"
             : qty <= 5
-            ? "bg-amber-50 text-amber-700 border border-amber-200"
-            : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+            ? "bg-amber-500/10 text-[#F59E0B] border border-amber-500/20"
+            : "bg-emerald-500/10 text-[#22C55E] border border-emerald-500/20"
         }`}
       >
         <span
           className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-            isOut ? "bg-rose-500" : qty <= 5 ? "bg-amber-500" : "bg-emerald-500"
+            isOut ? "bg-[#EF4444]" : qty <= 5 ? "bg-[#F59E0B]" : "bg-[#22C55E]"
           }`}
         />
         {isOut ? "0 in stock" : `${qty} in stock`}
@@ -284,7 +284,7 @@ export function ProductsTableClient({
       {/* Filters Bar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64748B]" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7181A8]" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -298,22 +298,22 @@ export function ProductsTableClient({
           <button
             type="button"
             onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-            className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 flex items-center justify-between text-xs font-semibold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-[#2563EB] shadow-sm hover:border-slate-400 transition-all cursor-pointer"
+            className="h-11 w-full rounded-xl border border-[#202D55] bg-[#101A3D] px-4 flex items-center justify-between text-xs font-semibold text-[#F5F7FF] focus:outline-none focus:ring-2 focus:ring-[#638BFF]/20 focus:border-[#4169E1] shadow-sm hover:border-[#4169E1]/40 transition-all cursor-pointer"
           >
             <span className="truncate">
               {categories.find((c) => c.id === selectedCategory)?.name || "All Categories"}
             </span>
             <ChevronDown
               className={cn(
-                "w-4 h-4 text-[#64748B] shrink-0 ml-2 transition-transform duration-200",
-                categoryDropdownOpen && "rotate-180 text-[#2563EB]"
+                "w-4 h-4 text-[#7181A8] shrink-0 ml-2 transition-transform duration-200",
+                categoryDropdownOpen && "rotate-180 text-[#638BFF]"
               )}
             />
           </button>
 
           {categoryDropdownOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-full bg-white rounded-2xl border border-slate-200/90 shadow-xl shadow-slate-900/10 p-1.5 z-40 max-h-64 overflow-y-auto animate-in fade-in-0 zoom-in-95">
-              <div className="text-[10px] font-bold text-[#94A3B8] px-2.5 py-1 uppercase tracking-wider">
+            <div className="absolute right-0 top-full mt-1.5 w-full bg-[#0A1030] rounded-2xl border border-[#202D55] shadow-2xl p-1.5 z-40 max-h-64 overflow-y-auto animate-in fade-in-0 zoom-in-95">
+              <div className="text-[10px] font-bold text-[#7181A8] px-2.5 py-1 uppercase tracking-wider">
                 Select Category
               </div>
 
@@ -327,13 +327,13 @@ export function ProductsTableClient({
                 className={cn(
                   "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors text-left cursor-pointer",
                   selectedCategory === ""
-                    ? "bg-blue-50 text-[#2563EB] font-bold"
-                    : "text-[#0F172A] hover:bg-slate-50 hover:text-[#2563EB]"
+                    ? "bg-[#172653] text-[#638BFF] font-bold"
+                    : "text-[#F5F7FF] hover:bg-[#101A3D] hover:text-[#638BFF]"
                 )}
               >
                 <span>All Categories</span>
                 {selectedCategory === "" && (
-                  <Check className="w-3.5 h-3.5 text-[#2563EB] shrink-0 ml-2" />
+                  <Check className="w-3.5 h-3.5 text-[#638BFF] shrink-0 ml-2" />
                 )}
               </button>
 
@@ -351,13 +351,13 @@ export function ProductsTableClient({
                     className={cn(
                       "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors text-left cursor-pointer",
                       isSelected
-                        ? "bg-blue-50 text-[#2563EB] font-bold"
-                        : "text-[#0F172A] hover:bg-slate-50 hover:text-[#2563EB]"
+                        ? "bg-[#172653] text-[#638BFF] font-bold"
+                        : "text-[#F5F7FF] hover:bg-[#101A3D] hover:text-[#638BFF]"
                     )}
                   >
                     <span className="truncate">{c.name}</span>
                     {isSelected && (
-                      <Check className="w-3.5 h-3.5 text-[#2563EB] shrink-0 ml-2" />
+                      <Check className="w-3.5 h-3.5 text-[#638BFF] shrink-0 ml-2" />
                     )}
                   </button>
                 );
@@ -368,12 +368,12 @@ export function ProductsTableClient({
       </div>
 
       {filteredProducts.length === 0 ? (
-        <Card className="p-0 overflow-hidden border border-slate-200/90 shadow-sm">
+        <Card className="p-0 overflow-hidden border border-[#202D55] bg-[#101A3D] shadow-sm">
           <div className="py-16 text-center space-y-3">
-            <Package className="w-12 h-12 text-slate-300 mx-auto stroke-1" />
+            <Package className="w-12 h-12 text-[#536184] mx-auto stroke-1" />
             <div className="space-y-1">
-              <h3 className="text-base font-bold text-[#0F172A]">No products found</h3>
-              <p className="text-xs text-[#64748B]">
+              <h3 className="text-base font-bold text-[#F5F7FF]">No products found</h3>
+              <p className="text-xs text-[#7181A8]">
                 {products.length === 0
                   ? "You haven't added any products yet."
                   : "No products matched your search filter."}
@@ -401,7 +401,7 @@ export function ProductsTableClient({
               return (
                 <div
                   key={p.id}
-                  className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden transition-all"
+                  className="bg-[#101A3D] rounded-2xl border border-[#202D55] shadow-sm overflow-hidden transition-all"
                 >
                   {/* Front Collapsed Row: Image + Name + Stock + Dropdown Arrow */}
                   <div
@@ -410,18 +410,18 @@ export function ProductsTableClient({
                   >
                     {/* Left: Image & Name */}
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="relative w-12 h-12 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200">
+                      <div className="relative w-12 h-12 rounded-xl bg-[#080D28] overflow-hidden flex-shrink-0 border border-[#202D55]">
                         {img ? (
                           <Image src={img} alt={p.name} fill className="object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs font-bold">
+                          <div className="w-full h-full flex items-center justify-center text-[#536184] text-xs font-bold">
                             -
                           </div>
                         )}
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="font-bold text-xs text-[#0F172A] truncate uppercase">
+                        <p className="font-bold text-xs text-[#F5F7FF] truncate uppercase">
                           {p.name}
                         </p>
                       </div>
@@ -437,8 +437,8 @@ export function ProductsTableClient({
                           e.stopPropagation();
                           toggleExpand(p.id);
                         }}
-                        className={`w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 transition-transform duration-200 shrink-0 ${
-                          isExpanded ? "rotate-180 bg-blue-50 text-[#2563EB]" : ""
+                        className={`w-7 h-7 rounded-full bg-[#172653] flex items-center justify-center text-[#A5B2D1] hover:text-[#F5F7FF] transition-transform duration-200 shrink-0 ${
+                          isExpanded ? "rotate-180 bg-[#1C3066] text-[#638BFF]" : ""
                         }`}
                       >
                         <ChevronDown className="w-4 h-4" />
@@ -448,10 +448,10 @@ export function ProductsTableClient({
 
                   {/* Expanded Full Product Details with Proper Alignment */}
                   {isExpanded && (
-                    <div className="px-4 pb-4 pt-2 space-y-3 bg-slate-50/70 border-t border-slate-100 animate-in fade-in-50 duration-200">
-                      <div className="bg-white rounded-xl p-3.5 border border-slate-200/90 shadow-xs space-y-2.5">
-                        <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
-                          <span className="text-xs font-bold text-[#0F172A]">Full Details</span>
+                    <div className="px-4 pb-4 pt-2 space-y-3 bg-[#0A1030] border-t border-[#172347] animate-in fade-in-50 duration-200">
+                      <div className="bg-[#101A3D] rounded-xl p-3.5 border border-[#202D55] shadow-xs space-y-2.5">
+                        <div className="flex items-center justify-between gap-2 border-b border-[#172347] pb-2">
+                          <span className="text-xs font-bold text-[#F5F7FF]">Full Details</span>
                           <Badge
                             variant={
                               p.status === "ACTIVE"
@@ -468,13 +468,13 @@ export function ProductsTableClient({
                         <div className="space-y-2 text-xs">
                           {/* Price */}
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-[#64748B] shrink-0">Price</span>
+                            <span className="text-[#7181A8] shrink-0">Price</span>
                             <div className="flex items-center gap-1.5">
-                              <span className="font-bold text-[#0F172A]">
+                              <span className="font-bold text-[#F5F7FF]">
                                 {formatCurrency(salePrice || price)}
                               </span>
                               {salePrice && (
-                                <span className="text-[11px] text-[#64748B] line-through">
+                                <span className="text-[11px] text-[#7181A8] line-through">
                                   {formatCurrency(price)}
                                 </span>
                               )}
@@ -483,8 +483,8 @@ export function ProductsTableClient({
 
                           {/* Category */}
                           <div className="flex items-center justify-between gap-2">
-                            <span className="text-[#64748B] shrink-0">Category</span>
-                            <span className="font-semibold text-[#0F172A] truncate">
+                            <span className="text-[#7181A8] shrink-0">Category</span>
+                            <span className="font-semibold text-[#F5F7FF] truncate">
                               {p.category?.name || "Uncategorized"}
                             </span>
                           </div>
@@ -492,33 +492,33 @@ export function ProductsTableClient({
                           {/* SKU */}
                           {p.sku && (
                             <div className="flex items-center justify-between gap-2">
-                              <span className="text-[#64748B] shrink-0">SKU</span>
-                              <span className="font-mono text-slate-700 truncate">{p.sku}</span>
+                              <span className="text-[#7181A8] shrink-0">SKU</span>
+                              <span className="font-mono text-[#A5B2D1] truncate">{p.sku}</span>
                             </div>
                           )}
 
                           {/* Color Variants Breakdown */}
                           {p.variants && p.variants.length > 0 && (
-                            <div className="border-t border-slate-100 pt-2 space-y-1.5">
-                              <span className="text-[#64748B] block font-medium">Color Variants</span>
+                            <div className="border-t border-[#172347] pt-2 space-y-1.5">
+                              <span className="text-[#7181A8] block font-medium">Color Variants</span>
                               <div className="grid grid-cols-2 gap-1.5">
                                 {p.variants.map((v: any, vIdx: number) => {
                                   const colorName = v.color || v.name || `Color ${vIdx + 1}`;
                                   return (
                                     <div
                                       key={v.id || vIdx}
-                                      className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-xs gap-1.5"
+                                      className="px-2.5 py-1.5 rounded-xl bg-[#080D28] border border-[#202D55] flex items-center justify-between text-xs gap-1.5"
                                     >
                                       <div className="flex items-center gap-1.5 min-w-0">
                                         <span
                                           className="w-3 h-3 rounded-full shrink-0 border border-black/15 shadow-2xs"
                                           style={{ backgroundColor: getColorHex(colorName) }}
                                         />
-                                        <span className="font-semibold text-[#0F172A] truncate">
+                                        <span className="font-semibold text-[#F5F7FF] truncate">
                                           {colorName}
                                         </span>
                                       </div>
-                                      <span className="text-[#64748B] font-mono shrink-0 font-medium text-[11px]">
+                                      <span className="text-[#7181A8] font-mono shrink-0 font-medium text-[11px]">
                                         {v.manageQuantity
                                           ? `${v.stock ?? 0} qty`
                                           : v.inStock !== false
@@ -538,7 +538,7 @@ export function ProductsTableClient({
                       <div className="flex items-center gap-2 pt-1">
                         <Link href={`/dashboard/products/${p.id}/edit`} className="flex-1">
                           <Button
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             className="w-full justify-center text-xs py-2 h-9"
                           >
@@ -551,7 +551,7 @@ export function ProductsTableClient({
                           type="button"
                           onClick={() => handleDelete(p.id, p.name)}
                           disabled={deletingId === p.id}
-                          className="flex-1 h-9 px-3 rounded-xl text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 cursor-pointer"
+                          className="flex-1 h-9 px-3 rounded-xl text-xs font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Delete</span>
@@ -565,7 +565,7 @@ export function ProductsTableClient({
           </div>
 
           {/* Desktop View: Full Table inside Card (completely preserved) */}
-          <Card className="hidden md:block p-0 overflow-hidden border border-slate-200/90 shadow-sm">
+          <Card className="hidden md:block p-0 overflow-hidden border border-[#202D55] bg-[#101A3D] shadow-sm">
             <div className="w-full overflow-hidden">
               <table className="w-full table-fixed text-left text-sm">
                 <colgroup>
@@ -576,7 +576,7 @@ export function ProductsTableClient({
                   <col className="w-20 sm:w-24" />
                   <col className="w-20 sm:w-24" />
                 </colgroup>
-                <thead className="bg-slate-50 text-xs font-semibold text-[#64748B] uppercase border-b border-slate-200">
+                <thead className="bg-[#0A1030] text-xs font-semibold text-[#7181A8] uppercase border-b border-[#202D55]">
                   <tr>
                     <th className="px-3 sm:px-4 py-3.5">Product</th>
                     <th className="px-3 sm:px-4 py-3.5">Category</th>
@@ -586,42 +586,42 @@ export function ProductsTableClient({
                     <th className="px-3 sm:px-4 py-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#172347]">
                   {filteredProducts.map((p) => {
                     const img = p.images?.[0]?.url;
                     const price = Number(p.price);
                     const salePrice = p.salePrice ? Number(p.salePrice) : null;
 
                     return (
-                      <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
+                      <tr key={p.id} className="hover:bg-[#172653]/40 transition-colors">
                         <td className="px-3 sm:px-4 py-3.5">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="relative w-11 h-11 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200">
+                            <div className="relative w-11 h-11 rounded-xl bg-[#080D28] overflow-hidden flex-shrink-0 border border-[#202D55]">
                               {img ? (
                                 <Image src={img} alt={p.name} fill className="object-cover" />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs font-bold">
+                                <div className="w-full h-full flex items-center justify-center text-[#536184] text-xs font-bold">
                                   -
                                 </div>
                               )}
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="font-semibold text-[#0F172A] truncate uppercase">{p.name}</p>
+                              <p className="font-semibold text-[#F5F7FF] truncate uppercase">{p.name}</p>
                             </div>
                           </div>
                         </td>
 
-                        <td className="px-3 sm:px-4 py-3.5 text-xs text-[#64748B] truncate">
+                        <td className="px-3 sm:px-4 py-3.5 text-xs text-[#A5B2D1] truncate">
                           {p.category?.name || "Uncategorized"}
                         </td>
 
                         <td className="px-3 sm:px-4 py-3.5">
                           <div className="flex flex-col whitespace-nowrap">
-                            <span className="font-bold text-[#0F172A] text-xs sm:text-sm">
+                            <span className="font-bold text-[#F5F7FF] text-xs sm:text-sm">
                               {formatCurrency(salePrice || price)}
                             </span>
                             {salePrice && (
-                              <span className="text-[11px] text-[#64748B] line-through">
+                              <span className="text-[11px] text-[#7181A8] line-through">
                                 {formatCurrency(price)}
                               </span>
                             )}
@@ -651,7 +651,7 @@ export function ProductsTableClient({
                             <Link href={`/dashboard/products/${p.id}/edit`}>
                               <button
                                 title="Edit product"
-                                className="p-1.5 sm:p-2 rounded-lg bg-slate-100 hover:bg-slate-200/90 text-slate-700 hover:text-[#0F172A] transition-colors border border-slate-200/70"
+                                className="p-1.5 sm:p-2 rounded-lg bg-[#172653] hover:bg-[#1C3066] text-[#A5B2D1] hover:text-[#F5F7FF] transition-colors border border-[#202D55] cursor-pointer"
                               >
                                 <Edit2 className="w-3.5 h-3.5" />
                               </button>
@@ -661,7 +661,7 @@ export function ProductsTableClient({
                               onClick={() => handleDelete(p.id, p.name)}
                               disabled={deletingId === p.id}
                               title="Delete product"
-                              className="p-1.5 sm:p-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors border border-rose-200/70 disabled:opacity-40"
+                              className="p-1.5 sm:p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors border border-rose-500/20 disabled:opacity-40 cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>

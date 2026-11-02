@@ -55,16 +55,16 @@ export function OrdersTab({
 }: OrdersTabProps) {
   return (
     <div className="space-y-6">
-      <Card className="space-y-6 bg-transparent sm:bg-white border-0 sm:border sm:border-slate-200/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
-        <div className="border-b border-slate-200/90 pb-3 flex items-center justify-between">
+      <Card className="space-y-6 bg-[#101A3D] border border-[#202D55] shadow-sm p-4 sm:p-6 rounded-2xl">
+        <div className="border-b border-[#172347] pb-3 flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold text-[#0F172A]">Checkout & Order Channels</h2>
-            <p className="text-xs text-[#64748B]">
+            <h2 className="text-base font-bold text-[#F5F7FF]">Checkout & Order Channels</h2>
+            <p className="text-xs text-[#A5B2D1]">
               Enable or disable the ordering methods available to customers on your storefront.
             </p>
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
-            <span className="text-xs font-semibold text-[#0F172A]">Store Ordering:</span>
+            <span className="text-xs font-semibold text-[#F5F7FF]">Store Ordering:</span>
             <input
               type="checkbox"
               checked={ordersEnabled}
@@ -79,14 +79,14 @@ export function OrdersTab({
 
         <div className="space-y-4">
           {/* Method 1: COD */}
-          <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-slate-50 flex items-start justify-between gap-4 transition-colors">
+          <div className="p-4 rounded-xl border border-[#202D55] bg-[#080D28] hover:bg-[#172653]/30 flex items-start justify-between gap-4 transition-colors">
             <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-200">
+              <div className="p-2.5 rounded-lg bg-amber-500/10 text-[#F59E0B] border border-amber-500/20">
                 <Banknote className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#0F172A]">Cash on Delivery (COD)</h4>
-                <p className="text-xs text-[#64748B]">
+                <h4 className="text-sm font-bold text-[#F5F7FF]">Cash on Delivery (COD)</h4>
+                <p className="text-xs text-[#A5B2D1]">
                   Allow customers to place orders online and pay cash directly upon delivery.
                 </p>
               </div>
@@ -100,14 +100,14 @@ export function OrdersTab({
           </div>
 
           {/* Method 2: Online Payment */}
-          <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-slate-50 flex items-start justify-between gap-4 transition-colors">
+          <div className="p-4 rounded-xl border border-[#202D55] bg-[#080D28] hover:bg-[#172653]/30 flex items-start justify-between gap-4 transition-colors">
             <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-lg bg-blue-50 text-[#2563EB] border border-blue-200">
+              <div className="p-2.5 rounded-lg bg-[#172653] text-[#638BFF] border border-[#4169E1]/30">
                 <CreditCard className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#0F172A]">Online Payment (Razorpay)</h4>
-                <p className="text-xs text-[#64748B]">
+                <h4 className="text-sm font-bold text-[#F5F7FF]">Online Payment (Razorpay)</h4>
+                <p className="text-xs text-[#A5B2D1]">
                   Accept instant UPI, credit/debit cards, and NetBanking payments securely.
                 </p>
               </div>
@@ -121,14 +121,14 @@ export function OrdersTab({
           </div>
 
           {/* Method 3: WhatsApp Ordering */}
-          <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-slate-50 flex items-start justify-between gap-4 transition-colors">
+          <div className="p-4 rounded-xl border border-[#202D55] bg-[#080D28] hover:bg-[#172653]/30 flex items-start justify-between gap-4 transition-colors">
             <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200">
+              <div className="p-2.5 rounded-lg bg-emerald-500/10 text-[#22C55E] border border-emerald-500/20">
                 <MessageCircle className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-[#0F172A]">WhatsApp Direct Order</h4>
-                <p className="text-xs text-[#64748B]">
+                <h4 className="text-sm font-bold text-[#F5F7FF]">WhatsApp Direct Order</h4>
+                <p className="text-xs text-[#A5B2D1]">
                   Saves order in database and opens WhatsApp with a pre-filled summary to complete with customer.
                 </p>
               </div>
