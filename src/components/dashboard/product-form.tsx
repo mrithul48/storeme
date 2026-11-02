@@ -691,8 +691,8 @@ export function ProductForm({
       )}
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-start gap-3 shadow-sm">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-600" />
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm flex items-start gap-3 shadow-sm">
+          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-400" />
           <span>{error}</span>
         </div>
       )}
@@ -1101,7 +1101,7 @@ export function ProductForm({
                               className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors group ${
                                 isSelected
                                   ? "bg-[#172653] text-[#638BFF] border border-[#4169E1]/30 font-semibold"
-                                  : "hover:bg-slate-50 text-[#0F172A]"
+                                  : "hover:bg-[#172653] text-[#F5F7FF] hover:text-[#638BFF]"
                               } ${isAlreadyAdded ? "opacity-60" : ""}`}
                             >
                               <div className="flex items-center gap-2.5 min-w-0">
@@ -1193,7 +1193,7 @@ export function ProductForm({
                                   type="color"
                                   value={customColorHex.startsWith("#") ? customColorHex : `#${customColorHex}`}
                                   onChange={(e) => setCustomColorHex(e.target.value)}
-                                  className="w-10 h-10 rounded-lg border border-slate-300 bg-white cursor-pointer p-0.5 shrink-0"
+                                  className="w-10 h-10 rounded-lg border border-[#202D55] bg-[#080D28] cursor-pointer p-0.5 shrink-0"
                                 />
                                 <Input
                                   placeholder="Enter hex code (e.g. #3B82F6)"
@@ -1232,9 +1232,9 @@ export function ProductForm({
               </div>
 
               {variants.length === 0 ? (
-                <div className="sm:p-5 sm:rounded-xl sm:border sm:border-dashed sm:border-slate-200 text-center space-y-1 sm:bg-slate-50/50 py-3 sm:py-5 border-0 bg-transparent">
-                  <p className="text-xs text-[#0F172A] font-semibold">No color variants added yet</p>
-                  <p className="text-[11px] text-[#64748B] max-w-md mx-auto">
+                <div className="sm:p-5 sm:rounded-xl sm:border sm:border-dashed sm:border-[#202D55] text-center space-y-1 sm:bg-[#080D28] py-3 sm:py-5 border-0 bg-transparent">
+                  <p className="text-xs text-[#F5F7FF] font-semibold">No color variants added yet</p>
+                  <p className="text-[11px] text-[#7181A8] max-w-md mx-auto">
                     Select a color from the dropdown above or create a custom one to configure inventory and upload product images for each color.
                   </p>
                 </div>
@@ -1341,11 +1341,11 @@ export function ProductForm({
                             <span className="text-xs font-semibold text-[#F5F7FF]">
                               Product Images ({variant.color})
                             </span>
-                            <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-[#172653] text-[#638BFF] border border-[#202D55]">
                               {(variant.images?.length || 0)} {variant.images?.length === 1 ? "image" : "images"}
                             </span>
                           </div>
-                          <span className="text-[11px] text-[#64748B]">
+                          <span className="text-[11px] text-[#7181A8]">
                             Shows in gallery when customer selects {variant.color}
                           </span>
                         </div>
@@ -1550,13 +1550,13 @@ export function ProductForm({
                     className={cn(
                       "w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors text-left cursor-pointer",
                       !formData.brandId
-                        ? "bg-blue-50 text-[#2563EB] font-bold"
-                        : "text-[#0F172A] hover:bg-slate-50 hover:text-[#2563EB]"
+                        ? "bg-[#172653] text-[#638BFF] font-bold"
+                        : "text-[#F5F7FF] hover:bg-[#172653]/60 hover:text-[#638BFF]"
                     )}
                   >
                     <span>No Brand</span>
                     {!formData.brandId && (
-                      <Check className="w-3.5 h-3.5 text-[#2563EB] shrink-0 ml-2" />
+                      <Check className="w-3.5 h-3.5 text-[#638BFF] shrink-0 ml-2" />
                     )}
                   </button>
                   {brands.map((b) => {
@@ -1578,7 +1578,7 @@ export function ProductForm({
                       >
                         <span className="truncate">{b.name}</span>
                         {isSelected && (
-                          <Check className="w-3.5 h-3.5 text-[#2563EB] shrink-0 ml-2" />
+                          <Check className="w-3.5 h-3.5 text-[#638BFF] shrink-0 ml-2" />
                         )}
                       </button>
                     );
@@ -1601,7 +1601,7 @@ export function ProductForm({
                   setIsCategoryOpen(false);
                   setIsBrandOpen(false);
                 }}
-                className="w-full h-11 px-3.5 rounded-xl border border-slate-200 bg-white flex items-center justify-between text-left hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20 transition-all text-xs font-semibold text-[#F5F7FF] shadow-sm cursor-pointer"
+                className="w-full h-11 px-3.5 rounded-xl border border-[#202D55] bg-[#080D28] flex items-center justify-between text-left hover:border-[#4169E1]/50 focus:outline-none focus:ring-2 focus:ring-[#638BFF]/20 transition-all text-xs font-semibold text-[#F5F7FF] shadow-sm cursor-pointer"
               >
                 <span>
                   {formData.status === "ACTIVE"

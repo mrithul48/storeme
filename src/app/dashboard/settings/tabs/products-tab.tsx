@@ -142,7 +142,7 @@ export function ProductsTab({
             className={`cursor-pointer rounded-xl border p-4.5 transition-all ${
               stockManagementType === "QUANTITY"
                 ? "border-[#4169E1] bg-[#172653] shadow-md ring-1 ring-[#638BFF]/40"
-                : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"
+                : "border-[#202D55] bg-[#080D28] hover:border-[#4169E1]/50 hover:bg-[#172653]/30"
             }`}
           >
             <div className="flex items-start gap-3.5">
@@ -154,7 +154,7 @@ export function ProductsTab({
                   value="QUANTITY"
                   checked={stockManagementType === "QUANTITY"}
                   onChange={() => onRequestStockTypeChange("QUANTITY")}
-                  className="w-4 h-4 text-[#2563EB] focus:ring-[#2563EB] cursor-pointer"
+                  className="w-4 h-4 text-[#4169E1] focus:ring-[#638BFF] cursor-pointer"
                 />
               </div>
               <div className="flex-1 space-y-1">
@@ -187,7 +187,7 @@ export function ProductsTab({
             className={`cursor-pointer rounded-xl border p-4.5 transition-all ${
               stockManagementType === "COLOR_WISE"
                 ? "border-[#4169E1] bg-[#172653] shadow-md ring-1 ring-[#638BFF]/40"
-                : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"
+                : "border-[#202D55] bg-[#080D28] hover:border-[#4169E1]/50 hover:bg-[#172653]/30"
             }`}
           >
             <div className="flex items-start gap-3.5">
@@ -199,7 +199,7 @@ export function ProductsTab({
                   value="COLOR_WISE"
                   checked={stockManagementType === "COLOR_WISE"}
                   onChange={() => onRequestStockTypeChange("COLOR_WISE")}
-                  className="w-4 h-4 text-[#2563EB] focus:ring-[#2563EB] cursor-pointer"
+                  className="w-4 h-4 text-[#4169E1] focus:ring-[#638BFF] cursor-pointer"
                 />
               </div>
               <div className="flex-1 space-y-1">
@@ -293,7 +293,7 @@ export function ProductsTab({
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-[#172347] p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(15,23,42,0.06)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pt-3 sm:border-t sm:border-slate-200/90 sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0A1030]/95 backdrop-blur-xl border-t border-[#202D55] p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(0,0,0,0.5)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pt-3 sm:border-t sm:border-[#172347] sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-3">
           <p className="hidden sm:block text-[11px] text-[#7181A8]">
             Saving applies this inventory configuration globally across all products in your store.
           </p>

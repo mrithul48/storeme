@@ -137,7 +137,7 @@ export function AboutTab({
               </div>
               <div className="space-y-3">
                 {badges.map((badge, idx) => (
-                  <div key={badge.id} className="p-3.5 rounded-xl bg-white border border-[#202D55]/90 shadow-xs space-y-3">
+                  <div key={badge.id} className="p-3.5 rounded-xl bg-[#080D28] border border-[#202D55] shadow-xs space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-[#F5F7FF] flex items-center gap-2">
                         <GripVertical className="w-3.5 h-3.5 text-[#7181A8]" />

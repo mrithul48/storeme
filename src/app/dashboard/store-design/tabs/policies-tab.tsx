@@ -227,9 +227,9 @@ export function PoliciesTab({
   return (
     <div className="space-y-6">
       {/* Overview Card */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-50/80 via-white to-indigo-50/40 border border-blue-100/90 shadow-xs">
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#101A3D] border border-[#202D55] shadow-xs">
         <div className="flex items-start gap-3">
-          <div className="p-2.5 rounded-xl bg-white text-[#2563EB] shadow-xs border border-blue-100/60 mt-0.5 shrink-0">
+          <div className="p-2.5 rounded-xl bg-[#080D28] text-[#638BFF] shadow-xs border border-[#202D55] mt-0.5 shrink-0">
             <FileText className="w-5 h-5" />
           </div>
           <div className="space-y-1">

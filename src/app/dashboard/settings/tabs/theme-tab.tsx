@@ -83,7 +83,7 @@ export function ThemeTab({
                     setNavbarBg(preset.navbarBg);
                     setNavbarText("#ffffff");
                   }}
-                  className="p-3 rounded-xl border border-[#202D55] bg-white hover:border-slate-300 hover:bg-slate-50 flex items-center gap-2.5 transition-all text-left shadow-sm"
+                  className="p-3 rounded-xl border border-[#202D55] bg-[#080D28] hover:border-[#4169E1]/50 hover:bg-[#172653] flex items-center gap-2.5 transition-all text-left shadow-sm cursor-pointer"
                 >
                   <div
                     className="w-5 h-5 rounded-full shadow-sm flex-shrink-0"
@@ -99,19 +99,20 @@ export function ThemeTab({
             {/* Typography Selector */}
             <div className="space-y-1.5 pt-2">
               <label className="text-xs font-semibold text-[#F5F7FF] flex items-center gap-1.5">
-                <Type className="w-4 h-4 text-[#2563EB]" />
+                <Type className="w-4 h-4 text-[#638BFF]" />
                 Storefront Font Style
               </label>
               <select
                 value={primaryFont}
                 onChange={(e) => setPrimaryFont(e.target.value)}
-                className="w-full h-11 rounded-xl border border-[#202D55] shadow-sm bg-white px-3.5 text-xs font-medium text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                className="w-full h-11 rounded-xl border border-[#202D55] shadow-sm bg-[#080D28] px-3.5 text-xs font-medium text-[#F5F7FF] focus:outline-none focus:ring-2 focus:ring-[#638BFF]/25 focus:border-[#4169E1]"
                 style={{ fontFamily: getFontFamilyCSS(primaryFont) }}
               >
                 {supportedFonts.map((f) => (
                   <option
                     key={f.id}
                     value={f.id}
+                    className="bg-[#080D28] text-[#F5F7FF]"
                     style={{ fontFamily: getFontFamilyCSS(f.id) }}
                   >
                     {f.name}
@@ -126,17 +127,17 @@ export function ThemeTab({
               <select
                 value={buttonShape}
                 onChange={(e) => setButtonShape(e.target.value)}
-                className="w-full h-11 rounded-xl border border-[#202D55] shadow-sm bg-white px-3.5 text-xs font-medium text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                className="w-full h-11 rounded-xl border border-[#202D55] shadow-sm bg-[#080D28] px-3.5 text-xs font-medium text-[#F5F7FF] focus:outline-none focus:ring-2 focus:ring-[#638BFF]/25 focus:border-[#4169E1]"
               >
-                <option value="SQUARE">Sharp Corners (Square)</option>
-                <option value="MEDIUM_ROUNDED">Rounded Corners (Standard)</option>
-                <option value="FULLY_ROUNDED">Pill Shaped (Fully Rounded)</option>
+                <option value="SQUARE" className="bg-[#080D28] text-[#F5F7FF]">Sharp Corners (Square)</option>
+                <option value="MEDIUM_ROUNDED" className="bg-[#080D28] text-[#F5F7FF]">Rounded Corners (Standard)</option>
+                <option value="FULLY_ROUNDED" className="bg-[#080D28] text-[#F5F7FF]">Pill Shaped (Fully Rounded)</option>
               </select>
             </div>
           </Card>
 
           {/* Detailed Color Pickers */}
-          <Card className="space-y-4 bg-transparent sm:bg-white border-0 sm:border sm:border-[#202D55]/90 shadow-none sm:shadow-sm p-0 sm:p-6 rounded-none sm:rounded-2xl">
+          <Card className="space-y-4 bg-[#101A3D] border border-[#202D55] shadow-sm p-4 sm:p-6 rounded-2xl">
             <div className="border-b border-[#172347] pb-3">
               <h2 className="text-base font-bold text-[#F5F7FF]">Element Colors</h2>
               <p className="text-xs text-[#A5B2D1]">

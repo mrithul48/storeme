@@ -167,7 +167,7 @@ export function HomepageTab({
                   return (
                     <div
                       key={idx}
-                      className="space-y-3 p-3.5 rounded-xl border border-[#202D55] bg-white flex flex-col justify-between shadow-sm"
+                      className="space-y-3 p-3.5 rounded-xl border border-[#202D55] bg-[#080D28] flex flex-col justify-between shadow-sm"
                     >
                       <div className="flex items-center justify-between border-b border-[#202D55] pb-2">
                         <label className="text-xs font-bold text-[#F5F7FF]">Slide {idx + 1}</label>
@@ -415,7 +415,7 @@ export function HomepageTab({
           {[0, 1].map((idx) => {
             const banner = offerBanners[idx] ?? ({} as OfferBanner);
             return (
-              <div key={idx} className="space-y-4 p-5 rounded-2xl bg-white border border-[#202D55]/90 shadow-sm">
+              <div key={idx} className="space-y-4 p-5 rounded-2xl bg-[#080D28] border border-[#202D55] shadow-sm">
                 <p className="text-sm font-bold text-[#F5F7FF]">Offer Banner {idx + 1}</p>
                 <ImageUploader
                   label="Banner Image"
@@ -446,8 +446,8 @@ export function HomepageTab({
                             className={cn(
                               "px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all shadow-xs cursor-pointer",
                               banner.linkType === opt
-                                ? "bg-blue-50 border-[#2563EB] text-[#2563EB]"
-                                : "bg-white border-[#202D55] text-[#A5B2D1] hover:text-[#F5F7FF] hover:bg-[#080D28] hover:border-slate-300"
+                                ? "bg-[#172653] border-[#4169E1] text-[#638BFF] font-bold"
+                                : "bg-[#101A3D] border-[#202D55] text-[#A5B2D1] hover:text-[#F5F7FF] hover:bg-[#172653]"
                             )}
                           >
                             {opt === "CATEGORY" ? "Category" : "Product"}
@@ -459,8 +459,8 @@ export function HomepageTab({
                           className={cn(
                             "px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all shadow-xs cursor-pointer",
                             !banner.linkType
-                              ? "bg-blue-50 border-[#2563EB] text-[#2563EB]"
-                              : "bg-white border-[#202D55] text-[#A5B2D1] hover:text-[#F5F7FF] hover:bg-[#080D28] hover:border-slate-300"
+                              ? "bg-[#172653] border-[#4169E1] text-[#638BFF] font-bold"
+                              : "bg-[#101A3D] border-[#202D55] text-[#A5B2D1] hover:text-[#F5F7FF] hover:bg-[#172653]"
                           )}
                         >
                           No link
@@ -531,7 +531,7 @@ export function HomepageTab({
             <>
               <div className="space-y-3">
                 {testimonials.map((t, idx) => (
-                  <div key={t.id} className="p-4 rounded-xl bg-white border border-[#202D55]/90 shadow-xs space-y-3">
+                  <div key={t.id} className="p-4 rounded-xl bg-[#080D28] border border-[#202D55] shadow-xs space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-[#F5F7FF] flex items-center gap-2">
                         <GripVertical className="w-3.5 h-3.5 text-[#7181A8]" />

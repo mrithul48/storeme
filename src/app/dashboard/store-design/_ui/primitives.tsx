@@ -270,9 +270,9 @@ export function CustomDropdown({
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          "w-full h-11 px-3.5 rounded-xl border bg-white flex items-center justify-between text-left transition-all cursor-pointer shadow-xs",
+          "w-full h-11 px-3.5 rounded-xl border bg-[#080D28] flex items-center justify-between text-left transition-all cursor-pointer shadow-xs",
           isOpen
-            ? "border-[#4169E1] ring-2 ring-[#638BFF]/20 shadow-sm"
+            ? "border-[#4169E1] bg-[#172653] ring-2 ring-[#638BFF]/20 shadow-sm"
             : "border-[#202D55] bg-[#080D28] hover:border-[#4169E1]/50 hover:bg-[#172653]/30"
         )}
       >
@@ -304,7 +304,7 @@ export function CustomDropdown({
                 e.stopPropagation();
                 onChange(null);
               }}
-              className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              className="p-1 rounded-md text-[#7181A8] hover:text-[#F5F7FF] hover:bg-[#172653] transition-colors"
               title="Clear selection"
             >
               <X className="w-3.5 h-3.5" />
@@ -312,7 +312,7 @@ export function CustomDropdown({
           )}
           <ChevronDown
             className={cn(
-              "w-4 h-4 text-slate-400 transition-transform duration-200",
+              "w-4 h-4 text-[#7181A8] transition-transform duration-200",
               isOpen && "rotate-180 text-[#2563EB]"
             )}
           />

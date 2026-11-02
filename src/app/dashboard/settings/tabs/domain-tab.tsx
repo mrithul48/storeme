@@ -59,7 +59,7 @@ export function DomainTab({
                   Custom Domain Active &amp; Verified
                 </span>
               </div>
-              <p className="text-xl font-mono font-bold text-[#0F172A] tracking-tight">
+              <p className="text-xl font-mono font-bold text-[#F5F7FF] tracking-tight">
                 https://{customDomain}
               </p>
               <p className="text-xs text-[#A5B2D1]">
@@ -134,8 +134,8 @@ export function DomainTab({
               {domainStatus === "CONNECTED" || domainStatus === "VERIFIED" ? "Update Domain" : "Register Domain"}
             </Button>
           </div>
-          <p className="text-[11px] text-[#64748B]">
-            Enter your domain name without <span className="font-mono text-slate-700">https://</span> or trailing slashes.
+          <p className="text-[11px] text-[#7181A8]">
+            Enter your domain name without <span className="font-mono text-[#638BFF]">https://</span> or trailing slashes.
           </p>
         </div>
 
@@ -150,73 +150,73 @@ export function DomainTab({
               <span className="text-[11px] text-[#64748B]">Hostinger, GoDaddy, Namecheap, Cloudflare</span>
             </div>
 
-            <p className="text-xs text-[#0F172A] leading-relaxed">
+            <p className="text-xs text-[#F5F7FF] leading-relaxed">
               Log in to your domain registrar and create the following DNS records to verify ownership and route traffic:
             </p>
 
             <div className="space-y-3">
               {/* Record 1: Routing Record */}
               {customDomain.split(".").length > 2 ? (
-                <div className="bg-white p-3.5 rounded-lg border border-[#202D55] space-y-2 shadow-sm">
+                <div className="bg-[#101A3D] p-3.5 rounded-xl border border-[#202D55] space-y-2 shadow-sm">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563EB]">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#638BFF]">
                       Record 1: Traffic Routing (CNAME)
                     </span>
-                    <span className="text-[10px] text-[#64748B]">Points subdomain to platform</span>
+                    <span className="text-[10px] text-[#7181A8]">Points subdomain to platform</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
                     <div>
-                      <span className="text-slate-400 block text-[10px] font-sans font-medium">TYPE</span>
-                      <span className="text-[#0F172A] font-bold">CNAME</span>
+                      <span className="text-[#7181A8] block text-[10px] font-sans font-medium">TYPE</span>
+                      <span className="text-[#F5F7FF] font-bold">CNAME</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px] font-sans font-medium">HOST / NAME</span>
-                      <span className="text-[#0F172A] font-bold">{customDomain.split(".")[0]}</span>
+                      <span className="text-[#7181A8] block text-[10px] font-sans font-medium">HOST / NAME</span>
+                      <span className="text-[#F5F7FF] font-bold">{customDomain.split(".")[0]}</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px] font-sans font-medium">TARGET / VALUE</span>
+                      <span className="text-[#7181A8] block text-[10px] font-sans font-medium">TARGET / VALUE</span>
                       <div className="flex items-center justify-between gap-1">
-                        <span className="text-[#2563EB] font-bold break-all">cname.vercel-dns.com</span>
+                        <span className="text-[#638BFF] font-bold break-all">cname.vercel-dns.com</span>
                         <button
                           type="button"
                           onClick={() => onCopyRouting("cname.vercel-dns.com")}
-                          className="p-1 rounded hover:bg-[#172653] text-[#64748B] hover:text-[#0F172A]"
+                          className="p-1 rounded hover:bg-[#172653] text-[#7181A8] hover:text-[#F5F7FF]"
                           title="Copy Value"
                         >
-                          {copiedRouting ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                          {copiedRouting ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-white p-3.5 rounded-lg border border-[#202D55] space-y-2 shadow-sm">
+                <div className="bg-[#101A3D] p-3.5 rounded-xl border border-[#202D55] space-y-2 shadow-sm">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#2563EB]">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#638BFF]">
                       Record 1: Traffic Routing (A Record)
                     </span>
-                    <span className="text-[10px] text-[#64748B]">Points root domain to platform IP</span>
+                    <span className="text-[10px] text-[#7181A8]">Points root domain to platform IP</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
                     <div>
-                      <span className="text-slate-400 block text-[10px] font-sans font-medium">TYPE</span>
-                      <span className="text-[#0F172A] font-bold">A</span>
+                      <span className="text-[#7181A8] block text-[10px] font-sans font-medium">TYPE</span>
+                      <span className="text-[#F5F7FF] font-bold">A</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px] font-sans font-medium">HOST / NAME</span>
-                      <span className="text-[#0F172A] font-bold">@</span>
+                      <span className="text-[#7181A8] block text-[10px] font-sans font-medium">HOST / NAME</span>
+                      <span className="text-[#F5F7FF] font-bold">@</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px] font-sans font-medium">TARGET / IP</span>
+                      <span className="text-[#7181A8] block text-[10px] font-sans font-medium">TARGET / IP</span>
                       <div className="flex items-center justify-between gap-1">
-                        <span className="text-[#2563EB] font-bold break-all">76.76.21.21</span>
+                        <span className="text-[#638BFF] font-bold break-all">76.76.21.21</span>
                         <button
                           type="button"
                           onClick={() => onCopyRouting("76.76.21.21")}
-                          className="p-1 rounded hover:bg-[#172653] text-[#64748B] hover:text-[#0F172A]"
+                          className="p-1 rounded hover:bg-[#172653] text-[#7181A8] hover:text-[#F5F7FF]"
                           title="Copy IP"
                         >
-                          {copiedRouting ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                          {copiedRouting ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     </div>
@@ -225,33 +225,33 @@ export function DomainTab({
               )}
 
               {/* Record 2: TXT Verification Record */}
-              <div className="bg-white p-3.5 rounded-lg border border-[#202D55] space-y-2 shadow-sm">
+              <div className="bg-[#101A3D] p-3.5 rounded-xl border border-[#202D55] space-y-2 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
                     Record 2: Ownership Verification (TXT)
                   </span>
-                  <span className="text-[10px] text-[#64748B]">Proves domain ownership</span>
+                  <span className="text-[10px] text-[#7181A8]">Proves domain ownership</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
                   <div>
-                    <span className="text-slate-400 block text-[10px] font-sans font-medium">TYPE</span>
-                    <span className="text-[#0F172A] font-bold">TXT</span>
+                    <span className="text-[#7181A8] block text-[10px] font-sans font-medium">TYPE</span>
+                    <span className="text-[#F5F7FF] font-bold">TXT</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[10px] font-sans font-medium">HOST / NAME</span>
-                    <span className="text-[#0F172A] font-bold">@</span>
+                    <span className="text-[#7181A8] block text-[10px] font-sans font-medium">HOST / NAME</span>
+                    <span className="text-[#F5F7FF] font-bold">@</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[10px] font-sans font-medium">RECORD VALUE</span>
+                    <span className="text-[#7181A8] block text-[10px] font-sans font-medium">RECORD VALUE</span>
                     <div className="flex items-center justify-between gap-1">
-                      <span className="text-emerald-700 font-bold break-all text-[11px]">{verificationToken}</span>
+                      <span className="text-emerald-400 font-bold break-all text-[11px]">{verificationToken}</span>
                       <button
                         type="button"
                         onClick={onCopyToken}
-                        className="p-1 rounded hover:bg-[#172653] text-[#64748B] hover:text-[#0F172A]"
+                        className="p-1 rounded hover:bg-[#172653] text-[#7181A8] hover:text-[#F5F7FF]"
                         title="Copy Token"
                       >
-                        {copiedToken ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        {copiedToken ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                       </button>
                     </div>
                   </div>

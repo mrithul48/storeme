@@ -99,7 +99,7 @@ export function CustomerAuthTab({
             {/* Enable Toggle */}
             <div className="flex items-center justify-between p-4 rounded-xl bg-[#080D28] border border-[#202D55]">
               <div>
-                <p className="text-sm font-semibold text-[#0F172A]">Enable Google Login</p>
+                <p className="text-sm font-semibold text-[#F5F7FF]">Enable Google Login</p>
                 <p className="text-xs text-[#A5B2D1] mt-0.5">
                   Displays &ldquo;Continue with Google&rdquo; on your storefront customer login page.
                 </p>
@@ -111,14 +111,14 @@ export function CustomerAuthTab({
                   onChange={(e) => setGoogleAuthEnabled(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2563EB]"></div>
+                <div className="w-11 h-6 bg-[#172653] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#F5F7FF] after:border-[#202D55] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#4169E1]"></div>
               </label>
             </div>
 
             {/* Client ID */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-[#F5F7FF] flex items-center gap-1.5">
-                <Key className="w-4 h-4 text-slate-400" />
+                <Key className="w-4 h-4 text-[#7181A8]" />
                 Google Client ID
               </label>
               <Input
@@ -126,7 +126,7 @@ export function CustomerAuthTab({
                 onChange={(e) => setGoogleClientId(e.target.value)}
                 placeholder="Enter Google Client ID"
               />
-              <p className="text-[11px] text-[#64748B]">
+              <p className="text-[11px] text-[#7181A8]">
                 Obtain this from your Google Cloud Console OAuth 2.0 Client credentials.
               </p>
             </div>
@@ -134,12 +134,12 @@ export function CustomerAuthTab({
             {/* Client Secret */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-[#F5F7FF] flex items-center gap-1.5">
-                <Lock className="w-4 h-4 text-slate-400" />
+                <Lock className="w-4 h-4 text-[#7181A8]" />
                 Google Client Secret
               </label>
               {hasGoogleClientSecret && !isEditingSecret ? (
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 px-4 py-2.5 rounded-xl border border-[#202D55] bg-[#080D28] font-mono text-sm text-[#0F172A] tracking-wider">
+                  <div className="flex-1 px-4 py-2.5 rounded-xl border border-[#202D55] bg-[#080D28] font-mono text-sm text-[#F5F7FF] tracking-wider">
                     ••••••••••••••••••••••••••••••••
                   </div>
                   <Button
@@ -166,14 +166,14 @@ export function CustomerAuthTab({
                     <button
                       type="button"
                       onClick={() => setIsEditingSecret(false)}
-                      className="text-xs text-[#A5B2D1] hover:text-[#0F172A] underline"
+                      className="text-xs text-[#A5B2D1] hover:text-[#F5F7FF] underline"
                     >
                       Cancel and keep existing secret
                     </button>
                   )}
                 </div>
               )}
-              <p className="text-[11px] text-[#64748B]">
+              <p className="text-[11px] text-[#7181A8]">
                 Encrypted server-side using AES-256-GCM. Never exposed to browser or storefront.
               </p>
             </div>
@@ -188,7 +188,7 @@ export function CustomerAuthTab({
                   type="text"
                   readOnly
                   value={defaultCallback}
-                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#080D28] border border-[#202D55] text-xs font-mono text-[#0F172A] select-all"
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#080D28] border border-[#202D55] text-xs font-mono text-[#F5F7FF] select-all"
                 />
                 <Button
                   type="button"
@@ -210,14 +210,14 @@ export function CustomerAuthTab({
             </div>
 
             {/* Save Button for Customer Auth */}
-            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-[#202D55]/90 p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(15,23,42,0.06)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pt-4 sm:border-t sm:border-[#202D55]/90 sm:flex sm:items-center sm:justify-end">
+            <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0A1030]/95 backdrop-blur-xl border-t border-[#202D55] p-3 pb-[calc(env(safe-area-inset-bottom)+0.6rem)] shadow-[0_-4px_24px_rgba(0,0,0,0.5)] sm:static sm:bg-transparent sm:border-0 sm:shadow-none sm:p-0 sm:pt-4 sm:border-t sm:border-[#172347] sm:flex sm:items-center sm:justify-end">
               <Button
                 type="button"
                 variant="primary"
                 size="md"
                 isLoading={googleAuthSaving}
                 onClick={onSave}
-                className="w-full sm:w-auto h-11 sm:h-auto py-2.5 sm:py-2 text-sm font-bold shadow-sm shadow-blue-500/20"
+                className="w-full sm:w-auto h-11 sm:h-auto py-2.5 sm:py-2 text-sm font-bold shadow-md shadow-[#4169E1]/25"
               >
                 Save Authentication Settings
               </Button>
@@ -227,8 +227,8 @@ export function CustomerAuthTab({
       </Card>
 
       {/* Email/Password Info Card */}
-      <Card className="bg-[#080D28] border border-[#202D55]/90 shadow-sm space-y-2">
-        <h3 className="text-sm font-semibold text-[#0F172A]">Email &amp; Username Authentication</h3>
+      <Card className="bg-[#101A3D] border border-[#202D55] shadow-sm space-y-2">
+        <h3 className="text-sm font-semibold text-[#F5F7FF]">Email &amp; Username Authentication</h3>
         <p className="text-xs text-[#A5B2D1] leading-relaxed">
           Email and Username + Password login is always active for your storefront customers with built-in secure scrypt hashing, account registration, and password recovery.
         </p>
