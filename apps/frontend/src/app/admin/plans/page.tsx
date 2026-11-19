@@ -4,37 +4,47 @@ import { AdminPlansClient } from "./admin-plans-client";
 import { PlanItem } from "@/services/plan.service";
 
 export default async function AdminPlansPage() {
-  const plans = await prisma.plan.findMany({
-    orderBy: { sortOrder: "asc" },
-    include: {
-      _count: {
-        select: { subscriptions: { where: { status: "ACTIVE" } } },
-      },
-    },
-  });
+  let plans: any[] = [];
+  try {
+    plans = await (prisma.plan as any).findMany();
+  } catch (e) {
+    console.warn("Could not query plans from database:", e);
+  }
 
-  const formatted: PlanItem[] = plans.map((p) => ({
-    id: p.id,
-    name: p.name,
-    slug: p.slug,
-    description: p.description,
-    price: Number(p.price),
-    yearlyPrice: p.yearlyPrice ? Number(p.yearlyPrice) : null,
-    features: Array.isArray(p.features) ? (p.features as string[]) : [],
-    maxProducts: p.maxProducts,
-    maxOrders: p.maxOrders,
-    maxImages: p.maxImages,
-    maxMonthlyOrders: p.maxMonthlyOrders,
-    customDomainAccess: p.customDomainAccess,
-    advancedAnalytics: p.advancedAnalytics,
-    premiumThemes: p.premiumThemes,
-    sortOrder: p.sortOrder,
-    isFeatured: p.isFeatured,
-    isPublic: p.isPublic,
-    badge: p.badge,
-    status: p.status as "ACTIVE" | "COMING_SOON" | "DEPRECATED",
-    activeSubscriptionsCount: p._count.subscriptions,
-  }));
+  const formatted: PlanItem[] = plans.map((p: any) => {
+    const feat =
+      typeof p.features === "object" && p.features !== null
+        ? (p.features as Record<string, any>)
+        : {};
+    const featureList = Array.isArray(p.features)
+      ? (p.features as string[])
+      : Array.isArray(feat.list)
+      ? feat.list
+      : [];
+
+    return {
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      description: p.description,
+      price: Number(p.price || 0),
+      yearlyPrice: p.yearlyPrice ? Number(p.yearlyPrice) : null,
+      features: featureList,
+      maxProducts: p.maxProducts ?? null,
+      maxOrders: p.maxOrders ?? null,
+      maxImages: p.maxImages ?? null,
+      maxMonthlyOrders: p.maxMonthlyOrders ?? p.maxOrders ?? null,
+      customDomainAccess: Boolean(p.customDomainAccess ?? feat.customDomainAccess),
+      advancedAnalytics: Boolean(p.advancedAnalytics ?? feat.advancedAnalytics),
+      premiumThemes: Boolean(p.premiumThemes ?? feat.premiumThemes),
+      sortOrder: Number(p.sortOrder ?? 0),
+      isFeatured: Boolean(p.isFeatured ?? feat.isFeatured),
+      isPublic: Boolean(p.isPublic ?? true),
+      badge: (p.badge || feat.badge || null) as string | null,
+      status: (p.status as "ACTIVE" | "COMING_SOON" | "DEPRECATED") || "ACTIVE",
+      activeSubscriptionsCount: p._count?.subscriptions ?? 0,
+    };
+  });
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

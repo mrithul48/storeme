@@ -35,7 +35,22 @@ async function bootstrap() {
 
   // Security & CORS
   app.enableCors({
-    origin: corsOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile native apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      // Allow localhost, local LAN IPs (192.168.x.x, 10.x.x.x), expo app previews, or configured origins
+      if (
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        origin.includes('192.168.') ||
+        origin.includes('10.') ||
+        origin.includes('expo.app') ||
+        corsOrigins.includes(origin)
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
