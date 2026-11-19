@@ -1,0 +1,5 @@
+.expo/
+node_modules/
+dist/
+expo-env.d.ts
+.env.local

@@ -1,0 +1,46 @@
+{
+  "name": "@launchcommerce/backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\""
+  },
+  "dependencies": {
+    "@launchcommerce/api-contracts": "*",
+    "@launchcommerce/shared-types": "*",
+    "@launchcommerce/validation": "*",
+    "@neondatabase/serverless": "^1.2.0",
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.0",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.1",
+    "@prisma/adapter-neon": "^7.10.0",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.0",
+    "compression": "^1.8.2",
+    "dotenv": "^16.4.7",
+    "ioredis": "^5.4.2",
+    "pg": "^8.23.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "ws": "^8.22.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@types/compression": "^1.8.1",
+    "@types/express": "^5.0.0",
+    "@types/node": "^20",
+    "@types/pg": "^8.23.1",
+    "@types/ws": "^8.18.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
+  }
+}
