@@ -1,0 +1,31 @@
+// apps/api/src/common/interceptors/transform.interceptor.ts
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { ApiResponse } from '@launchcommerce/api-contracts';
+
+@Injectable()
+export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponse<T>> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<ApiResponse<T>> {
+    const statusCode = context.switchToHttp().getResponse().statusCode;
+    return next.handle().pipe(
+      map((data) => {
+        // If data is already an ApiResponse or has { success, data }, don't double wrap
+        if (data && typeof data === 'object' && 'success' in data) {
+          return {
+            statusCode,
+            timestamp: new Date().toISOString(),
+            ...data,
+          };
+        }
+        return {
+          success: true,
+          data,
+          statusCode,
+          timestamp: new Date().toISOString(),
+        };
+      }),
+    );
+  }
+}
+

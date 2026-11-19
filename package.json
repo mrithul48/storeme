@@ -1,45 +1,38 @@
 {
-  "name": "me",
-  "version": "0.1.0",
+  "name": "launchcommerce",
+  "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "next start",
-    "lint": "eslint"
+    "dev": "npm run dev --workspace=@launchcommerce/frontend",
+    "dev:all": "node scripts/dev-all.js",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:frontend": "npm run build --workspace=@launchcommerce/frontend",
+    "build:backend": "npm run build --workspace=@launchcommerce/backend",
+    "frontend:dev": "npm run dev --workspace=@launchcommerce/frontend",
+    "frontend:build": "npm run build --workspace=@launchcommerce/frontend",
+    "frontend:start": "npm run start --workspace=@launchcommerce/frontend",
+    "backend:dev": "npm run start:dev --workspace=@launchcommerce/backend",
+    "backend:build": "npm run build --workspace=@launchcommerce/backend",
+    "backend:start": "npm run start:prod --workspace=@launchcommerce/backend",
+    "api:dev": "npm run start:dev --workspace=@launchcommerce/backend",
+    "api:build": "npm run build --workspace=@launchcommerce/backend",
+    "api:start": "npm run start:prod --workspace=@launchcommerce/backend",
+    "redis:dev": "node scripts/dev-redis.js",
+    "redis:test": "tsx scripts/test-real-redis.ts",
+    "mobile:dev": "npm run start --workspace=@launchcommerce/mobile -- -c",
+    "mobile:tunnel": "npm run start --workspace=@launchcommerce/mobile -- --tunnel -c",
+    "mobile:typecheck": "npm run typecheck --workspace=@launchcommerce/mobile"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.2.0",
-    "@prisma/adapter-neon": "^7.10.0",
     "@prisma/client": "^7.10.0",
-    "@sentry/nextjs": "^11.4.0",
-    "cloudinary": "^2.11.0",
-    "clsx": "^2.1.1",
-    "framer-motion": "^14.0.0",
-    "jspdf": "^4.2.1",
-    "lucide-react": "^1.51.0",
-    "next": "16.3.8",
-    "next-auth": "^5.0.0-beta.32",
-    "razorpay": "^2.9.8",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "ws": "^8.22.0",
-    "zod": "^4.6.5"
+    "prisma": "^7.10.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@types/ws": "^8.18.2",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.8",
-    "prisma": "^7.10.0",
-    "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   }
 }
